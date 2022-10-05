@@ -2,12 +2,39 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+	font-family: "Euclid";
+	font-weight: 400;
+	font-display: swap;
+	src: url("../src/assets/fonts/EuclidCircularA-Regular.woff2") format("woff2");
+}
+@font-face {
+	font-family: "Euclid";
+	font-weight: 500;
+	font-display: swap;
+	src: url("../src/assets/fonts/EuclidCircularA-Medium.woff2") format("woff2");
+}
+@font-face {
+	font-family: "Euclid";
+	font-weight: 600;
+	font-display: swap;
+	src: url("../src/assets/fonts/EuclidCircularA-SemiBold.woff2") format("woff2");
+}
+@font-face {
+	font-family: "Euclid";
+	font-weight: 700;
+	font-display: swap;
+	src: url("../src/assets/fonts/EuclidCircularA-Bold.woff2") format("woff2");
+}
+
 html,
 body {
-	padding: 0;
 	margin: 0;
-	font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell,
-		Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+	padding: 0;
+	font-weight: 400;
+	background-color: #0c0b0e;
+	font-family: "Euclid", -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu,
+		Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
 }
 
 a {
@@ -19,12 +46,25 @@ a {
 	box-sizing: border-box;
 }
 
+h1,
+h2,
+h3 {
+	font-weight: 700;
+	font-family: "Euclid";
+}
+
 @media (prefers-color-scheme: dark) {
 	html {
 		color-scheme: dark;
 	}
 	body {
 		color: white;
-		background: black;
+		background: #0c0b0e;
 	}
+}
+
+.pattern {
+	background-repeat: no-repeat;
+	background-position: top center;
+	background-image: url("/pattern.png");
 }
