@@ -2,7 +2,7 @@ import { Aave, BitCoin, BNB, Solana } from "../../assets/icons";
 
 export default function ProtocolCard() {
 	return (
-		<div className="bg-navy rounded-xl py-8 px-6 space-y-10">
+		<div className="bg-navy rounded-xl py-8 px-6 space-y-10 hover:bg-white hover:text-darkGrey">
 			<div className="space-y-6">
 				<div className="flex items-center space-x-2">
 					<Aave />
