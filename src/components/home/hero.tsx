@@ -15,7 +15,7 @@ import Button from "../common/button";
 
 export default function Hero() {
 	return (
-		<div className="min-h-[80vh] flex items-center">
+		<div className="h-[80vh] min-h-[772px] flex items-center">
 			<div className="max-w-2xl w-full space-y-8">
 				<div className="text-6xl space-y-3">
 					<h1 className="text-blue">Be in-charge</h1>
