@@ -1,11 +1,18 @@
 export { default as BNB } from "./bnb.svg";
 export { default as Aave } from "./aave.svg";
 export { default as Auto } from "./auto.svg";
+export { default as Swap } from "./swap.svg";
+export { default as Heart } from "./heart.svg";
 export { default as Github } from "./github.svg";
 export { default as Solana } from "./solana.svg";
+export { default as Search } from "./search.svg";
 export { default as Discord } from "./discord.svg";
 export { default as Twitter } from "./twitter.svg";
 export { default as BitCoin } from "./bitcoin.svg";
+export { default as Networth } from "./networth.svg";
+export { default as Dropdown } from "./dropdown.svg";
+export { default as Ethereum } from "./ethereum.svg";
+export { default as Sortable } from "./sortable.svg";
 
 export { default as Boom } from "./boom.svg";
 export { default as Asset } from "./asset.svg";

@@ -24,11 +24,11 @@ export default function Tabs({ data, onTabChnaged }: Props) {
 
 	const renderTabs = useMemo(() => {
 		return (
-			<div className="flex items-center space-x-8 border border-none border-b-grey">
+			<div className="flex items-center space-x-8 border border-none border-b-darkGrey">
 				{data.map((tab, index) => (
 					<span
 						key={index}
-						className={`space-x-2 flex items-center text-2xl ${
+						className={`space-x-2 flex items-center py-6 text-2xl ${
 							active === index ? "text-blue" : "text-grey"
 						}`}
 						onClick={() => {
@@ -45,7 +45,7 @@ export default function Tabs({ data, onTabChnaged }: Props) {
 
 	return (
 		<div>
-			<div className="border-b border-b-grey">{renderTabs}</div>
+			<div className="border-b border-b-darkGrey">{renderTabs}</div>
 			<div>{data[active].render}</div>
 		</div>
 	);

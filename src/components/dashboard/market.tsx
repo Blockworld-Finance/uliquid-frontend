@@ -5,7 +5,7 @@ import Stats from "./stats";
 
 export default function MarketPlace() {
 	return (
-		<div>
+		<div className="py-10">
 			<BlockChain />
 			<Stats />
 			<Assets />

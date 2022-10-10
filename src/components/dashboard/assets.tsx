@@ -16,7 +16,7 @@ export default function Assets() {
 
 const Asset = () => {
 	return (
-		<div className="border border-grey rounded-lg px-8 py-3 flex space-x-3">
+		<div className="border border-darkGrey rounded-lg px-8 py-3 flex space-x-3">
 			<BNB />
 			<div className="flex flex-grow items-center justify-between">
 				<div className="w-1/3 space-y-1">
