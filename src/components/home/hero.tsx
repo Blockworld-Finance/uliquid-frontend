@@ -48,7 +48,7 @@ const LeftImage = () => {
 		});
 	});
 	return (
-		<div className="max-w-2xl w-full h-full relative flex items-center justify-center">
+		<div className="max-w-2xl max-h-[244px] w-full h-full relative flex items-center justify-center">
 			<LendingProtocol
 				className="absolute -top-44 left-4 z-10 "
 				data-aos="fade-up"
