@@ -1,36 +1,6 @@
 import Button from "@components/common/button";
 import { Aave, BitCoin, Close, Dropdown, Ethereum, GasPump, Info } from "@icons";
 
-type Props = {
-	open: boolean;
-	setOpen: (_v: boolean) => void;
-};
-
-export default function Modal({ open, setOpen }: Props) {
-	return (
-		<>
-			<div
-				className={`${
-					open ? "fixed" : "hidden"
-				} w-screen h-screen top-0 left-0 bg-black bg-opacity-60`}
-				onClick={() => setOpen(false)}
-			/>
-			<div
-				className={`w-full max-w-lg bg-navy rounded-lg fixed ${
-					open ? "top-1/2" : "-top-[150%]"
-				} -translate-x-1/2 left-1/2 -translate-y-1/2 py-10 px-6`}
-			>
-				<div className="relative">
-					<Close className="absolute top-0 right-0" onClick={() => setOpen(false)} />
-					<div>
-						<Liquidate />
-					</div>
-				</div>
-			</div>
-		</>
-	);
-}
-
 export function Liquidate() {
 	return (
 		<>

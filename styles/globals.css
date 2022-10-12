@@ -81,3 +81,49 @@ h3 {
 .menu li:hover {
 	@apply text-blue cursor-pointer;
 }
+
+.ld-ring {
+	position: relative;
+	width: 80px;
+	height: 80px;
+	background: transparent;
+	border: 3px solid #1f2832;
+	border-radius: 50%;
+	text-align: center;
+	line-height: 80px;
+	font-family: "Eina", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu,
+		Cantarell, "Helvetica Neue", sans-serif;
+	font-size: 9px;
+	font-weight: 600;
+	color: #07121d;
+}
+.ld-ring span {
+	position: absolute;
+	display: block;
+	top: -3px;
+	left: -3px;
+	width: 80px;
+	height: 80px;
+	border: 3px solid transparent;
+	border-top-color: #32c1cc;
+	border-left-color: #32c1cc;
+	border-radius: 50%;
+	animation: animateC 1.3s linear infinite;
+}
+.ld-ring.dt {
+	width: 40px;
+	height: 40px;
+}
+.ld-ring.dt span {
+	width: 40px;
+	height: 40px;
+}
+
+@keyframes animateC {
+	0% {
+		transform: rotate(0deg);
+	}
+	100% {
+		transform: rotate(360deg);
+	}
+}
