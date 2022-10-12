@@ -64,16 +64,40 @@ export function Liquidate() {
 					</div>
 				</div>
 
-				<div className="bg-primary p-3 rounded-lg flex justify-between">
-					<div className="flex space-x-2 items-center">
-						<Info />
-						<span>1ETH = 0.072 BTC ($1431.47)</span>
-					</div>
+				<div className="bg-primary p-3 rounded-lg">
+					<div className="flex justify-between items-center">
+						<div className="flex space-x-2 items-center">
+							<Info />
+							<span>1ETH = 0.072 BTC ($1431.47)</span>
+						</div>
 
-					<div className="flex space-x-2 items-center">
-						<GasPump />
-						<span>$0.28</span>
-						<Dropdown />
+						<div className="flex space-x-2 items-center">
+							<GasPump />
+							<span>$0.28</span>
+							<Dropdown />
+						</div>
+					</div>
+					<div className="space-y-2 mt-3">
+						<div className="flex justify-between items-center">
+							<h3 className="text-grey">Expected output</h3>
+							<h3>13.80 ETH</h3>
+						</div>
+						<div className="flex justify-between items-center">
+							<h3 className="text-grey">Price impact</h3>
+							<h3>0.07%</h3>
+						</div>
+						<div className="flex justify-between items-center text-grey">
+							<p>Minimum received after slippage (1.0%)</p>
+							<p>0.0000016 ETH</p>
+						</div>
+						<div className="flex justify-between items-center text-grey">
+							<p>Network fee</p>
+							<p>$0.28</p>
+						</div>
+						<div className="flex justify-between items-center">
+							<p>Protocol fee</p>
+							<p>1%</p>
+						</div>
 					</div>
 				</div>
 			</div>

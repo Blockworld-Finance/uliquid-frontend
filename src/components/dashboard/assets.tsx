@@ -43,7 +43,7 @@ export default function Assets() {
 			<Modal open={show} setOpen={setShow} type="dark">
 				<Submitted />
 			</Modal>
-			<Modal open={true} setOpen={setShown} type="dark">
+			<Modal open={shown} setOpen={setShown} type="dark">
 				<NoAsset />
 			</Modal>
 		</div>
