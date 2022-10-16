@@ -1,7 +1,7 @@
 import Button from "@components/common/button";
 import Modal from "@components/common/Modal";
 import Spinner from "@components/common/Spinner";
-import { BNB, Info, Send, Sortable, Starlay } from "@icons";
+import { BNB, Dropdown, Info, Send, Sortable, Starlay } from "@icons";
 import Link from "next/link";
 import { useState } from "react";
 import { Liquidate } from "./liquidate";
@@ -18,15 +18,21 @@ export default function Assets() {
 		<div className="bg-navy p-10 rounded-xl">
 			<div className="space-y-6">
 				<div className="text-darkGrey">
-					<ul className="px-8 grid grid-cols-6">
+					<ul className="px-8 grid grid-cols-6 items-center">
 						<li className="col-span-2">Asset</li>
 						<li className="col-span-2 flex space-x-3">
 							<span>Total supplied</span>
 							<Sortable />
 						</li>
-						<li className="col-span-2 flex space-x-3">
-							<span>Total borrowed</span>
-							<Sortable />
+						<li className="col-span-2 flex items-center justify-between">
+							<div className="flex space-x-3">
+								<span className="whitespace-nowrap">Total borrowed</span>
+								<Sortable />
+							</div>
+							<div className="bg-primary text-sm px-3 py-2 space-x-7 rounded flex items-center justify-between">
+								<span>Filter</span>
+								<Dropdown />
+							</div>
 						</li>
 					</ul>
 				</div>
