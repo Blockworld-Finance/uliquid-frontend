@@ -17,6 +17,7 @@
 		"baseUrl": "./",
 		"paths": {
 			"@icons": ["src/assets/icons/index"],
+			"@types": ["src/types.d.ts", "src/schema.d.ts"],
 			"@components/*": ["src/components/*"],
 			"@common/*": ["src/components/common/*"]
 		}

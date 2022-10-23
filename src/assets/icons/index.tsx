@@ -9,6 +9,7 @@ export { default as Close } from "./close.svg";
 export { default as Github } from "./github.svg";
 export { default as Solana } from "./solana.svg";
 export { default as Search } from "./search.svg";
+export { default as Wallet } from "./wallet.svg";
 export { default as Discord } from "./discord.svg";
 export { default as Starlay } from "./starlay.svg";
 export { default as Twitter } from "./twitter.svg";

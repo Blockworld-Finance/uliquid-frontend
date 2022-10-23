@@ -1,8 +1,9 @@
+import Image from "next/image";
 import { useCallback, useMemo, useState } from "react";
 
 type TabData = {
 	title: string;
-	icon: JSX.Element;
+	icon: string;
 	render: JSX.Element;
 };
 
@@ -35,7 +36,7 @@ export default function Tabs({ data, onTabChnaged }: Props) {
 							changeTab(index);
 						}}
 					>
-						{tab.icon}
+						<Image src={tab.icon} alt={tab.title} width={32} height={32} />
 						<span>{tab.title}</span>
 					</span>
 				))}

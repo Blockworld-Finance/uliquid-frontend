@@ -1,37 +1,42 @@
-import Layout from "@components/common/layout";
 import Tabs from "@components/common/tabs";
+import Layout from "@components/common/layout";
 import MarketPlace from "@components/dashboard/market";
-import { Aave } from "@icons";
+import { useProtocols } from "src/hooks/useQueries";
+import { getProtocols } from "src/queries";
+import useData from "src/hooks/useData";
 
-const data = [
-	{
-		title: "Aave",
-		icon: <Aave />,
-		render: <MarketPlace />,
-	},
-	{
-		title: "Compound",
-		icon: <Aave />,
-		render: <>Compound</>,
-	},
-	{
-		title: "Starlay",
-		icon: <Aave />,
-		render: <>Starlay</>,
-	},
-	{
-		title: "Uniswap",
-		icon: <Aave />,
-		render: <>Uniswap</>,
-	},
-];
+export default function Dashboard({ data: ddata }) {
+	const { data } = useProtocols(ddata);
+	const { dispatch } = useData();
 
-export default function Dashboard() {
 	return (
 		<Layout>
 			<div className="my-36">
-				<Tabs data={data} />
+				<Tabs
+					data={data.getProtocols.map(p => ({
+						title: p.name,
+						icon: p.logo,
+						render: <MarketPlace />
+					}))}
+					onTabChnaged={(_t, index) =>
+						dispatch({
+							activeChain: 0,
+							activeVersion: 0,
+							activeProtocol: index
+						})
+					}
+				/>
 			</div>
 		</Layout>
 	);
+}
+
+export async function getStaticProps() {
+	const data = await getProtocols();
+	return {
+		props: {
+			data
+		},
+		revalidate: 3600 // In seconds
+	};
 }

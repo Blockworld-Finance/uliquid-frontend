@@ -8,6 +8,9 @@ const nextConfig = {
 
 		return config;
 	},
+	images: {
+		domains: ["blockchain-rdata.s3.amazonaws.com"],
+	},
 	swcMinify: true,
 	reactStrictMode: true,
 };

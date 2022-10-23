@@ -1,0 +1,7 @@
+# codegen.yaml
+schema:
+  - https://api.uliquid.finance:
+generates:
+  ./types.ts:
+    plugins:
+      - typescript
