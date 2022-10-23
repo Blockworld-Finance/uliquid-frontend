@@ -1,6 +1,6 @@
-import Image from "next/image";
 import Link from "next/link";
-import Button from "./button";
+import Image from "next/image";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
 
 export default function Header() {
 	return (
@@ -17,9 +17,7 @@ export default function Header() {
 					<li>Docs</li>
 					<li>FAQs</li>
 				</ul>
-				<Button variant={"secodary"} size="default">
-					Connect wallet
-				</Button>
+				<ConnectButton />
 			</div>
 		</header>
 	);
