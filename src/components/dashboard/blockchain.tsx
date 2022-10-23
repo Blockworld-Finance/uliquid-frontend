@@ -53,6 +53,7 @@ export default function BlockChain() {
 							<Selector
 								name={name}
 								open={open}
+								close={() => setOpen(false)}
 								chains={chains}
 								versions={versions}
 							/>
@@ -64,7 +65,7 @@ export default function BlockChain() {
 	);
 }
 
-const Selector = ({ chains = [], versions = [], name, open }) => {
+const Selector = ({ chains = [], versions = [], name, open, close }) => {
 	const {
 		dispatch,
 		data: { activeChain, activeVersion }
@@ -88,7 +89,10 @@ const Selector = ({ chains = [], versions = [], name, open }) => {
 									? "text-primary bg-blue"
 									: "bg-primary text-blue"
 							} text-sm px-5 py-2 rounded`}
-							onClick={() => dispatch({ activeVersion: i })}
+							onClick={() => {
+								close();
+								dispatch({ activeVersion: i });
+							}}
 						>
 							{v.name}
 						</div>
@@ -97,7 +101,14 @@ const Selector = ({ chains = [], versions = [], name, open }) => {
 			</div>
 			<div className="space-y-6">
 				{chains.map((c, i) => (
-					<div key={c.name} className={"flex text-grey space-x-4"}>
+					<div
+						key={c.name}
+						className={"flex text-grey space-x-4"}
+						onClick={() => {
+							close();
+							dispatch({ activeChain: i });
+						}}
+					>
 						<Image
 							width={24}
 							height={24}
