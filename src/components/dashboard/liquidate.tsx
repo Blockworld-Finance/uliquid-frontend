@@ -1,12 +1,15 @@
 import Image from "next/image";
+import { useState } from "react";
 
 import useData from "@hooks/useData";
 import Button from "@components/common/button";
+import { LendingMarketUser } from "src/schema";
 import { useProtocols } from "@hooks/useQueries";
-import { Info, BitCoin, GasPump, Dropdown, Ethereum } from "@icons";
-import { useState } from "react";
+import { Info, GasPump, Dropdown, Ethereum } from "@icons";
 
-export function Liquidate() {
+type Props = { asset?: LendingMarketUser };
+
+export function Liquidate({ asset }: Props) {
 	const {
 		data: { activeProtocol, activeChain, activeVersion }
 	} = useData();
@@ -18,8 +21,6 @@ export function Liquidate() {
 		chains = [],
 		versions = []
 	} = data.getProtocols[activeProtocol];
-
-	// const toggleMetaData = useCallback();
 
 	return (
 		<>
@@ -64,11 +65,16 @@ export function Liquidate() {
 							</div>
 							<div className="space-y-2 col-span-2">
 								<div className="flex items-center justify-between">
-									<div className="flex items-center space-x-1">
-										<BitCoin />
-										<span>BTC</span>
+									<div className="flex items-center space-x-1 flex-initial">
+										<Image
+											width={32}
+											height={32}
+											src={asset?.marketLogo ?? ""}
+											alt={asset?.marketName ?? ""}
+										/>
+										<span className="">{asset?.marketName}</span>
 									</div>
-									<Dropdown />
+									<Dropdown className="flex-none" />
 								</div>
 								<small className="text-sm text-grey">Debt = 2</small>
 							</div>

@@ -5,7 +5,7 @@ import { Dropdown, Info, Send, Sortable, Starlay, Wallet } from "@icons";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { LendingMarketUser } from "src/schema";
 import Link from "next/link";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useUserData } from "src/hooks/useQueries";
 import { useAccount } from "wagmi";
 import { Liquidate } from "./liquidate";
@@ -19,8 +19,14 @@ export default function Assets() {
 	const [view, setView] = useState(false);
 	const [show, setShow] = useState(false);
 	const [shown, setShown] = useState(false);
+	const [asset, setAsset] = useState<LendingMarketUser>();
 
 	const { data, isLoading } = useUserData();
+
+	const selectAsset = useCallback((asset: LendingMarketUser) => {
+		setOpen(true);
+		setAsset(asset);
+	}, []);
 
 	return (
 		<div className="bg-navy p-10 rounded-xl">
@@ -52,7 +58,7 @@ export default function Assets() {
 					)}
 					{data && data.getLendingProtocolUserData.markets
 						? data.getLendingProtocolUserData.markets.map((m, i) => (
-								<Asset key={i} setOpen={() => setOpen(true)} market={m} />
+								<Asset key={i} setOpen={selectAsset} market={m} />
 						  ))
 						: !isLoading && (
 								<div className="text-center space-y-5 py-24">
@@ -73,7 +79,7 @@ export default function Assets() {
 				</div>
 			)}
 			<Modal open={open} setOpen={setOpen}>
-				<Liquidate />
+				<Liquidate asset={asset} />
 			</Modal>
 			<Modal open={view} setOpen={setView} type="dark">
 				<Confirmation />
@@ -90,14 +96,14 @@ export default function Assets() {
 
 type AssetProps = {
 	market: LendingMarketUser;
-	setOpen: (v: boolean) => void;
+	setOpen: (v: LendingMarketUser) => void;
 };
 
 const Asset = ({ market, setOpen }: AssetProps) => {
 	return (
 		<div
 			className="border border-darkGrey rounded-lg px-8 py-3 cursor-pointer grid grid-cols-3"
-			onClick={() => setOpen(false)}
+			onClick={() => setOpen(market)}
 		>
 			<div className="flex space-x-2 items-center col-span-1">
 				<Image
