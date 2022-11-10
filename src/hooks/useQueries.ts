@@ -1,8 +1,9 @@
-import { AnyObject, NormalizedProtocols } from "@types";
-import { useQuery } from "react-query";
-import { getProtocols, getUserData } from "src/queries";
 import { useAccount } from "wagmi";
+import { useQuery } from "react-query";
+
 import useData from "./useData";
+import { getProtocols, getUserData } from "src/queries";
+import { AnyObject, NormalizedProtocols } from "@types";
 
 export function useProtocols(data?: NormalizedProtocols) {
 	return useQuery(["protocols"], getProtocols, {
@@ -16,8 +17,6 @@ export function useUserData() {
 		data: { activeChain, activeProtocol, activeVersion }
 	} = useData();
 	const { address, isConnected } = useAccount();
-
-	console.log(address, isConnected);
 
 	return useQuery(
 		["user-data", activeProtocol, activeChain, activeVersion],

@@ -5,7 +5,8 @@ import useData from "@hooks/useData";
 import Button from "@components/common/button";
 import { LendingMarketUser } from "src/schema";
 import { useProtocols } from "@hooks/useQueries";
-import { Info, GasPump, Dropdown, Ethereum } from "@icons";
+import { Info, GasPump, Dropdown, Ethereum, Search } from "@icons";
+import Input from "@components/common/input";
 
 type Props = { asset?: LendingMarketUser };
 
@@ -55,7 +56,10 @@ export function Liquidate({ asset }: Props) {
 						<small className="text-sm text-darkGrey">Debt</small>
 						<div className="grid gap-4 grid-cols-5 space-x-4 items-center">
 							<div className="flex-grow border border-darkGrey rounded-lg py-3 px-4 col-span-3">
-								<input className="w-full text-3xl text-white bg-primary border-none focus:outline-none" />
+								<input
+									readOnly
+									className="w-full text-3xl text-white bg-primary border-none focus:outline-none"
+								/>
 								<small className="text-sm text-grey">$19750.70</small>
 							</div>
 							<div className="space-y-2 col-span-2">
@@ -145,3 +149,22 @@ export function Liquidate({ asset }: Props) {
 		</>
 	);
 }
+
+const AssetPicker = () => {
+	return (
+		<div className="">
+			<div>
+				<p>Change Asset</p>
+				<Input
+					className="self-center"
+					LeadingIcon={() => <Search />}
+					placeholder="Search assets or paste address"
+				/>
+			</div>
+			<div>
+				<p>Recent searches</p>
+			</div>
+			<div></div>
+		</div>
+	);
+};

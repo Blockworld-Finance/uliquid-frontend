@@ -110,8 +110,6 @@ export const getUserData = async ({
 		}
 	`;
 
-	console.log(address, chainId, version, protocol);
-
 	const data = await client.request(query, {
 		user: address,
 		protocol,

@@ -6,8 +6,6 @@ export default function Stats() {
 	const { isConnected } = useAccount();
 	const { data } = useUserData();
 
-	console.log(data);
-
 	return (
 		<div className="flex items-center my-10 space-x-8">
 			<div className="flex items-center space-x-4">

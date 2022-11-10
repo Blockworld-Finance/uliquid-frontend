@@ -9,8 +9,6 @@ export default function Dashboard({ data: ddata }) {
 	const { data } = useProtocols(ddata);
 	const { dispatch } = useData();
 
-	console.log(ddata);
-
 	return (
 		<Layout>
 			<div className="my-36">
