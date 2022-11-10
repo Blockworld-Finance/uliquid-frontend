@@ -33,3 +33,28 @@ type NormalizedProtocols = {
 		}[];
 	}[];
 }[];
+
+type GetLiquidationResult = {
+	canLiquidate: boolean;
+	collateral: string;
+	collateralAmount: number;
+	debt: string;
+	debtAmount: number;
+	debtAmountUSD: number;
+	collateralAmountUSD: number;
+	fee: number;
+	reason: string;
+	slippage: number;
+	swapQuote: {
+		amountIn: number;
+		amountOut: number;
+		path: {
+			pool: string;
+			tokenIn: string;
+			tokenOut: string;
+		};
+		priceImpact: number;
+		tokenIn: string;
+		tokenOut: string;
+	};
+};

@@ -2,8 +2,8 @@ import { useAccount } from "wagmi";
 import { useQuery } from "react-query";
 
 import useData from "./useData";
+import { NormalizedProtocols } from "@types";
 import { getProtocols, getUserData } from "src/queries";
-import { AnyObject, NormalizedProtocols } from "@types";
 
 export function useProtocols(data?: NormalizedProtocols) {
 	return useQuery(["protocols"], getProtocols, {

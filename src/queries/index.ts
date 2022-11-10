@@ -1,7 +1,11 @@
 import { gql } from "graphql-request";
 import client from "src/utils/client";
 import { LendingProtocolUserData, Version } from "src/schema";
-import { GetProtocolResponse, NormalizedProtocols } from "@types";
+import {
+	GetLiquidationResult,
+	GetProtocolResponse,
+	NormalizedProtocols
+} from "@types";
 
 export const getProtocols = async () => {
 	const query = gql`
@@ -25,7 +29,7 @@ export const getProtocols = async () => {
 		}
 	`;
 
-	const data = (await client.request(query)) as GetProtocolResponse;
+	const data = (await client().request(query)) as GetProtocolResponse;
 
 	const normalizeData = () => {
 		const chains = [];
@@ -110,11 +114,137 @@ export const getUserData = async ({
 		}
 	`;
 
-	const data = await client.request(query, {
+	const data = await client().request(query, {
 		user: address,
 		protocol,
 		chainId,
 		version
 	});
 	return data as { getLendingProtocolUserData: LendingProtocolUserData };
+};
+
+type TLiquidationProps = {
+	user: string;
+	debt: string;
+	collateral: string;
+	debtAmount: number;
+	protocol: string;
+	chainId: number;
+	version: string;
+	slippage: number;
+	signal: AbortSignal;
+};
+
+export const getLiquidation = async ({
+	user,
+	debt,
+	collateral,
+	debtAmount,
+	protocol,
+	chainId,
+	version,
+	slippage,
+	signal
+}: TLiquidationProps) => {
+	const query = gql`
+		query GetLiquidationQuote(
+			$user: String!
+			$debt: String!
+			$collateral: String!
+			$debtAmount: Float!
+			$protocol: String!
+			$chainId: Int!
+			$version: String!
+			$slippage: Float!
+		) {
+			getLiquidationQuote(
+				user: $user
+				debt: $debt
+				collateral: $collateral
+				debtAmount: $debtAmount
+				protocol: $protocol
+				chainId: $chainId
+				version: $version
+				slippage: $slippage
+			) {
+				canLiquidate
+				collateral
+				debt
+				collateralAmount
+				debtAmountUSD
+				collateralAmountUSD
+				debtAmount
+				fee
+				reason
+				slippage
+				swapQuote {
+					amountIn
+					amountOut
+					path {
+						pool
+						tokenIn
+						tokenOut
+					}
+					priceImpact
+					tokenIn
+					tokenOut
+				}
+			}
+		}
+	`;
+
+	const data = await client(signal).request(query, {
+		user,
+		debt,
+		collateral,
+		debtAmount,
+		protocol,
+		chainId,
+		version,
+		slippage
+	});
+
+	return data.getLiquidationQuote as GetLiquidationResult;
+};
+
+type TTokenValueProps = {
+	token: string;
+	quoteToken: string;
+	chainId: number;
+	getTokenUsdValueToken2: string;
+	getTokenUsdValueChainId2: number;
+};
+
+export const getTokenUSDValue = async ({
+	token,
+	chainId,
+	quoteToken,
+	getTokenUsdValueChainId2,
+	getTokenUsdValueToken2
+}: TTokenValueProps) => {
+	const query = gql`
+		query Query(
+			$token: String!
+			$quoteToken: String!
+			$chainId: Int!
+			$getTokenUsdValueToken2: String!
+			$getTokenUsdValueChainId2: Int!
+		) {
+			getTokenValue(token: $token, quoteToken: $quoteToken, chainId: $chainId)
+			getTokenUSDValue(
+				token: $getTokenUsdValueToken2
+				chainId: $getTokenUsdValueChainId2
+			)
+		}
+	`;
+
+	const data = await client().request(query, {
+		token,
+		chainId,
+		quoteToken,
+		getTokenUsdValueToken2,
+		getTokenUsdValueChainId2
+	});
+
+	return data as { getTokenValue: number; getTokenUSDValue: number };
 };

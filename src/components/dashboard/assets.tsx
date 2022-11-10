@@ -5,7 +5,7 @@ import { Dropdown, Info, Send, Sortable, Starlay, Wallet } from "@icons";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { LendingMarketUser } from "src/schema";
 import Link from "next/link";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useUserData } from "src/hooks/useQueries";
 import { useAccount } from "wagmi";
 import { Liquidate } from "./liquidate";
@@ -20,8 +20,21 @@ export default function Assets() {
 	const [show, setShow] = useState(false);
 	const [shown, setShown] = useState(false);
 	const [asset, setAsset] = useState<LendingMarketUser>();
-
 	const { data, isLoading } = useUserData();
+
+	const defaultCollateral = useMemo(() => {
+		if (data) {
+			const vals = data.getLendingProtocolUserData.markets.map(
+				m => m.amountSupplied
+			);
+			const max = Math.max(...vals);
+			return (
+				data.getLendingProtocolUserData.markets.find(
+					m => m.amountSupplied === max
+				) ?? data.getLendingProtocolUserData.markets[0]
+			);
+		}
+	}, [data]);
 
 	const selectAsset = useCallback((asset: LendingMarketUser) => {
 		setOpen(true);
@@ -79,7 +92,7 @@ export default function Assets() {
 				</div>
 			)}
 			<Modal open={open} setOpen={setOpen}>
-				<Liquidate asset={asset} />
+				<Liquidate asset={asset} collateral={defaultCollateral} />
 			</Modal>
 			<Modal open={view} setOpen={setView} type="dark">
 				<Confirmation />

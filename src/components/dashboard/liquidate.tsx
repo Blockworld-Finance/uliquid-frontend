@@ -1,5 +1,11 @@
 import Image from "next/image";
-import { useState } from "react";
+import {
+	useRef,
+	useState,
+	ChangeEventHandler,
+	useCallback,
+	useEffect
+} from "react";
 
 import useData from "@hooks/useData";
 import Button from "@components/common/button";
@@ -7,16 +13,69 @@ import { LendingMarketUser } from "src/schema";
 import { useProtocols } from "@hooks/useQueries";
 import { Info, GasPump, Dropdown, Ethereum, Search } from "@icons";
 import Input from "@components/common/input";
+import { getLiquidation, getTokenUSDValue } from "src/queries";
+import { useAccount } from "wagmi";
+import { GetLiquidationResult } from "@types";
 
-type Props = { asset?: LendingMarketUser };
+type Props = {
+	asset?: LendingMarketUser;
+	collateral?: LendingMarketUser;
+};
 
-export function Liquidate({ asset }: Props) {
+export function Liquidate({ asset, collateral }: Props) {
 	const {
 		data: { activeProtocol, activeChain, activeVersion }
 	} = useData();
-	const [show, setShow] = useState(false);
+	const { address } = useAccount();
 	const { data } = useProtocols();
+	const [show, setShow] = useState(false);
+	let { current: control } = useRef(new AbortController());
+	const [tokenValue, setTokenValue] = useState<{
+		getTokenValue: number;
+		getTokenUSDValue: number;
+	}>();
 	const { name, logo, versions = [] } = data[activeProtocol];
+	const [liquidation, setLiquidation] = useState<GetLiquidationResult>();
+
+	useEffect(() => {
+		if (asset && collateral)
+			getTokenUSDValue({
+				token: asset.marketAddress,
+				quoteToken: collateral.marketAddress,
+				getTokenUsdValueToken2: collateral.marketAddress,
+				chainId: versions[activeVersion].chains[activeChain].id,
+				getTokenUsdValueChainId2: versions[activeVersion].chains[activeChain].id
+			}).then(d => {
+				console.log(d);
+				setTokenValue(d);
+			});
+	}, [activeChain, activeVersion, asset, collateral, versions]);
+
+	const getLiquidationQuote: ChangeEventHandler<HTMLInputElement> = useCallback(
+		e => {
+			if (e.target.value.length) {
+				control.abort();
+				control = new AbortController();
+				getLiquidation({
+					user: address,
+					protocol: name,
+					signal: control.signal,
+					debt: asset.marketAddress,
+					slippage: (0.3 / 100) * 1000000,
+					debtAmount: Number(e.target.value),
+					collateral: collateral.marketAddress,
+					version: versions[activeVersion].name,
+					chainId: versions[activeVersion].chains[activeChain].id
+				})
+					.then(d => {
+						console.log(d);
+						setLiquidation(d);
+					})
+					.catch(e => {});
+			}
+		},
+		[]
+	);
 
 	return (
 		<>
@@ -57,25 +116,35 @@ export function Liquidate({ asset }: Props) {
 						<div className="grid gap-4 grid-cols-5 space-x-4 items-center">
 							<div className="flex-grow border border-darkGrey rounded-lg py-3 px-4 col-span-3">
 								<input
-									readOnly
+									step={0.01}
+									type="number"
+									onChange={getLiquidationQuote}
+									max={asset?.amountBorrowed}
 									className="w-full text-3xl text-white bg-primary border-none focus:outline-none"
 								/>
-								<small className="text-sm text-grey">$19750.70</small>
+								<small className="text-sm text-grey">
+									${liquidation?.debtAmountUSD ?? 0}
+								</small>
 							</div>
 							<div className="space-y-2 col-span-2">
 								<div className="flex items-center justify-between">
-									<div className="flex items-center space-x-1 flex-initial">
+									<div className="flex items-center space-x-2 flex-initial">
 										<Image
 											width={32}
 											height={32}
 											src={asset?.marketLogo ?? ""}
 											alt={asset?.marketName ?? ""}
 										/>
-										<span className="">{asset?.marketName}</span>
+										<span className="">{asset?.marketSymbol}</span>
 									</div>
 									<Dropdown className="flex-none" />
 								</div>
-								<small className="text-sm text-grey">Debt = 2</small>
+								<small className="text-sm text-grey">
+									<span>
+										Debt = {asset?.amountBorrowed.toPrecision(8) ?? 0}
+									</span>
+									<span>Max</span>
+								</small>
 							</div>
 						</div>
 					</div>
@@ -84,18 +153,31 @@ export function Liquidate({ asset }: Props) {
 						<small className="text-sm text-darkGrey">Collateral</small>
 						<div className="grid gap-4 grid-cols-5 space-x-4 items-center">
 							<div className="flex-grow border border-darkGrey rounded-lg py-3 px-4 col-span-3">
-								<input className="w-full text-3xl text-white bg-primary border-none focus:outline-none" />
-								<small className="text-sm text-grey">$19750.70</small>
+								<input
+									readOnly
+									value={liquidation?.collateralAmount ?? 0}
+									className="w-full text-3xl text-white bg-primary border-none focus:outline-none"
+								/>
+								<small className="text-sm text-grey">
+									${liquidation?.collateralAmountUSD ?? 0}
+								</small>
 							</div>
 							<div className="space-y-2 col-span-2">
 								<div className="flex items-center justify-between">
-									<div className="flex items-center space-x-1">
-										<Ethereum />
-										<span>ETH</span>
+									<div className="flex items-center space-x-2">
+										<Image
+											width={32}
+											height={32}
+											src={collateral?.marketLogo ?? ""}
+											alt={collateral?.marketName ?? ""}
+										/>
+										<span>{collateral?.marketSymbol}</span>
 									</div>
 									<Dropdown />
 								</div>
-								<small className="text-sm text-grey">Bal = 27.48</small>
+								<small className="text-sm text-grey">
+									Bal = ${collateral?.amountSuppliedUSD.toPrecision(8) ?? 0}
+								</small>
 							</div>
 						</div>
 					</div>
@@ -104,7 +186,17 @@ export function Liquidate({ asset }: Props) {
 						<div className="flex justify-between items-center">
 							<div className="flex space-x-2 items-center">
 								<Info />
-								<span>1ETH = 0.072 BTC ($1431.47)</span>
+								<span>
+									1{asset?.marketSymbol} ={" "}
+									{tokenValue?.getTokenValue.toPrecision(6) ?? 0}{" "}
+									{collateral?.marketSymbol} ($
+									{(
+										tokenValue?.getTokenValue ??
+										0 / tokenValue?.getTokenUSDValue ??
+										0
+									).toPrecision(6)}
+									)
+								</span>
 							</div>
 
 							<div className="flex space-x-2 items-center">
@@ -120,15 +212,20 @@ export function Liquidate({ asset }: Props) {
 						>
 							<div className="flex justify-between items-center">
 								<h3 className="text-grey">Expected output</h3>
-								<h3>13.80 ETH</h3>
+								<h3> {asset?.marketSymbol ?? ""}</h3>
 							</div>
 							<div className="flex justify-between items-center">
 								<h3 className="text-grey">Price impact</h3>
-								<h3>0.07%</h3>
+								<h3>
+									{liquidation?.swapQuote.priceImpact.toPrecision(8) ?? 0}%
+								</h3>
 							</div>
 							<div className="flex justify-between items-center text-grey">
-								<p>Minimum received after slippage (1.0%)</p>
-								<p>0.0000016 ETH</p>
+								<p>Maximum spent after slippage (0.3%)</p>
+								<p>
+									{liquidation?.collateralAmount ?? 0}{" "}
+									{collateral?.marketSymbol}
+								</p>
 							</div>
 							<div className="flex justify-between items-center text-grey">
 								<p>Network fee</p>
@@ -136,7 +233,7 @@ export function Liquidate({ asset }: Props) {
 							</div>
 							<div className="flex justify-between items-center">
 								<p>Protocol fee</p>
-								<p>1%</p>
+								<p>{(liquidation?.fee / 1000000) * 100 ?? 0}%</p>
 							</div>
 						</div>
 					</div>
