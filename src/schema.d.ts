@@ -254,15 +254,17 @@ export type SwapQuoteInput = {
 // slippage: estimated difference between the swapQuote amount out and actual amount out
 // """
 export type LiquidationQuote = {
-	canLiquidate: boolean;
-	reason: string;
+	fee: number;
 	debt: string;
+	reason: string;
+	slippage: number;
 	collateral: string;
 	debtAmount: number;
-	collateralAmount: number;
 	swapQuote: SwapQuote;
-	fee: number;
-	slippage: number;
+	debtAmountUSD: number;
+	canLiquidate: boolean;
+	collateralAmount: number;
+	collateralAmountUSD: number;
 };
 
 export type LiquidationQuoteInput = {

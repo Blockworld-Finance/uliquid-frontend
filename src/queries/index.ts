@@ -1,6 +1,6 @@
 import { gql } from "graphql-request";
 import client from "src/utils/client";
-import { LendingProtocolUserData, Version } from "src/schema";
+import { LendingProtocolUserData, LiquidationQuote, Version } from "src/schema";
 import {
 	GetLiquidationResult,
 	GetProtocolResponse,
@@ -204,7 +204,7 @@ export const getLiquidation = async ({
 		slippage
 	});
 
-	return data.getLiquidationQuote as GetLiquidationResult;
+	return data.getLiquidationQuote as LiquidationQuote;
 };
 
 type TTokenValueProps = {
@@ -247,4 +247,53 @@ export const getTokenUSDValue = async ({
 	});
 
 	return data as { getTokenValue: number; getTokenUSDValue: number };
+};
+
+type TGLPLiquidateTxProps = {
+	user: string;
+	protocol: string;
+	chainId: number;
+	version: string;
+	liquidationQuote: LiquidationQuote;
+};
+
+export const getLendingProtocolLiquidateTx = async ({
+	user,
+	chainId,
+	version,
+	protocol,
+	liquidationQuote
+}: TGLPLiquidateTxProps) => {
+	const query = gql`
+		query GetLendingProtocolLiquidateTx(
+			$user: String!
+			$protocol: String!
+			$chainId: Int!
+			$version: String!
+			$liquidationQuote: LiquidationQuoteInput
+		) {
+			getLendingProtocolLiquidateTx(
+				user: $user
+				protocol: $protocol
+				chainId: $chainId
+				version: $version
+				liquidationQuote: $liquidationQuote
+			) {
+				data
+				error
+				from
+				to
+			}
+		}
+	`;
+
+	const data = await client().request(query, {
+		user,
+		chainId,
+		version,
+		protocol,
+		liquidationQuote
+	});
+
+	return data;
 };

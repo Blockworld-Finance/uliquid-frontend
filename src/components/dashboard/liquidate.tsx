@@ -1,21 +1,28 @@
-import Image from "next/image";
 import {
 	useRef,
 	useState,
-	ChangeEventHandler,
+	useEffect,
 	useCallback,
-	useEffect
+	ChangeEventHandler
 } from "react";
+import Image from "next/image";
+import {
+	useAccount,
+	useSendTransaction,
+	usePrepareSendTransaction
+} from "wagmi";
 
+import {
+	getLiquidation,
+	getTokenUSDValue,
+	getLendingProtocolLiquidateTx
+} from "src/queries";
 import useData from "@hooks/useData";
-import Button from "@components/common/button";
-import { LendingMarketUser } from "src/schema";
-import { useProtocols } from "@hooks/useQueries";
-import { Info, GasPump, Dropdown, Ethereum, Search } from "@icons";
 import Input from "@components/common/input";
-import { getLiquidation, getTokenUSDValue } from "src/queries";
-import { useAccount } from "wagmi";
-import { GetLiquidationResult } from "@types";
+import Button from "@components/common/button";
+import { useProtocols } from "@hooks/useQueries";
+import { Info, GasPump, Dropdown, Search } from "@icons";
+import { LendingMarketUser, LiquidationQuote } from "src/schema";
 
 type Props = {
 	asset?: LendingMarketUser;
@@ -34,19 +41,28 @@ export function Liquidate({ asset, collateral }: Props) {
 		getTokenValue: number;
 		getTokenUSDValue: number;
 	}>();
+	const [tx, setTx] = useState();
+
+
+	const { config,  } = usePrepareSendTransaction({
+		request: { to: "moxey.eth", data:""}
+	});
+	const { data: transdata, isLoading, isSuccess, sendTransaction } = 
+		useSendTransaction(config);
+
+	const [loading, setLoading] = useState(false);
 	const { name, logo, versions = [] } = data[activeProtocol];
-	const [liquidation, setLiquidation] = useState<GetLiquidationResult>();
+	const [liquidation, setLiquidation] = useState<LiquidationQuote>();
 
 	useEffect(() => {
 		if (asset && collateral)
 			getTokenUSDValue({
-				token: asset.marketAddress,
-				quoteToken: collateral.marketAddress,
-				getTokenUsdValueToken2: collateral.marketAddress,
+				token: asset?.marketAddress,
+				quoteToken: collateral?.marketAddress,
+				getTokenUsdValueToken2: collateral?.marketAddress,
 				chainId: versions[activeVersion].chains[activeChain].id,
 				getTokenUsdValueChainId2: versions[activeVersion].chains[activeChain].id
 			}).then(d => {
-				console.log(d);
 				setTokenValue(d);
 			});
 	}, [activeChain, activeVersion, asset, collateral, versions]);
@@ -68,7 +84,6 @@ export function Liquidate({ asset, collateral }: Props) {
 					chainId: versions[activeVersion].chains[activeChain].id
 				})
 					.then(d => {
-						console.log(d);
 						setLiquidation(d);
 					})
 					.catch(e => {});
@@ -76,6 +91,23 @@ export function Liquidate({ asset, collateral }: Props) {
 		},
 		[]
 	);
+
+	const getLiquidateTx = () => {
+		setLoading(true);
+		getLendingProtocolLiquidateTx({
+			user: address,
+			protocol: name,
+			liquidationQuote: liquidation,
+			version: versions[activeVersion].name,
+			chainId: versions[activeVersion].chains[activeChain].id
+		})
+			.then(d => {
+				setLoading(false);
+			})
+			.catch(e => {
+				setLoading(false);
+			});
+	};
 
 	return (
 		<>
@@ -192,7 +224,7 @@ export function Liquidate({ asset, collateral }: Props) {
 									{collateral?.marketSymbol} ($
 									{(
 										tokenValue?.getTokenValue ??
-										0 / tokenValue?.getTokenUSDValue ??
+										0 * tokenValue?.getTokenUSDValue ??
 										0
 									).toPrecision(6)}
 									)
@@ -240,7 +272,12 @@ export function Liquidate({ asset, collateral }: Props) {
 				</div>
 			</div>
 
-			<Button size="large" className="w-full font-semibold">
+			<Button
+				size="large"
+				loading={loading}
+				onClick={getLiquidateTx}
+				className="w-full font-semibold"
+			>
 				Liquidate
 			</Button>
 		</>
