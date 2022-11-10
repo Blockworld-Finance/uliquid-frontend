@@ -1,6 +1,7 @@
 import { gql } from "graphql-request";
 import client from "src/utils/client";
-import { LendingProtocolUserData } from "src/schema";
+import { LendingProtocolUserData, Version } from "src/schema";
+import { GetProtocolResponse, NormalizedProtocols } from "@types";
 
 export const getProtocols = async () => {
 	const query = gql`
@@ -9,21 +10,53 @@ export const getProtocols = async () => {
 				name
 				description
 				logo
-				chains {
-					id
-					name
-					logo
-				}
 				versions {
 					protocolName
 					name
+					contracts {
+						chain {
+							id
+							name
+							logo
+						}
+					}
 				}
 			}
 		}
 	`;
 
-	const data = await client.request(query);
-	return data;
+	const data = (await client.request(query)) as GetProtocolResponse;
+
+	const normalizeData = () => {
+		const chains = [];
+		data.getProtocols.forEach((protocol, p) => {
+			chains[p] = {
+				versions: [],
+				name: protocol.name,
+				logo: protocol.logo,
+				description: protocol.description
+			};
+			protocol.versions.forEach((version, i) => {
+				const uniqueChains = [];
+				chains[p].versions[i] = {
+					name: version.name,
+					protocolName: version.protocolName,
+					chains: []
+				};
+
+				version.contracts.forEach(contract => {
+					if (!uniqueChains.includes(contract.chain.name)) {
+						uniqueChains.push(contract.chain.name);
+						chains[p].versions[i].chains.push(contract.chain);
+					}
+				});
+			});
+		});
+
+		return chains;
+	};
+
+	return normalizeData() as NormalizedProtocols;
 };
 
 type TUserData = {

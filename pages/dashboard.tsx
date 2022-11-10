@@ -9,11 +9,13 @@ export default function Dashboard({ data: ddata }) {
 	const { data } = useProtocols(ddata);
 	const { dispatch } = useData();
 
+	console.log(ddata);
+
 	return (
 		<Layout>
 			<div className="my-36">
 				<Tabs
-					data={data.getProtocols.map(p => ({
+					data={data.map(p => ({
 						title: p.name,
 						icon: p.logo,
 						render: <MarketPlace />
@@ -33,6 +35,7 @@ export default function Dashboard({ data: ddata }) {
 
 export async function getStaticProps() {
 	const data = await getProtocols();
+
 	return {
 		props: {
 			data

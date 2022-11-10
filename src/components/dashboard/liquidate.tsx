@@ -15,12 +15,7 @@ export function Liquidate({ asset }: Props) {
 	} = useData();
 	const [show, setShow] = useState(false);
 	const { data } = useProtocols();
-	const {
-		name,
-		logo,
-		chains = [],
-		versions = []
-	} = data.getProtocols[activeProtocol];
+	const { name, logo, versions = [] } = data[activeProtocol];
 
 	return (
 		<>
@@ -40,10 +35,10 @@ export function Liquidate({ asset }: Props) {
 							<Image
 								width={24}
 								height={24}
-								src={chains[activeChain]?.logo ?? ""}
-								alt={chains[activeChain]?.name ?? ""}
+								src={versions[activeVersion].chains[activeChain]?.logo ?? ""}
+								alt={versions[activeVersion].chains[activeChain]?.name ?? ""}
 							/>
-							<p>{chains[activeChain]?.name ?? ""}</p>
+							<p>{versions[activeVersion].chains[activeChain]?.name ?? ""}</p>
 							{versions && versions.length ? (
 								<div className="bg-primary text-blue text-xs px-5 py-1 rounded">
 									{versions[activeVersion].name}

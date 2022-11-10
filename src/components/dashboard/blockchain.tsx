@@ -1,9 +1,9 @@
 import Image from "next/image";
+import { useState } from "react";
 import { Dropdown } from "@icons";
 import useData from "src/hooks/useData";
 import { useProtocols } from "src/hooks/useQueries";
 import { ClickOutside } from "src/hooks/useClickOutside";
-import { useState } from "react";
 
 export default function BlockChain() {
 	const {
@@ -11,11 +11,7 @@ export default function BlockChain() {
 	} = useData();
 	const [open, setOpen] = useState(false);
 	const { data } = useProtocols();
-	const {
-		chains = [],
-		versions = [],
-		name
-	} = data.getProtocols[activeProtocol];
+	const { versions = [], name } = data[activeProtocol];
 
 	return (
 		<div>
@@ -26,10 +22,19 @@ export default function BlockChain() {
 						<Image
 							width={32}
 							height={32}
-							src={chains[activeChain]?.logo ?? ""}
-							alt={chains[activeChain]?.name ?? ""}
+							src={
+								data[activeProtocol].versions[activeVersion].chains[activeChain]
+									?.logo ?? ""
+							}
+							alt={
+								data[activeProtocol].versions[activeVersion].chains[activeChain]
+									?.name ?? ""
+							}
 						/>
-						<p>{chains[activeChain]?.name ?? ""}</p>
+						<p>
+							{data[activeProtocol].versions[activeVersion].chains[activeChain]
+								?.name ?? ""}
+						</p>
 						{versions && versions.length ? (
 							<div className="bg-primary text-blue text-sm px-5 py-2 rounded">
 								{versions[activeVersion].name}
@@ -50,13 +55,7 @@ export default function BlockChain() {
 							>
 								<Dropdown />
 							</div>
-							<Selector
-								name={name}
-								open={open}
-								close={() => setOpen(false)}
-								chains={chains}
-								versions={versions}
-							/>
+							<Selector open={open} close={() => setOpen(false)} />
 						</ClickOutside>
 					</div>
 				</div>
@@ -65,11 +64,17 @@ export default function BlockChain() {
 	);
 }
 
-const Selector = ({ chains = [], versions = [], name, open, close }) => {
+type SelectorProps = {
+	open: boolean;
+	close: () => void;
+};
+
+const Selector = ({ open, close }: SelectorProps) => {
 	const {
 		dispatch,
-		data: { activeChain, activeVersion }
+		data: { activeVersion, activeChain, activeProtocol }
 	} = useData();
+	const { data } = useProtocols();
 
 	return (
 		<div
@@ -77,21 +82,22 @@ const Selector = ({ chains = [], versions = [], name, open, close }) => {
 				open ? "py-10 top-8 opacity-100" : "h-0 py-0 top-0 opacity-0"
 			} overflow-hidden`}
 		>
-			<h4 className="font-semibold text-darkGrey">Select {name} Market</h4>
+			<h4 className="font-semibold text-darkGrey">
+				Select {data[activeProtocol].name} Market
+			</h4>
 			<div>
 				<small className="text-xs text-grey">Versions</small>
-				<div className="flex">
-					{versions.map((v, i) => (
+				<div className="flex space-x-2">
+					{data[activeProtocol].versions.map((v, i) => (
 						<div
-							key={v.name}
+							key={`${v.name}-${i}-${activeProtocol}`}
 							className={`${
 								activeVersion === i
 									? "text-primary bg-blue"
 									: "bg-primary text-blue"
-							} text-sm px-5 py-2 rounded`}
+							} text-sm px-5 py-2 rounded cursor-pointer`}
 							onClick={() => {
-								close();
-								dispatch({ activeVersion: i });
+								dispatch({ activeVersion: i, activeChain: 0 });
 							}}
 						>
 							{v.name}
@@ -100,10 +106,12 @@ const Selector = ({ chains = [], versions = [], name, open, close }) => {
 				</div>
 			</div>
 			<div className="space-y-6">
-				{chains.map((c, i) => (
+				{data[activeProtocol].versions[activeVersion].chains.map((c, i) => (
 					<div
-						key={c.name}
-						className={"flex text-grey space-x-4"}
+						key={`${c.name}-${i}-${activeVersion}`}
+						className={`flex text-grey space-x-4 cursor-pointer ${
+							activeChain === i ? "text-blue" : ""
+						}`}
 						onClick={() => {
 							close();
 							dispatch({ activeChain: i });

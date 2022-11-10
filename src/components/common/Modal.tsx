@@ -37,8 +37,8 @@ export default function Modal({
 			<div
 				ref={modalRef}
 				className={`${
-					open ? "opacity-100 fixed" : "opacity-0"
-				} w-screen h-screen top-0 left-0 bg-black bg-opacity-60 cursor-pointer`}
+					open ? "opacity-100  h-screen" : "opacity-0 h-0"
+				} w-screen fixed top-0 left-0 bg-black bg-opacity-60 cursor-pointer`}
 				onClick={() => setOpen(false)}
 			/>
 			<div

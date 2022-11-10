@@ -40,6 +40,7 @@ export type Protocol = {
 export type Contract = {
 	id: string;
 	chain: Chain;
+	chains: Chain[];
 	protocol: Protocol;
 	protocolName: string;
 	version: Version;

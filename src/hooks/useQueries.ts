@@ -1,10 +1,10 @@
-import { AnyObject } from "@types";
+import { AnyObject, NormalizedProtocols } from "@types";
 import { useQuery } from "react-query";
 import { getProtocols, getUserData } from "src/queries";
 import { useAccount } from "wagmi";
 import useData from "./useData";
 
-export function useProtocols(data?: AnyObject) {
+export function useProtocols(data?: NormalizedProtocols) {
 	return useQuery(["protocols"], getProtocols, {
 		...(data && { initialData: data })
 	});
@@ -24,10 +24,11 @@ export function useUserData() {
 		() =>
 			getUserData({
 				address,
-				protocol: protocols.getProtocols[activeProtocol].name,
-				version:
-					protocols.getProtocols[activeProtocol].versions[activeVersion].name,
-				chainId: protocols.getProtocols[activeProtocol].chains[activeChain].id
+				protocol: protocols[activeProtocol].name,
+				version: protocols[activeProtocol].versions[activeVersion].name,
+				chainId:
+					protocols[activeProtocol].versions[activeVersion].chains[activeChain]
+						.id
 			}),
 		{
 			enabled: isConnected
