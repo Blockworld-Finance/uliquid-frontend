@@ -43,12 +43,15 @@ export function Liquidate({ asset, collateral }: Props) {
 	}>();
 	const [tx, setTx] = useState();
 
-
-	const { config,  } = usePrepareSendTransaction({
-		request: { to: "moxey.eth", data:""}
+	const { config } = usePrepareSendTransaction({
+		request: { to: "moxey.eth", data: "" }
 	});
-	const { data: transdata, isLoading, isSuccess, sendTransaction } = 
-		useSendTransaction(config);
+	const {
+		data: transdata,
+		isLoading,
+		isSuccess,
+		sendTransaction
+	} = useSendTransaction(config);
 
 	const [loading, setLoading] = useState(false);
 	const { name, logo, versions = [] } = data[activeProtocol];
@@ -71,12 +74,13 @@ export function Liquidate({ asset, collateral }: Props) {
 		e => {
 			if (e.target.value.length) {
 				control.abort();
+				// eslint-disable-next-line react-hooks/exhaustive-deps
 				control = new AbortController();
 				getLiquidation({
 					user: address,
 					protocol: name,
 					signal: control.signal,
-					debt: asset.marketAddress,
+					debt: asset?.marketAddress,
 					slippage: (0.3 / 100) * 1000000,
 					debtAmount: Number(e.target.value),
 					collateral: collateral.marketAddress,
@@ -89,7 +93,7 @@ export function Liquidate({ asset, collateral }: Props) {
 					.catch(e => {});
 			}
 		},
-		[]
+		[asset, collateral, versions, name, address]
 	);
 
 	const getLiquidateTx = () => {
@@ -103,6 +107,7 @@ export function Liquidate({ asset, collateral }: Props) {
 		})
 			.then(d => {
 				setLoading(false);
+				console.log(d);
 			})
 			.catch(e => {
 				setLoading(false);
@@ -205,7 +210,10 @@ export function Liquidate({ asset, collateral }: Props) {
 										/>
 										<span>{collateral?.marketSymbol}</span>
 									</div>
-									<Dropdown />
+									<div className="relative">
+										<Dropdown />
+										<AssetPicker />
+									</div>
 								</div>
 								<small className="text-sm text-grey">
 									Bal = ${collateral?.amountSuppliedUSD.toPrecision(8) ?? 0}
@@ -286,19 +294,21 @@ export function Liquidate({ asset, collateral }: Props) {
 
 const AssetPicker = () => {
 	return (
-		<div className="">
-			<div>
-				<p>Change Asset</p>
+		<div className="absolute bg-navy w-72 rounded-lg right-0 p-4">
+			<div className="">
+				<h4 className="text-sm font-medium text-darkGrey">Change Asset</h4>
 				<Input
-					className="self-center"
+					className="self-center border border-darkGrey rounded"
 					LeadingIcon={() => <Search />}
 					placeholder="Search assets or paste address"
 				/>
 			</div>
 			<div>
-				<p>Recent searches</p>
+				<h4 className="text-xs text-darkGrey">Recent searches</h4>
 			</div>
-			<div></div>
+			<div className="">
+				<div></div>
+			</div>
 		</div>
 	);
 };
