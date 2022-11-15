@@ -6,11 +6,7 @@ import {
 	ChangeEventHandler
 } from "react";
 import Image from "next/image";
-import {
-	useAccount,
-	useSendTransaction,
-	usePrepareSendTransaction
-} from "wagmi";
+import { useAccount } from "wagmi";
 
 import {
 	getLiquidation,
@@ -27,9 +23,10 @@ import { LendingMarketUser, LiquidationQuote } from "src/schema";
 type Props = {
 	asset?: LendingMarketUser;
 	collateral?: LendingMarketUser;
+	getTx: (l: LiquidationQuote) => void;
 };
 
-export function Liquidate({ asset, collateral }: Props) {
+export function Liquidate({ asset, collateral, getTx }: Props) {
 	const {
 		data: { activeProtocol, activeChain, activeVersion }
 	} = useData();
@@ -42,16 +39,6 @@ export function Liquidate({ asset, collateral }: Props) {
 		getTokenUSDValue: number;
 	}>();
 	const [tx, setTx] = useState();
-
-	const { config } = usePrepareSendTransaction({
-		request: { to: "moxey.eth", data: "" }
-	});
-	const {
-		data: transdata,
-		isLoading,
-		isSuccess,
-		sendTransaction
-	} = useSendTransaction(config);
 
 	const [loading, setLoading] = useState(false);
 	const { name, logo, versions = [] } = data[activeProtocol];
@@ -95,24 +82,6 @@ export function Liquidate({ asset, collateral }: Props) {
 		},
 		[asset, collateral, versions, name, address]
 	);
-
-	const getLiquidateTx = () => {
-		setLoading(true);
-		getLendingProtocolLiquidateTx({
-			user: address,
-			protocol: name,
-			liquidationQuote: liquidation,
-			version: versions[activeVersion].name,
-			chainId: versions[activeVersion].chains[activeChain].id
-		})
-			.then(d => {
-				setLoading(false);
-				console.log(d);
-			})
-			.catch(e => {
-				setLoading(false);
-			});
-	};
 
 	return (
 		<>
@@ -212,7 +181,7 @@ export function Liquidate({ asset, collateral }: Props) {
 									</div>
 									<div className="relative">
 										<Dropdown />
-										<AssetPicker />
+										{/* <AssetPicker /> */}
 									</div>
 								</div>
 								<small className="text-sm text-grey">
@@ -283,7 +252,7 @@ export function Liquidate({ asset, collateral }: Props) {
 			<Button
 				size="large"
 				loading={loading}
-				onClick={getLiquidateTx}
+				onClick={() => getTx(liquidation)}
 				className="w-full font-semibold"
 			>
 				Liquidate

@@ -1,16 +1,20 @@
 import { ButtonHTMLAttributes, DetailedHTMLProps } from "react";
+import Spinner from "./Spinner";
 
 const variants = {
 	default: "bg-blue",
-	secodary: "bg-white",
+	secodary: "bg-white"
 };
 
 const sizes = {
 	default: "h-14",
-	large: "h-20",
+	large: "h-20"
 };
 
-type Props = DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement> & {
+type Props = DetailedHTMLProps<
+	ButtonHTMLAttributes<HTMLButtonElement>,
+	HTMLButtonElement
+> & {
 	loading?: boolean;
 	size?: keyof typeof sizes;
 	variant?: keyof typeof variants;
@@ -37,7 +41,7 @@ export default function Button({
 				disabled={loading || disabled}
 				className={`${variants[variant]} ${sizes[size]} ${className} rounded-md text-[18px] leading-6 py-3 px-4 text-primary`}
 			>
-				{loading ? "" : children}
+				{loading ? <Spinner color="white" /> : children}
 			</button>
 		</>
 	);

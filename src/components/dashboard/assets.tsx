@@ -1,26 +1,43 @@
-import Button from "@components/common/button";
-import Modal from "@components/common/Modal";
-import Spinner from "@components/common/Spinner";
-import { Dropdown, Info, Send, Sortable, Starlay, Wallet } from "@icons";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { LendingMarketUser } from "src/schema";
 import Link from "next/link";
-import { useCallback, useMemo, useState } from "react";
-import { useUserData } from "src/hooks/useQueries";
-import { useAccount } from "wagmi";
-import { Liquidate } from "./liquidate";
 import Image from "next/image";
+import { useAccount } from "wagmi";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { useCallback, useMemo, useState } from "react";
+import { prepareSendTransaction, sendTransaction } from "@wagmi/core";
+
+import useData from "@hooks/useData";
+import { Liquidate } from "./liquidate";
+import Modal from "@components/common/Modal";
+import Button from "@components/common/button";
+import Spinner from "@components/common/Spinner";
+import { getLendingProtocolLiquidateTx } from "src/queries";
+import { useProtocols, useUserData } from "src/hooks/useQueries";
+import { LendingMarketUser, LiquidationQuote } from "src/schema";
+import { Dropdown, Info, Send, Sortable, Starlay, Wallet } from "@icons";
 
 const data = Array(10).fill(10);
 
 export default function Assets() {
-	const { isConnected } = useAccount();
+	const {
+		data: { activeChain, activeProtocol, activeVersion }
+	} = useData();
+	const { isConnected, address } = useAccount();
 	const [open, setOpen] = useState(false);
 	const [view, setView] = useState(false);
 	const [show, setShow] = useState(false);
 	const [shown, setShown] = useState(false);
-	const [asset, setAsset] = useState<LendingMarketUser>();
 	const { data, isLoading } = useUserData();
+	const { data: protocols } = useProtocols();
+	const hasNoAsset = useMemo(
+		() =>
+			data &&
+			data?.getLendingProtocolUserData?.totalSuppliedUSD === 0 &&
+			data?.getLendingProtocolUserData?.totalBorrowedUSD === 0,
+		[data]
+	);
+	const [asset, setAsset] = useState<LendingMarketUser>();
+
+	const { name, logo, versions = [] } = protocols[activeProtocol];
 
 	const defaultCollateral = useMemo(() => {
 		if (data) {
@@ -36,10 +53,57 @@ export default function Assets() {
 		}
 	}, [data]);
 
-	const selectAsset = useCallback((asset: LendingMarketUser) => {
-		setOpen(true);
-		setAsset(asset);
-	}, []);
+	const getLiquidateTx = (liquidationQuote: LiquidationQuote) => {
+		setView(true);
+		setOpen(false);
+		getLendingProtocolLiquidateTx({
+			user: address,
+			protocol: name,
+			liquidationQuote,
+			version: versions[activeVersion].name,
+			chainId: versions[activeVersion].chains[activeChain].id
+		})
+			.then(async d => {
+				let x = 0;
+				for (let tx in d.getLendingProtocolLiquidateTx) {
+					const config = await prepareSendTransaction({
+						request: {
+							to: d.getLendingProtocolLiquidateTx[tx].to,
+							data: d.getLendingProtocolLiquidateTx[tx].data,
+							from: d.getLendingProtocolLiquidateTx[tx].from,
+							chainId: versions[activeVersion].chains[activeChain].id
+						},
+						chainId: versions[activeVersion].chains[activeChain].id
+					});
+
+					const result = await sendTransaction(config);
+					const receipt = await result.wait();
+
+					console.log(receipt, "receipt");
+				}
+
+				console.log("Run");
+
+				setView(false);
+				setShow(true);
+			})
+			.catch(e => {
+				console.log(e);
+				setView(false);
+			});
+	};
+
+	const selectAsset = useCallback(
+		(asset: LendingMarketUser) => {
+			if (hasNoAsset) {
+				setShown(true);
+				return;
+			}
+			setOpen(true);
+			setAsset(asset);
+		},
+		[hasNoAsset]
+	);
 
 	return (
 		<div className="bg-navy p-10 rounded-xl">
@@ -92,7 +156,11 @@ export default function Assets() {
 				</div>
 			)}
 			<Modal open={open} setOpen={setOpen}>
-				<Liquidate asset={asset} collateral={defaultCollateral} />
+				<Liquidate
+					asset={asset}
+					getTx={getLiquidateTx}
+					collateral={defaultCollateral}
+				/>
 			</Modal>
 			<Modal open={view} setOpen={setView} type="dark">
 				<Confirmation />
