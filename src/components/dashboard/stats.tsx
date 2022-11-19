@@ -5,6 +5,11 @@ import { useAccount } from "wagmi";
 export default function Stats() {
 	const { isConnected } = useAccount();
 	const { data } = useUserData();
+	const {
+		healthFactor = "",
+		totalBorrowedUSD = 0,
+		totalSuppliedUSD = 0
+	} = data?.getLendingProtocolUserData ?? {};
 
 	return (
 		<div className="flex items-center my-10 space-x-8">
@@ -15,9 +20,7 @@ export default function Stats() {
 				<div className="space-y-2">
 					<div className="text-darkGrey text-[18px]">Total networth</div>
 					<div className="text-2xl">
-						{isConnected
-							? (data && data.getLendingProtocolUserData.totalSuppliedUSD) ?? 0
-							: "--:--"}
+						{isConnected ? totalSuppliedUSD ?? 0 : "--:--"}
 					</div>
 				</div>
 			</div>
@@ -28,9 +31,7 @@ export default function Stats() {
 				<div className="space-y-2">
 					<div className="text-darkGrey text-[18px]">Total Borrows</div>
 					<div className="text-2xl">
-						{isConnected
-							? (data && data.getLendingProtocolUserData.totalBorrowedUSD) ?? 0
-							: "--:--"}
+						{isConnected ? totalSuppliedUSD - totalBorrowedUSD : "--:--"}
 					</div>
 				</div>
 			</div>
@@ -42,11 +43,7 @@ export default function Stats() {
 					<div className="space-y-2">
 						<div className="text-darkGrey text-[18px]">Health factor</div>
 						<div className="text-2xl text-blue">
-							{(data &&
-								data.getLendingProtocolUserData.healthFactor
-									.toString()
-									.substring(0, 5)) ??
-								0}
+							{(data && healthFactor.toString().substring(0, 5)) ?? 0}
 						</div>
 					</div>
 				</div>

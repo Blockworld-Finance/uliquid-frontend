@@ -28,13 +28,6 @@ export default function Assets() {
 	const [shown, setShown] = useState(false);
 	const { data, isLoading } = useUserData();
 	const { data: protocols } = useProtocols();
-	const hasNoAsset = useMemo(
-		() =>
-			data &&
-			data?.getLendingProtocolUserData?.totalSuppliedUSD === 0 &&
-			data?.getLendingProtocolUserData?.totalBorrowedUSD === 0,
-		[data]
-	);
 	const [asset, setAsset] = useState<LendingMarketUser>();
 
 	const { name, logo, versions = [] } = protocols[activeProtocol];
@@ -78,11 +71,7 @@ export default function Assets() {
 
 					const result = await sendTransaction(config);
 					const receipt = await result.wait();
-
-					console.log(receipt, "receipt");
 				}
-
-				console.log("Run");
 
 				setView(false);
 				setShow(true);
@@ -93,17 +82,14 @@ export default function Assets() {
 			});
 	};
 
-	const selectAsset = useCallback(
-		(asset: LendingMarketUser) => {
-			if (hasNoAsset) {
-				setShown(true);
-				return;
-			}
-			setOpen(true);
-			setAsset(asset);
-		},
-		[hasNoAsset]
-	);
+	const selectAsset = useCallback((asset: LendingMarketUser) => {
+		if (asset.amountBorrowed === 0 && asset.amountSupplied === 0) {
+			setShown(true);
+			return;
+		}
+		setOpen(true);
+		setAsset(asset);
+	}, []);
 
 	return (
 		<div className="bg-navy p-10 rounded-xl">
