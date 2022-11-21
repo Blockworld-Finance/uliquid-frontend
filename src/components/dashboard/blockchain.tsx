@@ -75,6 +75,7 @@ const Selector = ({ open, close }: SelectorProps) => {
 		data: { activeVersion, activeChain, activeProtocol }
 	} = useData();
 	const { data } = useProtocols();
+	const [version, setVersion] = useState(activeVersion);
 
 	return (
 		<div
@@ -92,12 +93,11 @@ const Selector = ({ open, close }: SelectorProps) => {
 						<div
 							key={`${v.name}-${i}-${activeProtocol}`}
 							className={`${
-								activeVersion === i
-									? "text-primary bg-blue"
-									: "bg-primary text-blue"
+								version === i ? "text-primary bg-blue" : "bg-primary text-blue"
 							} text-sm px-5 py-2 rounded cursor-pointer`}
 							onClick={() => {
-								dispatch({ activeVersion: i, activeChain: 0 });
+								setVersion(i);
+								dispatch({ activeChain: 0 });
 							}}
 						>
 							{v.name}
@@ -106,15 +106,15 @@ const Selector = ({ open, close }: SelectorProps) => {
 				</div>
 			</div>
 			<div className="space-y-6">
-				{data[activeProtocol].versions[activeVersion].chains.map((c, i) => (
+				{data[activeProtocol].versions[version].chains.map((c, i) => (
 					<div
-						key={`${c.name}-${i}-${activeVersion}`}
+						key={`${c.name}-${i}-${version}`}
 						className={`flex text-grey space-x-4 cursor-pointer ${
 							activeChain === i ? "text-blue" : ""
 						}`}
 						onClick={() => {
 							close();
-							dispatch({ activeChain: i });
+							dispatch({ activeChain: i, activeVersion: version });
 						}}
 					>
 						<Image

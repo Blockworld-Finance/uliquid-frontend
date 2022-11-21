@@ -21,16 +21,27 @@ export default function Assets() {
 	const {
 		data: { activeChain, activeProtocol, activeVersion }
 	} = useData();
-	const { isConnected, address } = useAccount();
 	const [open, setOpen] = useState(false);
 	const [view, setView] = useState(false);
 	const [show, setShow] = useState(false);
 	const [shown, setShown] = useState(false);
 	const { data, isLoading } = useUserData();
 	const { data: protocols } = useProtocols();
+	const { isConnected, address } = useAccount();
 	const [asset, setAsset] = useState<LendingMarketUser>();
-
-	const { name, logo, versions = [] } = protocols[activeProtocol];
+	const hasNoAsset = useMemo(
+		() =>
+			data &&
+			data?.getLendingProtocolUserData?.totalSuppliedUSD === 0 &&
+			data?.getLendingProtocolUserData?.totalBorrowedUSD === 0,
+		[data]
+	);
+	const {
+		url = "",
+		name = "",
+		logo = "",
+		versions = []
+	} = protocols[activeProtocol];
 
 	const defaultCollateral = useMemo(() => {
 		if (data) {
@@ -94,41 +105,60 @@ export default function Assets() {
 	return (
 		<div className="bg-navy p-10 rounded-xl">
 			{isConnected ? (
-				<div className="space-y-6">
-					<div className="text-darkGrey">
-						<ul className="px-8 grid grid-cols-6 items-center">
-							<li className="col-span-2">Asset</li>
-							<li className="col-span-2 flex space-x-3">
-								<span>Total supplied</span>
-								<Sortable />
-							</li>
-							<li className="col-span-2 flex items-center justify-between">
-								<div className="flex space-x-3">
-									<span className="whitespace-nowrap">Total borrowed</span>
-									<Sortable />
-								</div>
-								<div className="bg-primary text-sm px-3 py-2 space-x-7 rounded flex items-center justify-between">
-									<span>Filter</span>
-									<Dropdown />
-								</div>
-							</li>
-						</ul>
+				hasNoAsset ? (
+					<div className="text-center space-y-5 py-24">
+						<Image width={90} height={90} src={logo} alt={name} />
+						<h2 className="font-semibold text-4xl">No debt</h2>
+						<p className="mb-14 text-2xl text-grey">
+							You have not borrowed from {name} yet, Kindly do so to access this
+							page.
+						</p>
+						<a
+							href={url}
+							target="_blank"
+							rel="noopener noreferrer"
+							className="mx-auto block w-max"
+						>
+							<Button variant="secodary">Go to {name}</Button>
+						</a>
 					</div>
-					{isLoading && (
-						<div className="grid place-items-center py-10">
-							<Spinner size={4} />
+				) : (
+					<div className="space-y-6">
+						<div className="text-darkGrey">
+							<ul className="px-8 grid grid-cols-6 items-center">
+								<li className="col-span-2">Asset</li>
+								<li className="col-span-2 flex space-x-3">
+									<span>Total supplied</span>
+									<Sortable />
+								</li>
+								<li className="col-span-2 flex items-center justify-between">
+									<div className="flex space-x-3">
+										<span className="whitespace-nowrap">Total borrowed</span>
+										<Sortable />
+									</div>
+									<div className="bg-primary text-sm px-3 py-2 space-x-7 rounded flex items-center justify-between">
+										<span>Filter</span>
+										<Dropdown />
+									</div>
+								</li>
+							</ul>
 						</div>
-					)}
-					{data && data.getLendingProtocolUserData.markets
-						? data.getLendingProtocolUserData.markets.map((m, i) => (
-								<Asset key={i} setOpen={selectAsset} market={m} />
-						  ))
-						: !isLoading && (
-								<div className="text-center space-y-5 py-24">
-									<p className="mb-14 text-2xl text-grey">No assets found</p>
-								</div>
-						  )}
-				</div>
+						{isLoading && (
+							<div className="grid place-items-center py-10">
+								<Spinner size={4} />
+							</div>
+						)}
+						{data && data.getLendingProtocolUserData.markets
+							? data.getLendingProtocolUserData.markets.map((m, i) => (
+									<Asset key={i} setOpen={selectAsset} market={m} />
+							  ))
+							: !isLoading && (
+									<div className="text-center space-y-5 py-24">
+										<p className="mb-14 text-2xl text-grey">No assets found</p>
+									</div>
+							  )}
+					</div>
+				)
 			) : (
 				<div className="text-center space-y-5 py-24">
 					<Wallet className="mx-auto" />

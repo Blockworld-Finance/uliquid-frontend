@@ -29,7 +29,7 @@ export default function Tabs({ data, onTabChnaged }: Props) {
 				{data.map((tab, index) => (
 					<span
 						key={index}
-						className={`space-x-2 flex items-center py-6 text-2xl ${
+						className={`space-x-2 cursor-pointer flex items-center py-6 text-2xl ${
 							active === index ? "text-blue" : "text-grey"
 						}`}
 						onClick={() => {

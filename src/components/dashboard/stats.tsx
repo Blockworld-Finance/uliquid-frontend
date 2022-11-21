@@ -20,7 +20,7 @@ export default function Stats() {
 				<div className="space-y-2">
 					<div className="text-darkGrey text-[18px]">Total networth</div>
 					<div className="text-2xl">
-						{isConnected ? totalSuppliedUSD ?? 0 : "--:--"}
+						{isConnected ? totalSuppliedUSD - totalBorrowedUSD : "--:--"}
 					</div>
 				</div>
 			</div>
@@ -31,7 +31,7 @@ export default function Stats() {
 				<div className="space-y-2">
 					<div className="text-darkGrey text-[18px]">Total Borrows</div>
 					<div className="text-2xl">
-						{isConnected ? totalSuppliedUSD - totalBorrowedUSD : "--:--"}
+						{isConnected ? totalSuppliedUSD : "--:--"}
 					</div>
 				</div>
 			</div>

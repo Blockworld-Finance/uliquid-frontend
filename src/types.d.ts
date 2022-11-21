@@ -12,6 +12,7 @@ export interface AnyObject<T = any, D = any> extends D {
 
 type GetProtocolResponse = {
 	getProtocols: {
+		url: string;
 		logo: string;
 		name: string;
 		description: string;
@@ -20,6 +21,7 @@ type GetProtocolResponse = {
 };
 
 type NormalizedProtocols = {
+	url: string;
 	name: string;
 	logo: string;
 	description: string;

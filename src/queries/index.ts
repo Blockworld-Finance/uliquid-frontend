@@ -11,9 +11,10 @@ export const getProtocols = async () => {
 	const query = gql`
 		{
 			getProtocols {
+				url
 				name
-				description
 				logo
+				description
 				versions {
 					protocolName
 					name
@@ -31,36 +32,33 @@ export const getProtocols = async () => {
 
 	const data = (await client().request(query)) as GetProtocolResponse;
 
-	const normalizeData = () => {
-		const chains = [];
-		data.getProtocols.forEach((protocol, p) => {
-			chains[p] = {
-				versions: [],
-				name: protocol.name,
-				logo: protocol.logo,
-				description: protocol.description
+	const chains = [];
+	data.getProtocols.forEach((protocol, p) => {
+		chains[p] = {
+			versions: [],
+			url: protocol.url,
+			name: protocol.name,
+			logo: protocol.logo,
+			description: protocol.description
+		};
+		protocol.versions.forEach((version, i) => {
+			const uniqueChains = [];
+			chains[p].versions[i] = {
+				name: version.name,
+				protocolName: version.protocolName,
+				chains: []
 			};
-			protocol.versions.forEach((version, i) => {
-				const uniqueChains = [];
-				chains[p].versions[i] = {
-					name: version.name,
-					protocolName: version.protocolName,
-					chains: []
-				};
 
-				version.contracts.forEach(contract => {
-					if (!uniqueChains.includes(contract.chain.name)) {
-						uniqueChains.push(contract.chain.name);
-						chains[p].versions[i].chains.push(contract.chain);
-					}
-				});
+			version.contracts.forEach(contract => {
+				if (!uniqueChains.includes(contract.chain.name)) {
+					uniqueChains.push(contract.chain.name);
+					chains[p].versions[i].chains.push(contract.chain);
+				}
 			});
 		});
+	});
 
-		return chains;
-	};
-
-	return normalizeData() as NormalizedProtocols;
+	return chains as NormalizedProtocols;
 };
 
 type TUserData = {

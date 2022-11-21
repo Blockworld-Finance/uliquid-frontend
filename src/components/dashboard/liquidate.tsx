@@ -3,21 +3,18 @@ import {
 	useState,
 	useEffect,
 	useCallback,
-	ChangeEventHandler
+	ChangeEventHandler,
+	useMemo
 } from "react";
 import Image from "next/image";
 import { useAccount } from "wagmi";
 
-import {
-	getLiquidation,
-	getTokenUSDValue,
-	getLendingProtocolLiquidateTx
-} from "src/queries";
 import useData from "@hooks/useData";
 import Input from "@components/common/input";
 import Button from "@components/common/button";
-import { useProtocols } from "@hooks/useQueries";
+import { useProtocols, useUserData } from "@hooks/useQueries";
 import { Info, GasPump, Dropdown, Search } from "@icons";
+import { getLiquidation, getTokenUSDValue } from "src/queries";
 import { LendingMarketUser, LiquidationQuote } from "src/schema";
 
 type Props = {
@@ -30,6 +27,7 @@ export function Liquidate({ asset, collateral, getTx }: Props) {
 	const {
 		data: { activeProtocol, activeChain, activeVersion }
 	} = useData();
+	const inputRef = useRef();
 	const { address } = useAccount();
 	const { data } = useProtocols();
 	const [show, setShow] = useState(false);
@@ -38,9 +36,7 @@ export function Liquidate({ asset, collateral, getTx }: Props) {
 		getTokenValue: number;
 		getTokenUSDValue: number;
 	}>();
-	const [tx, setTx] = useState();
 
-	const [loading, setLoading] = useState(false);
 	const { name, logo, versions = [] } = data[activeProtocol];
 	const [liquidation, setLiquidation] = useState<LiquidationQuote>();
 
@@ -68,7 +64,7 @@ export function Liquidate({ asset, collateral, getTx }: Props) {
 					protocol: name,
 					signal: control.signal,
 					debt: asset?.marketAddress,
-					slippage: (0.3 / 100) * 1000000,
+					slippage: (1 / 100) * 1000000,
 					debtAmount: Number(e.target.value),
 					collateral: collateral.marketAddress,
 					version: versions[activeVersion].name,
@@ -124,8 +120,9 @@ export function Liquidate({ asset, collateral, getTx }: Props) {
 								<input
 									step={0.01}
 									type="number"
-									onChange={getLiquidationQuote}
+									ref={inputRef}
 									max={asset?.amountBorrowed}
+									onChange={getLiquidationQuote}
 									className="w-full text-3xl text-white bg-primary border-none focus:outline-none"
 								/>
 								<small className="text-sm text-grey">
@@ -251,9 +248,8 @@ export function Liquidate({ asset, collateral, getTx }: Props) {
 
 			<Button
 				size="large"
-				loading={loading}
-				onClick={() => getTx(liquidation)}
 				className="w-full font-semibold"
+				onClick={() => getTx(liquidation)}
 			>
 				Liquidate
 			</Button>
@@ -262,6 +258,9 @@ export function Liquidate({ asset, collateral, getTx }: Props) {
 }
 
 const AssetPicker = () => {
+	const { data } = useUserData();
+	// const assets = useMemo(() => {}, []);
+
 	return (
 		<div className="absolute bg-navy w-72 rounded-lg right-0 p-4">
 			<div className="">
@@ -276,7 +275,13 @@ const AssetPicker = () => {
 				<h4 className="text-xs text-darkGrey">Recent searches</h4>
 			</div>
 			<div className="">
-				<div></div>
+				<div>
+					{data &&
+						data.getLendingProtocolUserData.markets &&
+						data.getLendingProtocolUserData.markets.map((m, i) => (
+							<div key={i}>{m.marketName}</div>
+						))}
+				</div>
 			</div>
 		</div>
 	);
