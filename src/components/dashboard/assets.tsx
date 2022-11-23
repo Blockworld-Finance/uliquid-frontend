@@ -185,7 +185,7 @@ export default function Assets() {
 				<Submitted />
 			</Modal>
 			<Modal open={shown} setOpen={setShown} type="dark">
-				<NoAsset />
+				<NoAsset protocolURL={url} />
 			</Modal>
 		</div>
 	);
@@ -268,7 +268,7 @@ const Submitted = () => {
 	);
 };
 
-const NoAsset = () => {
+const NoAsset = ({ protocolURL }) => {
 	return (
 		<div className="text-center">
 			<Starlay className="mx-auto mt-3" />
@@ -280,7 +280,14 @@ const NoAsset = () => {
 			</p>
 
 			<div className="flex justify-center items-center space-x-2 mt-6">
-				<Button>Go to starlay</Button>
+				<a
+					href={protocolURL}
+					target="_blank"
+					rel="noopener noreferrer"
+					className="mx-auto block w-max"
+				>
+					<Button>Go to starlay</Button>
+				</a>
 			</div>
 		</div>
 	);

@@ -9,9 +9,9 @@ export default function BlockChain() {
 	const {
 		data: { activeProtocol, activeChain, activeVersion }
 	} = useData();
-	const [open, setOpen] = useState(false);
 	const { data } = useProtocols();
-	const { versions = [], name } = data[activeProtocol];
+	const [open, setOpen] = useState(false);
+	const { versions = [] } = data[activeProtocol];
 
 	return (
 		<div>
@@ -23,17 +23,20 @@ export default function BlockChain() {
 							width={32}
 							height={32}
 							src={
-								data[activeProtocol].versions[activeVersion].chains[activeChain]
-									?.logo ?? ""
+								data[activeProtocol]?.versions?.[activeVersion]?.chains?.[
+									activeChain
+								]?.logo ?? ""
 							}
 							alt={
-								data[activeProtocol].versions[activeVersion].chains[activeChain]
-									?.name ?? ""
+								data[activeProtocol]?.versions?.[activeVersion]?.chains?.[
+									activeChain
+								]?.name ?? ""
 							}
 						/>
 						<p>
-							{data[activeProtocol].versions[activeVersion].chains[activeChain]
-								?.name ?? ""}
+							{data[activeProtocol]?.versions?.[activeVersion]?.chains?.[
+								activeChain
+							]?.name ?? ""}
 						</p>
 						{versions && versions.length ? (
 							<div className="bg-primary text-blue text-sm px-5 py-2 rounded">
@@ -55,7 +58,11 @@ export default function BlockChain() {
 							>
 								<Dropdown />
 							</div>
-							<Selector open={open} close={() => setOpen(false)} />
+							<Selector
+								open={open}
+								close={() => setOpen(false)}
+								key={`${activeProtocol}-${activeVersion}-${activeChain}`}
+							/>
 						</ClickOutside>
 					</div>
 				</div>
