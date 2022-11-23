@@ -8,9 +8,9 @@ module.exports = {
 				grey: "#8E8E93",
 				navy: "#1F2832",
 				primary: "#0C0B0E",
-				darkGrey: "#605D5D",
-			},
-		},
+				darkGrey: "#605D5D"
+			}
+		}
 	},
-	plugins: [],
+	plugins: [require("@tailwindcss/line-clamp")]
 };

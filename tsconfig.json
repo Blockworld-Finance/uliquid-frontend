@@ -17,10 +17,11 @@
 		"forceConsistentCasingInFileNames": true,
 		"paths": {
 			"@hooks/*": ["src/hooks/*"],
+			"@types": ["src/types.d.ts"],
+			"@schema": ["src/schema.d.ts"],
 			"@icons": ["src/assets/icons/index"],
 			"@components/*": ["src/components/*"],
-			"@common/*": ["src/components/common/*"],
-			"@types": ["src/types.d.ts", "src/schema.d.ts"]
+			"@common/*": ["src/components/common/*"]
 		}
 	},
 	"exclude": ["node_modules"],

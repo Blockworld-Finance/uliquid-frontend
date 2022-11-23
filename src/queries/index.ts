@@ -1,11 +1,7 @@
 import { gql } from "graphql-request";
 import client from "src/utils/client";
-import { LendingProtocolUserData, LiquidationQuote, Version } from "src/schema";
-import {
-	GetLiquidationResult,
-	GetProtocolResponse,
-	NormalizedProtocols
-} from "@types";
+import { LendingProtocolUserData, LiquidationQuote } from "src/schema";
+import { GetProtocolResponse, NormalizedProtocols, TFAQ } from "@types";
 
 export const getProtocols = async () => {
 	const query = gql`
@@ -293,5 +289,51 @@ export const getLendingProtocolLiquidateTx = async ({
 		liquidationQuote
 	});
 
+	return data;
+};
+
+export type TGetURLsResponse = {
+	getURLs: {
+		github: string;
+		twitter: string;
+		discord: string;
+		documentation: string;
+	};
+};
+export const getURLS = async () => {
+	const query = gql`
+		{
+			getURLs {
+				github
+				twitter
+				discord
+				documentation
+			}
+			getFAQs {
+				question
+				answer
+			}
+		}
+	`;
+
+	const data = (await client().request(query)) as TGetURLsResponse;
+	return data;
+};
+
+export type TGetFAQsResponse = {
+	getFAQs: TFAQ[];
+};
+
+export const getFAQs = async () => {
+	const query = gql`
+		{
+			getFAQs {
+				question
+				answer
+			}
+		}
+	`;
+
+	const data = (await client().request(query)) as TGetFAQsResponse;
 	return data;
 };

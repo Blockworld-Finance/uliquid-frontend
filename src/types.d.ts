@@ -1,4 +1,4 @@
-import { Version } from "./schema";
+import { Chain, Version } from "./schema";
 
 export type AppData = {
 	activeChain: number;
@@ -20,7 +20,12 @@ type GetProtocolResponse = {
 	}[];
 };
 
-type NormalizedProtocols = {
+type TFAQ = {
+	answer: string;
+	question: string;
+};
+
+type NormalizedProtocol = {
 	url: string;
 	name: string;
 	logo: string;
@@ -28,13 +33,11 @@ type NormalizedProtocols = {
 	versions: {
 		name: string;
 		protocolName: string;
-		chains: {
-			id: number;
-			name: string;
-			logo: string;
-		}[];
+		chains: Chain[];
 	}[];
-}[];
+};
+
+type NormalizedProtocols = NormalizedProtocol[];
 
 type GetLiquidationResult = {
 	canLiquidate: boolean;

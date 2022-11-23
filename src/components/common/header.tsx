@@ -2,7 +2,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 
-export default function Header() {
+type Props = {
+	docsURL: string;
+};
+
+export default function Header({ docsURL }: Props) {
 	return (
 		<header className="p-4">
 			<div className="flex items-center justify-between max-w-[1240px] mx-auto">
@@ -14,7 +18,9 @@ export default function Header() {
 					<Link href={"/dashboard"}>
 						<li>Dashboard</li>
 					</Link>
-					<li>Docs</li>
+					<a href={docsURL} target="_blank" rel="noopener noreferrer">
+						<li>Docs</li>
+					</a>
 					<li>FAQs</li>
 				</ul>
 				<ConnectButton />

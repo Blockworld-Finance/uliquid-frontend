@@ -182,7 +182,7 @@ export function Liquidate({ asset, collateral, getTx }: Props) {
 									</div>
 								</div>
 								<small className="text-sm text-grey">
-									Bal = ${collateral?.amountSuppliedUSD.toPrecision(8) ?? 0}
+									Bal = {collateral?.amountSupplied.toPrecision(8) ?? 0}
 								</small>
 							</div>
 						</div>
