@@ -21,7 +21,9 @@ export default function Header({ docsURL }: Props) {
 					<a href={docsURL} target="_blank" rel="noopener noreferrer">
 						<li>Docs</li>
 					</a>
-					<li>FAQs</li>
+					<a href="#faqs">
+						<li>FAQs</li>
+					</a>
 				</ul>
 				<ConnectButton />
 			</div>

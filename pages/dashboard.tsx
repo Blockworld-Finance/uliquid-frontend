@@ -2,15 +2,15 @@ import Tabs from "@components/common/tabs";
 import Layout from "@components/common/layout";
 import MarketPlace from "@components/dashboard/market";
 import { useProtocols } from "src/hooks/useQueries";
-import { getProtocols } from "src/queries";
+import { getProtocols, getURLS } from "src/queries";
 import useData from "src/hooks/useData";
 
-export default function Dashboard({ data: ddata }) {
+export default function Dashboard({ data: ddata, urls }) {
 	const { data } = useProtocols(ddata);
 	const { dispatch } = useData();
 
 	return (
-		<Layout>
+		<Layout urls={urls}>
 			<div className="my-36">
 				<Tabs
 					data={data.map(p => ({
@@ -32,11 +32,12 @@ export default function Dashboard({ data: ddata }) {
 }
 
 export async function getStaticProps() {
-	const data = await getProtocols();
+	const [data, urls = {}] = await Promise.all([getProtocols(), getURLS()]);
 
 	return {
 		props: {
-			data
+			data,
+			urls
 		},
 		revalidate: 3600 // In seconds
 	};

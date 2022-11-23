@@ -9,7 +9,7 @@ type Props = {
 
 export default function FAQs({ faqs }: Props) {
 	return (
-		<div className="mb-36">
+		<div className="mb-36" id="faqs">
 			<div className="space-y-4">
 				<h1 className="text-6xl leading-tight">FAQs</h1>
 				<p className="text-3xl text-grey leading-10">

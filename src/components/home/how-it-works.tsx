@@ -1,5 +1,6 @@
 import Button from "@components/common/button";
 import { BitCoin, BNB, Solana } from "@icons";
+import Link from "next/link";
 
 const HIWData = Array(4).fill(0);
 
@@ -8,8 +9,12 @@ export default function HowItWorks() {
 		<div className="flex space-x-36 my-36">
 			<div className="max-w-lg space-y-10 flex-none">
 				<p className="text-3xl text-grey leading-10">How it works</p>
-				<h1 className="text-6xl leading-tight">A quick guide on how Uliquid works.</h1>
-				<Button>Get started</Button>
+				<h1 className="text-6xl leading-tight">
+					A quick guide on how Uliquid works.
+				</h1>
+				<Link href={"/dashboard"}>
+					<Button>Get started</Button>
+				</Link>
 			</div>
 			<div className="hiw grid grid-cols-2 gap-16">
 				{HIWData.map((_d, index) => (
@@ -32,15 +37,15 @@ function HowItWorksCard({ index }) {
 					<span className="text-xs">and so on</span>
 				</div>
 				<p className="text-grey ">
-					Avoid loosing a portion of your collateral without your consent, start doing the
-					liquidation process yourself.
+					Avoid loosing a portion of your collateral without your consent, start
+					doing the liquidation process yourself.
 				</p>
 			</div>
 			<div className="h-[1px] bg-darkGrey mt-6">
 				<div
 					className="h-[1px] bg-blue"
 					style={{
-						width: `${25 * (index + 1)}%`,
+						width: `${25 * (index + 1)}%`
 					}}
 				></div>
 			</div>

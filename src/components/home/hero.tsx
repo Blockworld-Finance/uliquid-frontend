@@ -6,9 +6,10 @@ import {
 	Protocols,
 	Asset,
 	Assets,
-	Boom,
+	Boom
 } from "@icons";
 import { init } from "aos";
+import Link from "next/link";
 import { useEffect } from "react";
 
 import Button from "../common/button";
@@ -21,7 +22,9 @@ export default function Hero() {
 					<h1 className="text-blue">Be in-charge</h1>
 					<h1>
 						Manage your{" "}
-						<span className="underline underline-offset-8 decoration-2 decoration-blue">Debts</span>{" "}
+						<span className="underline underline-offset-8 decoration-2 decoration-blue">
+							Debts
+						</span>{" "}
 						&amp;{" "}
 						<span className="underline underline-offset-8 decoration-2 decoration-blue">
 							Collaterals
@@ -30,10 +33,12 @@ export default function Hero() {
 					</h1>
 				</div>
 				<p className="text-grey text-2xl">
-					Avoid loosing a portion of your collateral when it falls in value, perform the liquidation
-					of your assets yourself.
+					Avoid loosing a portion of your collateral when it falls in value,
+					perform the liquidation of your assets yourself.
 				</p>
-				<Button>Get started</Button>
+				<Link href={"/dashboard"}>
+					<Button>Get started</Button>
+				</Link>
 			</div>
 			<LeftImage />
 		</div>
@@ -44,7 +49,7 @@ const LeftImage = () => {
 	useEffect(() => {
 		init({
 			duration: 1200,
-			easing: "ease-in-out-back",
+			easing: "ease-in-out-back"
 		});
 	});
 	return (
