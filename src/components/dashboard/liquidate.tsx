@@ -3,8 +3,7 @@ import {
 	useState,
 	useEffect,
 	useCallback,
-	ChangeEventHandler,
-	useMemo
+	ChangeEventHandler
 } from "react";
 import Image from "next/image";
 import { useAccount } from "wagmi";
@@ -12,10 +11,11 @@ import { useAccount } from "wagmi";
 import useData from "@hooks/useData";
 import Input from "@components/common/input";
 import Button from "@components/common/button";
-import { useProtocols, useUserData } from "@hooks/useQueries";
 import { Info, GasPump, Dropdown, Search } from "@icons";
+import { useProtocols, useUserData } from "@hooks/useQueries";
 import { getLiquidation, getTokenUSDValue } from "src/queries";
 import { LendingMarketUser, LiquidationQuote } from "src/schema";
+import { ClickOutside } from "@hooks/useClickOutside";
 
 type Props = {
 	asset?: LendingMarketUser;
@@ -30,6 +30,8 @@ export function Liquidate({ asset, collateral, getTx }: Props) {
 	const inputRef = useRef();
 	const { address } = useAccount();
 	const { data } = useProtocols();
+	const [open, setOpen] = useState(false);
+	const [view, setView] = useState(false);
 	const [show, setShow] = useState(false);
 	let { current: control } = useRef(new AbortController());
 	const [tokenValue, setTokenValue] = useState<{
@@ -82,7 +84,7 @@ export function Liquidate({ asset, collateral, getTx }: Props) {
 	return (
 		<>
 			<h1 className="text-3xl text-darkGrey mb-6">Liquidate</h1>
-			<div className="max-h-[60vh] overflow-y-scroll">
+			<div className="max-h-[60vh] overflow-y-scroll overscroll-y-contain">
 				<div className="flex space-x-10">
 					<div className="space-y-2">
 						<small className="text-sm text-darkGrey">Protocol</small>
@@ -140,7 +142,20 @@ export function Liquidate({ asset, collateral, getTx }: Props) {
 										/>
 										<span className="">{asset?.marketSymbol}</span>
 									</div>
-									<Dropdown className="flex-none" />
+									<ClickOutside
+										className="relative"
+										onclickoutside={() => {
+											setView(false);
+										}}
+									>
+										<div
+											className="w-8 h-8 grid place-content-center cursor-pointer"
+											onClick={() => setView(true)}
+										>
+											<Dropdown />
+										</div>
+										<AssetPicker open={view} close={() => setView(false)} />
+									</ClickOutside>
 								</div>
 								<small className="text-sm text-grey">
 									<span>
@@ -176,10 +191,21 @@ export function Liquidate({ asset, collateral, getTx }: Props) {
 										/>
 										<span>{collateral?.marketSymbol}</span>
 									</div>
-									<div className="relative">
-										<Dropdown />
-										{/* <AssetPicker /> */}
-									</div>
+
+									<ClickOutside
+										className="relative"
+										onclickoutside={() => {
+											setOpen(false);
+										}}
+									>
+										<div
+											className="w-8 h-8 grid place-content-center cursor-pointer"
+											onClick={() => setOpen(true)}
+										>
+											<Dropdown />
+										</div>
+										<AssetPicker open={open} close={() => setOpen(false)} />
+									</ClickOutside>
 								</div>
 								<small className="text-sm text-grey">
 									Bal = {collateral?.amountSupplied.toPrecision(8) ?? 0}
@@ -257,13 +283,21 @@ export function Liquidate({ asset, collateral, getTx }: Props) {
 	);
 }
 
-const AssetPicker = () => {
+type AssetPickerProps = {
+	open: boolean;
+	close: () => void;
+};
+
+const AssetPicker = ({ open, close }: AssetPickerProps) => {
 	const { data } = useUserData();
-	// const assets = useMemo(() => {}, []);
 
 	return (
-		<div className="absolute bg-navy w-72 rounded-lg right-0 p-4">
-			<div className="">
+		<div
+			className={`absolute bg-navy w-72 rounded-lg shadow-2xl right-0 p-4 z-50 ${
+				open ? "py-4 opacity-100 h-[324px]" : "h-0 py-0 opacity-0"
+			}`}
+		>
+			<div className="space-y-3">
 				<h4 className="text-sm font-medium text-darkGrey">Change Asset</h4>
 				<Input
 					className="self-center border border-darkGrey rounded"
@@ -271,15 +305,32 @@ const AssetPicker = () => {
 					placeholder="Search assets or paste address"
 				/>
 			</div>
-			<div>
+			{/* <div>
 				<h4 className="text-xs text-darkGrey">Recent searches</h4>
-			</div>
-			<div className="">
-				<div>
+			</div> */}
+			<div className="mt-6">
+				<div className="space-y-3 h-52 overflow-y-scroll overscroll-contain">
 					{data &&
 						data.getLendingProtocolUserData.markets &&
 						data.getLendingProtocolUserData.markets.map((m, i) => (
-							<div key={i}>{m.marketName}</div>
+							<div key={i} className="flex items-center space-x-3">
+								<div>
+									<Image
+										width={24}
+										height={24}
+										src={m.marketLogo ?? ""}
+										alt={m.marketName ?? ""}
+									/>
+								</div>
+								<div>
+									<h4 className="text-base leading-5 text-grey">
+										{m.marketName}
+									</h4>
+									<small className="text-xs text-darkGrey">
+										{m.marketSymbol}
+									</small>
+								</div>
+							</div>
 						))}
 				</div>
 			</div>
