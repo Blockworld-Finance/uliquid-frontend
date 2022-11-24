@@ -11,11 +11,11 @@ import { useAccount } from "wagmi";
 import useData from "@hooks/useData";
 import Input from "@components/common/input";
 import Button from "@components/common/button";
+import { ClickOutside } from "@hooks/useClickOutside";
 import { Info, GasPump, Dropdown, Search } from "@icons";
 import { useProtocols, useUserData } from "@hooks/useQueries";
 import { getLiquidation, getTokenUSDValue } from "src/queries";
 import { LendingMarketUser, LiquidationQuote } from "src/schema";
-import { ClickOutside } from "@hooks/useClickOutside";
 
 type Props = {
 	asset?: LendingMarketUser;
@@ -23,17 +23,24 @@ type Props = {
 	getTx: (l: LiquidationQuote) => void;
 };
 
-export function Liquidate({ asset, collateral, getTx }: Props) {
+export function Liquidate({
+	getTx,
+	asset: initialAsset,
+	collateral: initialCollateral
+}: Props) {
 	const {
 		data: { activeProtocol, activeChain, activeVersion }
 	} = useData();
+
 	const inputRef = useRef();
-	const { address } = useAccount();
 	const { data } = useProtocols();
+	const { address } = useAccount();
 	const [open, setOpen] = useState(false);
 	const [view, setView] = useState(false);
 	const [show, setShow] = useState(false);
+	const [asset, setAsset] = useState(initialAsset);
 	let { current: control } = useRef(new AbortController());
+	const [collateral, setCollateral] = useState(initialCollateral);
 	const [tokenValue, setTokenValue] = useState<{
 		getTokenValue: number;
 		getTokenUSDValue: number;
@@ -83,7 +90,7 @@ export function Liquidate({ asset, collateral, getTx }: Props) {
 
 	return (
 		<>
-			<h1 className="text-3xl text-darkGrey mb-6">Liquidate</h1>
+			<h1 className="text-3xl text-darkGrey mb-6 relative">Liquidate</h1>
 			<div className="max-h-[60vh] overflow-y-scroll overscroll-y-contain">
 				<div className="flex space-x-10">
 					<div className="space-y-2">
@@ -142,20 +149,25 @@ export function Liquidate({ asset, collateral, getTx }: Props) {
 										/>
 										<span className="">{asset?.marketSymbol}</span>
 									</div>
-									<ClickOutside
-										className="relative"
-										onclickoutside={() => {
-											setView(false);
-										}}
-									>
-										<div
-											className="w-8 h-8 grid place-content-center cursor-pointer"
-											onClick={() => setView(true)}
+									<div className="">
+										<ClickOutside
+											onclickoutside={() => {
+												setView(false);
+											}}
 										>
-											<Dropdown />
-										</div>
-										<AssetPicker open={view} close={() => setView(false)} />
-									</ClickOutside>
+											<div
+												className="w-8 h-8 grid place-content-center cursor-pointer"
+												onClick={() => setView(true)}
+											>
+												<Dropdown />
+											</div>
+											<AssetPicker
+												open={view}
+												select={setAsset}
+												close={() => setView(false)}
+											/>
+										</ClickOutside>
+									</div>
 								</div>
 								<small className="text-sm text-grey">
 									<span>
@@ -191,21 +203,26 @@ export function Liquidate({ asset, collateral, getTx }: Props) {
 										/>
 										<span>{collateral?.marketSymbol}</span>
 									</div>
-
-									<ClickOutside
-										className="relative"
-										onclickoutside={() => {
-											setOpen(false);
-										}}
-									>
-										<div
-											className="w-8 h-8 grid place-content-center cursor-pointer"
-											onClick={() => setOpen(true)}
+									<div className="">
+										<ClickOutside
+											className=""
+											onclickoutside={() => {
+												setOpen(false);
+											}}
 										>
-											<Dropdown />
-										</div>
-										<AssetPicker open={open} close={() => setOpen(false)} />
-									</ClickOutside>
+											<div
+												className="w-8 h-8 grid place-content-center cursor-pointer"
+												onClick={() => setOpen(true)}
+											>
+												<Dropdown />
+											</div>
+											<AssetPicker
+												open={open}
+												select={setCollateral}
+												close={() => setOpen(false)}
+											/>
+										</ClickOutside>
+									</div>
 								</div>
 								<small className="text-sm text-grey">
 									Bal = {collateral?.amountSupplied.toPrecision(8) ?? 0}
@@ -286,52 +303,78 @@ export function Liquidate({ asset, collateral, getTx }: Props) {
 type AssetPickerProps = {
 	open: boolean;
 	close: () => void;
+	select: (_m: LendingMarketUser) => void;
 };
 
-const AssetPicker = ({ open, close }: AssetPickerProps) => {
+const AssetPicker = ({ open, close, select }: AssetPickerProps) => {
 	const { data } = useUserData();
+	const inputRef = useRef<HTMLInputElement>(null);
+
+	const [list, setList] = useState(
+		data?.getLendingProtocolUserData?.markets ?? []
+	);
+
+	const searchMarkets: ChangeEventHandler<HTMLInputElement> = useCallback(
+		e => {
+			const value = e.target.value?.toLowerCase() ?? "";
+
+			const cache = data?.getLendingProtocolUserData?.markets.filter(
+				m =>
+					m.marketName.toLowerCase().includes(value) ||
+					m.marketSymbol.toLowerCase().includes(value)
+			);
+
+			setList(cache);
+		},
+		[data]
+	);
 
 	return (
 		<div
-			className={`absolute bg-navy w-72 rounded-lg shadow-2xl right-0 p-4 z-50 ${
-				open ? "py-4 opacity-100 h-[324px]" : "h-0 py-0 opacity-0"
+			className={`absolute bg-navy w-72 rounded-lg shadow-2xl right-4 p-4 z-50 overflow-hidden ${
+				open ? "py-4 opacity-100 h-[344px]" : "h-0 py-0 opacity-0"
 			}`}
 		>
 			<div className="space-y-3">
 				<h4 className="text-sm font-medium text-darkGrey">Change Asset</h4>
 				<Input
-					className="self-center border border-darkGrey rounded"
+					ref={inputRef}
+					onChange={searchMarkets}
 					LeadingIcon={() => <Search />}
 					placeholder="Search assets or paste address"
+					className="self-center border border-darkGrey rounded"
 				/>
 			</div>
-			{/* <div>
-				<h4 className="text-xs text-darkGrey">Recent searches</h4>
-			</div> */}
 			<div className="mt-6">
 				<div className="space-y-3 h-52 overflow-y-scroll overscroll-contain">
-					{data &&
-						data.getLendingProtocolUserData.markets &&
-						data.getLendingProtocolUserData.markets.map((m, i) => (
-							<div key={i} className="flex items-center space-x-3">
-								<div>
-									<Image
-										width={24}
-										height={24}
-										src={m.marketLogo ?? ""}
-										alt={m.marketName ?? ""}
-									/>
-								</div>
-								<div>
-									<h4 className="text-base leading-5 text-grey">
-										{m.marketName}
-									</h4>
-									<small className="text-xs text-darkGrey">
-										{m.marketSymbol}
-									</small>
-								</div>
+					{list.map((m, i) => (
+						<div
+							key={i}
+							className="flex items-center space-x-3 cursor-pointer"
+							onClick={() => {
+								if (inputRef.current) inputRef.current.value = "";
+								select(m);
+								close();
+							}}
+						>
+							<div>
+								<Image
+									width={24}
+									height={24}
+									src={m.marketLogo ?? ""}
+									alt={m.marketName ?? ""}
+								/>
 							</div>
-						))}
+							<div>
+								<h4 className="text-base leading-5 text-grey">
+									{m.marketName}
+								</h4>
+								<small className="text-xs text-darkGrey">
+									{m.marketSymbol}
+								</small>
+							</div>
+						</div>
+					))}
 				</div>
 			</div>
 		</div>

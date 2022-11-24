@@ -171,12 +171,8 @@ export default function Assets() {
 					</span>
 				</div>
 			)}
-			<Modal open={open} setOpen={setOpen}>
-				<Liquidate
-					asset={asset}
-					getTx={getLiquidateTx}
-					collateral={defaultCollateral}
-				/>
+			<Modal open={shown} setOpen={setShown} type="dark">
+				<NoAsset protocolURL={url} />
 			</Modal>
 			<Modal open={view} setOpen={setView} type="dark">
 				<Confirmation />
@@ -184,8 +180,13 @@ export default function Assets() {
 			<Modal open={show} setOpen={setShow} type="dark">
 				<Submitted />
 			</Modal>
-			<Modal open={shown} setOpen={setShown} type="dark">
-				<NoAsset protocolURL={url} />
+			<Modal open={open} setOpen={setOpen}>
+				<Liquidate
+					asset={asset}
+					getTx={getLiquidateTx}
+					collateral={defaultCollateral}
+					key={`${asset?.marketSymbol ?? "NOASSET"}-${open}`}
+				/>
 			</Modal>
 		</div>
 	);
