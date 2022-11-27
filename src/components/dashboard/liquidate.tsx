@@ -17,6 +17,9 @@ import { useProtocols, useUserData } from "@hooks/useQueries";
 import { getLiquidation, getTokenUSDValue } from "src/queries";
 import { LendingMarketUser, LiquidationQuote } from "src/schema";
 
+// TODO Disable Liquidate button if debt input amount is greater than amount borrowed
+// Prevent NAN from showing when getting liquidation quote (Hide dropdown icon)
+
 type Props = {
 	asset?: LendingMarketUser;
 	collateral?: LendingMarketUser;
@@ -39,6 +42,7 @@ export function Liquidate({
 	const [view, setView] = useState(false);
 	const [show, setShow] = useState(false);
 	const [asset, setAsset] = useState(initialAsset);
+	const [isInputValid, setInputValid] = useState(false);
 	let { current: control } = useRef(new AbortController());
 	const [collateral, setCollateral] = useState(initialCollateral);
 	const [tokenValue, setTokenValue] = useState<{
@@ -65,24 +69,29 @@ export function Liquidate({
 	const getLiquidationQuote: ChangeEventHandler<HTMLInputElement> = useCallback(
 		e => {
 			if (e.target.value.length) {
-				control.abort();
-				// eslint-disable-next-line react-hooks/exhaustive-deps
-				control = new AbortController();
-				getLiquidation({
-					user: address,
-					protocol: name,
-					signal: control.signal,
-					debt: asset?.marketAddress,
-					slippage: (1 / 100) * 1000000,
-					debtAmount: Number(e.target.value),
-					collateral: collateral.marketAddress,
-					version: versions[activeVersion].name,
-					chainId: versions[activeVersion].chains[activeChain].id
-				})
-					.then(d => {
-						setLiquidation(d);
+				if (Number(e.target.value) <= asset?.amountBorrowed) {
+					control.abort();
+					setInputValid(true);
+					// eslint-disable-next-line react-hooks/exhaustive-deps
+					control = new AbortController();
+					getLiquidation({
+						user: address,
+						protocol: name,
+						signal: control.signal,
+						debt: asset?.marketAddress,
+						slippage: (1 / 100) * 1000000,
+						debtAmount: Number(e.target.value),
+						collateral: collateral.marketAddress,
+						version: versions[activeVersion].name,
+						chainId: versions[activeVersion].chains[activeChain].id
 					})
-					.catch(e => {});
+						.then(d => {
+							setLiquidation(d);
+						})
+						.catch(e => {});
+				} else {
+					setInputValid(false);
+				}
 			}
 		},
 		[asset, collateral, versions, name, address]
@@ -130,7 +139,6 @@ export function Liquidate({
 									step={0.01}
 									type="number"
 									ref={inputRef}
-									max={asset?.amountBorrowed}
 									onChange={getLiquidationQuote}
 									className="w-full text-3xl text-white bg-primary border-none focus:outline-none"
 								/>
@@ -251,7 +259,7 @@ export function Liquidate({
 							<div className="flex space-x-2 items-center">
 								<GasPump />
 								<span>$0.28</span>
-								<Dropdown onClick={() => setShow(!show)} />
+								{liquidation && <Dropdown onClick={() => setShow(!show)} />}
 							</div>
 						</div>
 						<div
@@ -291,6 +299,7 @@ export function Liquidate({
 
 			<Button
 				size="large"
+				disabled={!isInputValid}
 				className="w-full font-semibold"
 				onClick={() => getTx(liquidation)}
 			>

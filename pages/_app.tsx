@@ -4,11 +4,16 @@ import { publicProvider } from "wagmi/providers/public";
 import { alchemyProvider } from "wagmi/providers/alchemy";
 import { Hydrate, QueryClient, QueryClientProvider } from "react-query";
 import { chain, WagmiConfig, createClient, configureChains } from "wagmi";
-import { getDefaultWallets, RainbowKitProvider, darkTheme } from "@rainbow-me/rainbowkit";
+import {
+	getDefaultWallets,
+	RainbowKitProvider,
+	darkTheme
+} from "@rainbow-me/rainbowkit";
 
 import "../styles/globals.css";
 import "@rainbow-me/rainbowkit/styles.css";
 import { DataProvider } from "src/hooks/useData";
+import Script from "next/script";
 
 const { chains, provider } = configureChains(
 	[chain.mainnet, chain.polygon, chain.optimism, chain.arbitrum],
@@ -17,13 +22,13 @@ const { chains, provider } = configureChains(
 
 const { connectors } = getDefaultWallets({
 	appName: "Uliquid",
-	chains,
+	chains
 });
 
 const wagmiClient = createClient({
 	autoConnect: true,
 	connectors,
-	provider,
+	provider
 });
 
 function MyApp({ Component, pageProps }) {
@@ -34,7 +39,10 @@ function MyApp({ Component, pageProps }) {
 			<QueryClientProvider client={queryClient}>
 				<Hydrate state={pageProps.dehydratedState}>
 					<WagmiConfig client={wagmiClient}>
-						<RainbowKitProvider chains={chains} theme={darkTheme({ accentColor: "#32C1CC" })}>
+						<RainbowKitProvider
+							chains={chains}
+							theme={darkTheme({ accentColor: "#32C1CC" })}
+						>
 							<Component {...pageProps} />
 						</RainbowKitProvider>
 					</WagmiConfig>

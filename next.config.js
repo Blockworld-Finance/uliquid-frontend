@@ -9,7 +9,7 @@ const nextConfig = {
 		return config;
 	},
 	images: {
-		domains: ["blockchain-rdata.s3.amazonaws.com"],
+		domains: ["blockchain-rdata.s3.amazonaws.com", "static.alchemyapi.io"],
 	},
 	swcMinify: true,
 	reactStrictMode: true,

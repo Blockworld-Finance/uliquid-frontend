@@ -35,6 +35,17 @@ export default function Footer({
 					<a href={discord} target="_blank" rel="noopener noreferrer">
 						<Discord />
 					</a>
+					<a href="#">
+						<Image
+							id="badge-button"
+							width={"240px"}
+							height={"53px"}
+							// @ts-ignore
+							onClick={() => logBadgeClick()}
+							src="https://static.alchemyapi.io/images/marketing/badge.png"
+							alt="Alchemy Supercharged"
+						/>
+					</a>
 				</div>
 			</div>
 		</footer>

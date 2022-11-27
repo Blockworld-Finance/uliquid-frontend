@@ -31,7 +31,7 @@ export default function Stats() {
 				<div className="space-y-2">
 					<div className="text-darkGrey text-[18px]">Total Borrows</div>
 					<div className="text-2xl">
-						{isConnected ? totalSuppliedUSD : "--:--"}
+						{isConnected ? totalBorrowedUSD : "--:--"}
 					</div>
 				</div>
 			</div>
