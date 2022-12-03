@@ -126,7 +126,7 @@ type TLiquidationProps = {
 	chainId: number;
 	version: string;
 	slippage: number;
-	signal: AbortSignal;
+	signal?: AbortSignal;
 };
 
 export const getLiquidation = async ({
@@ -190,12 +190,12 @@ export const getLiquidation = async ({
 	const data = await client(signal).request(query, {
 		user,
 		debt,
-		collateral,
-		debtAmount,
-		protocol,
 		chainId,
 		version,
-		slippage
+		slippage,
+		protocol,
+		debtAmount,
+		collateral
 	});
 
 	return data.getLiquidationQuote as LiquidationQuote;

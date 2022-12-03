@@ -1,19 +1,19 @@
+import {
+	darkTheme,
+	getDefaultWallets,
+	RainbowKitProvider
+} from "@rainbow-me/rainbowkit";
 import { useState } from "react";
-import { init } from "src/utils/store";
 import { publicProvider } from "wagmi/providers/public";
 import { alchemyProvider } from "wagmi/providers/alchemy";
 import { Hydrate, QueryClient, QueryClientProvider } from "react-query";
 import { chain, WagmiConfig, createClient, configureChains } from "wagmi";
-import {
-	getDefaultWallets,
-	RainbowKitProvider,
-	darkTheme
-} from "@rainbow-me/rainbowkit";
+
+import { init } from "src/utils/store";
+import { DataProvider } from "src/hooks/useData";
 
 import "../styles/globals.css";
 import "@rainbow-me/rainbowkit/styles.css";
-import { DataProvider } from "src/hooks/useData";
-import Script from "next/script";
 
 const { chains, provider } = configureChains(
 	[chain.mainnet, chain.polygon, chain.optimism, chain.arbitrum],
@@ -26,9 +26,9 @@ const { connectors } = getDefaultWallets({
 });
 
 const wagmiClient = createClient({
-	autoConnect: true,
+	provider,
 	connectors,
-	provider
+	autoConnect: true
 });
 
 function MyApp({ Component, pageProps }) {

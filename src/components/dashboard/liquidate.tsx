@@ -17,9 +17,6 @@ import { useProtocols, useUserData } from "@hooks/useQueries";
 import { getLiquidation, getTokenUSDValue } from "src/queries";
 import { LendingMarketUser, LiquidationQuote } from "src/schema";
 
-// TODO Disable Liquidate button if debt input amount is greater than amount borrowed
-// Prevent NAN from showing when getting liquidation quote (Hide dropdown icon)
-
 type Props = {
 	asset?: LendingMarketUser;
 	collateral?: LendingMarketUser;
@@ -34,24 +31,63 @@ export function Liquidate({
 	const {
 		data: { activeProtocol, activeChain, activeVersion }
 	} = useData();
-
-	const inputRef = useRef();
 	const { data } = useProtocols();
 	const { address } = useAccount();
+	const interval = useRef<NodeJS.Timer>();
 	const [open, setOpen] = useState(false);
 	const [view, setView] = useState(false);
 	const [show, setShow] = useState(false);
-	const [asset, setAsset] = useState(initialAsset);
-	const [isInputValid, setInputValid] = useState(false);
-	let { current: control } = useRef(new AbortController());
-	const [collateral, setCollateral] = useState(initialCollateral);
 	const [tokenValue, setTokenValue] = useState<{
 		getTokenValue: number;
 		getTokenUSDValue: number;
 	}>();
+	const inputRef = useRef<HTMLInputElement>(null);
+	const [asset, setAsset] = useState(initialAsset);
+	const [isInputValid, setInputValid] = useState(false);
+	let { current: control } = useRef(new AbortController());
+	const [collateral, setCollateral] = useState(initialCollateral);
 
 	const { name, logo, versions = [] } = data[activeProtocol];
 	const [liquidation, setLiquidation] = useState<LiquidationQuote>();
+
+	const pollLiquidationQoute = useCallback(() => {
+		const amount = Number(inputRef.current?.value ?? 0);
+		if (amount && amount <= asset?.amountBorrowed) {
+			getLiquidation({
+				user: address,
+				protocol: name,
+				debtAmount: amount,
+				// signal: control.signal,
+				debt: asset?.marketAddress,
+				slippage: (1 / 100) * 1000000,
+				collateral: collateral.marketAddress,
+				version: versions[activeVersion].name,
+				chainId: versions[activeVersion].chains[activeChain].id
+			})
+				.then(d => {
+					setLiquidation(d);
+				})
+				.catch(e => {});
+		}
+	}, [
+		name,
+		address,
+		inputRef,
+		versions,
+		activeChain,
+		activeVersion,
+		asset?.marketAddress,
+		asset?.amountBorrowed,
+		collateral?.marketAddress
+	]);
+
+	useEffect(() => {
+		if (!interval.current) {
+			interval.current = setInterval(() => {
+				pollLiquidationQoute();
+			}, 10000);
+		}
+	}, [pollLiquidationQoute]);
 
 	useEffect(() => {
 		if (asset && collateral)
@@ -347,7 +383,7 @@ const AssetPicker = ({ open, close, select }: AssetPickerProps) => {
 			<div className="space-y-3">
 				<h4 className="text-sm font-medium text-darkGrey">Change Asset</h4>
 				<Input
-					ref={inputRef}
+					innerRef={inputRef}
 					onChange={searchMarkets}
 					LeadingIcon={() => <Search />}
 					placeholder="Search assets or paste address"
