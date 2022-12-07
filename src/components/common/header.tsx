@@ -50,10 +50,12 @@ export default function Header({
 								setOpen(!open);
 							}}
 						>
-							{open ? <Close /> : <Menu />}
 							{open && (
 								<div className="bg-black bg-opacity-60 cursor-pointer w-screen h-screen fixed top-0 left-0" />
 							)}
+							<span className="relative z-50">
+								{open ? <Close /> : <Menu />}
+							</span>
 							<ClickOutside
 								onclickoutside={() => {
 									setOpen(false);
