@@ -25,6 +25,12 @@ type TFAQ = {
 	question: string;
 };
 
+type TGuide = {
+	text: string;
+	heading: string;
+	images: string[];
+};
+
 type NormalizedProtocol = {
 	url: string;
 	name: string;

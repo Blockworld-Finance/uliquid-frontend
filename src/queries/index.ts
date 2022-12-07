@@ -1,7 +1,7 @@
 import { gql } from "graphql-request";
 import client from "src/utils/client";
 import { LendingProtocolUserData, LiquidationQuote } from "src/schema";
-import { GetProtocolResponse, NormalizedProtocols, TFAQ } from "@types";
+import { GetProtocolResponse, NormalizedProtocols, TFAQ, TGuide } from "@types";
 
 export const getProtocols = async () => {
 	const query = gql`
@@ -330,6 +330,25 @@ export const getFAQs = async () => {
 			getFAQs {
 				question
 				answer
+			}
+		}
+	`;
+
+	const data = (await client().request(query)) as TGetFAQsResponse;
+	return data;
+};
+
+export type TGetGuideResponse = {
+	getGuide: TGuide[];
+};
+
+export const getGuide = async () => {
+	const query = gql`
+		{
+			getGuide {
+				heading
+				images
+				text
 			}
 		}
 	`;

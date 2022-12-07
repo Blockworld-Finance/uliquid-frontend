@@ -16,9 +16,9 @@ import Button from "../common/button";
 
 export default function Hero() {
 	return (
-		<div className="h-[80vh] min-h-[772px] flex items-center">
-			<div className="max-w-2xl w-full space-y-8">
-				<div className="text-6xl space-y-3">
+		<div className="md:h-[80vh] md:min-h-[772px] flex items-center">
+			<div className="max-w-2xl w-full space-y-3 md:space-y-8">
+				<div className="text-2xl md:text-6xl md:space-y-3">
 					<h1 className="text-blue">Be in-charge</h1>
 					<h1>
 						Manage your{" "}
@@ -32,7 +32,7 @@ export default function Hero() {
 						.
 					</h1>
 				</div>
-				<p className="text-grey text-2xl">
+				<p className="text-grey text-sm md:text-2xl">
 					Avoid loosing a portion of your collateral when it falls in value,
 					perform the liquidation of your assets yourself.
 				</p>
@@ -53,7 +53,7 @@ const LeftImage = () => {
 		});
 	});
 	return (
-		<div className="max-w-2xl max-h-[244px] w-full h-full relative flex items-center justify-center">
+		<div className="max-w-2xl hidden md:flex max-h-[244px] w-full h-full relative items-center justify-center">
 			<LendingProtocol
 				className="absolute -top-44 left-4 z-10 "
 				data-aos="fade-up"

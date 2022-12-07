@@ -5,43 +5,48 @@ import Protocols from "@components/home/protocols";
 import HowItWorks from "@components/home/how-it-works";
 import {
 	getFAQs,
-	getProtocols,
 	getURLS,
+	getGuide,
+	getProtocols,
 	TGetFAQsResponse,
-	TGetURLsResponse
+	TGetURLsResponse,
+	TGetGuideResponse
 } from "src/queries";
 import { NormalizedProtocols } from "@types";
 
 type Props = {
 	urls: TGetURLsResponse;
 	faqs: TGetFAQsResponse;
+	guide: TGetGuideResponse;
 	protocols: NormalizedProtocols;
 };
 
-export default function Home({ protocols, urls, faqs }: Props) {
+export default function Home({ protocols, urls, faqs, guide }: Props) {
 	return (
 		<Layout urls={urls}>
 			<Hero />
 			<Protocols protocols={protocols} />
-			<HowItWorks />
+			<HowItWorks guide={guide} />
 			<FAQs faqs={faqs.getFAQs} />
 		</Layout>
 	);
 }
 
 export async function getStaticProps() {
-	const [protocols, urls = {}, faqs = {}] = await Promise.all([
+	const [protocols, urls = {}, faqs = {}, guide = {}] = await Promise.all([
 		getProtocols(),
 		getURLS(),
-		getFAQs()
+		getFAQs(),
+		getGuide()
 	]);
 
 	return {
 		props: {
 			faqs,
 			urls,
+			guide,
 			protocols
 		},
-		revalidate: 5 // In seconds
+		revalidate: 600 // In seconds
 	};
 }

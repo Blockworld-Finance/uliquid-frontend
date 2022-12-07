@@ -4,6 +4,7 @@ export { default as Auto } from "./auto.svg";
 export { default as Swap } from "./swap.svg";
 export { default as Info } from "./info.svg";
 export { default as Send } from "./send.svg";
+export { default as Menu } from "./menu.svg";
 export { default as Heart } from "./heart.svg";
 export { default as Close } from "./close.svg";
 export { default as Github } from "./github.svg";

@@ -1,9 +1,10 @@
-import Input from "@components/common/input";
-import { Search } from "@icons";
 import { useAccount } from "wagmi";
-import Assets from "./assets";
-import BlockChain from "./blockchain";
+
 import Stats from "./stats";
+import Assets from "./assets";
+import { Search } from "@icons";
+import BlockChain from "./blockchain";
+import Input from "@components/common/input";
 
 export default function MarketPlace() {
 	const { isConnected } = useAccount();
