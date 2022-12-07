@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import Image from "next/image";
 import { useState } from "react";
 import { Dropdown } from "@icons";
@@ -16,12 +17,11 @@ export default function BlockChain() {
 	return (
 		<div>
 			<div className="space-y-4">
-				<p className="text-[18px] text-darkGrey">Blockchain</p>
-				<div className="flex max-w-md py-7 px-8 bg-navy rounded-xl items-center justify-between">
-					<div className="flex items-center space-x-4">
-						<Image
-							width={32}
-							height={32}
+				<p className="text-xs md:text-[18px] text-darkGrey">Blockchain</p>
+				<div className="flex max-w-md p-2 md:p-7 bg-navy rounded-xl items-center justify-between">
+					<div className="flex items-center space-x-4 text-sm md:text-base">
+						<img
+							className="w-4 h-4 md:w-8 md:h-8"
 							src={
 								data[activeProtocol]?.versions?.[activeVersion]?.chains?.[
 									activeChain
@@ -87,11 +87,11 @@ const Selector = ({ open, close }: SelectorProps) => {
 
 	return (
 		<div
-			className={`absolute right-0 px-10 bg-navy rounded-xl space-y-4 shadow-2xl min-w-[320px] ${
-				open ? "py-10 top-8 opacity-100" : "h-0 py-0 top-0 opacity-0"
-			} overflow-hidden`}
+			className={`absolute right-0 px-4 md:px-10 bg-navy rounded-xl space-y-4 shadow-2xl w-min min-w-[240px] md:min-w-[320px] ${
+				open ? "py-6 md:py-10 top-8 opacity-100" : "h-0 py-0 top-0 opacity-0"
+			} overflow-hidden z-20`}
 		>
-			<h4 className="font-semibold text-darkGrey">
+			<h4 className="text-sm font-semibold text-darkGrey">
 				Select {data[activeProtocol].name} Market
 			</h4>
 			<div>
@@ -102,7 +102,7 @@ const Selector = ({ open, close }: SelectorProps) => {
 							key={`${v.name}-${i}-${activeProtocol}`}
 							className={`${
 								version === i ? "text-primary bg-blue" : "bg-primary text-blue"
-							} text-sm px-5 py-2 rounded cursor-pointer`}
+							} text-sm px-2 md:px-5 py-1 md:py-2 rounded cursor-pointer`}
 							onClick={() => {
 								setChain(0);
 								setVersion(i);
@@ -117,7 +117,7 @@ const Selector = ({ open, close }: SelectorProps) => {
 				{data[activeProtocol].versions[version].chains.map((c, i) => (
 					<div
 						key={`${c.name}-${i}-${version}`}
-						className={`flex text-grey space-x-4 cursor-pointer ${
+						className={`flex text-grey space-x-4 cursor-pointer text-xs md:text-base ${
 							chain === i ? "text-blue" : ""
 						}`}
 						onClick={() => {
@@ -125,9 +125,8 @@ const Selector = ({ open, close }: SelectorProps) => {
 							dispatch({ activeChain: i, activeVersion: version });
 						}}
 					>
-						<Image
-							width={24}
-							height={24}
+						<img
+							className="w-4 h-4 md:w-8 md:h-8"
 							src={c.logo ?? ""}
 							alt={c.name ?? ""}
 						/>

@@ -7,6 +7,7 @@ export { default as Send } from "./send.svg";
 export { default as Menu } from "./menu.svg";
 export { default as Heart } from "./heart.svg";
 export { default as Close } from "./close.svg";
+export { default as Filter } from "./filter.svg";
 export { default as Github } from "./github.svg";
 export { default as Solana } from "./solana.svg";
 export { default as Search } from "./search.svg";

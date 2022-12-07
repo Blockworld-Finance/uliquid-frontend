@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import Image from "next/image";
 import { useCallback, useMemo, useState } from "react";
 
@@ -29,14 +30,18 @@ export default function Tabs({ data, onTabChnaged }: Props) {
 				{data.map((tab, index) => (
 					<span
 						key={index}
-						className={`space-x-2 cursor-pointer flex items-center py-6 text-2xl ${
+						className={`space-x-2 cursor-pointer flex items-center py-4 md:py-6 text-xs md:text-2xl ${
 							active === index ? "text-blue" : "text-grey"
 						}`}
 						onClick={() => {
 							changeTab(index);
 						}}
 					>
-						<Image src={tab.icon} alt={tab.title} width={32} height={32} />
+						<img
+							src={tab.icon}
+							alt={tab.title}
+							className="w-4 h-4 md:w-8 md:h-8"
+						/>
 						<span>{tab.title}</span>
 					</span>
 				))}

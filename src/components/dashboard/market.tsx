@@ -12,16 +12,18 @@ export default function MarketPlace() {
 	return (
 		<div className="py-10">
 			<BlockChain />
-			<div className="flex items-center justify-between">
+
+			<div className="flex items-start md:items-center md:justify-between flex-col md:flex-row">
 				<Stats />
 				{isConnected && (
 					<Input
-						className="self-center"
+						className="self-center w-full"
 						LeadingIcon={() => <Search />}
 						placeholder="Search assets"
 					/>
 				)}
 			</div>
+
 			<Assets />
 		</div>
 	);

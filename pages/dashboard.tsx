@@ -11,7 +11,7 @@ export default function Dashboard({ data: ddata, urls }) {
 
 	return (
 		<Layout urls={urls}>
-			<div className="my-36">
+			<div className="my-6 md:my-36">
 				<Tabs
 					data={data.map(p => ({
 						title: p.name,

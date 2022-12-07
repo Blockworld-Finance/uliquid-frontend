@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 import Image from "next/image";
 import { useAccount } from "wagmi";
@@ -13,7 +14,15 @@ import Spinner from "@components/common/Spinner";
 import { getLendingProtocolLiquidateTx } from "src/queries";
 import { useProtocols, useUserData } from "src/hooks/useQueries";
 import { LendingMarketUser, LiquidationQuote } from "src/schema";
-import { Dropdown, Info, Send, Sortable, Starlay, Wallet } from "@icons";
+import {
+	Dropdown,
+	Filter,
+	Info,
+	Send,
+	Sortable,
+	Starlay,
+	Wallet
+} from "@icons";
 
 const data = Array(10).fill(10);
 
@@ -103,7 +112,7 @@ export default function Assets() {
 	}, []);
 
 	return (
-		<div className="bg-navy p-10 rounded-xl">
+		<div className="bg-navy p-4 md:p-10 rounded-xl">
 			{isConnected ? (
 				hasNoAsset ? (
 					<div className="text-center space-y-5 py-24">
@@ -123,20 +132,23 @@ export default function Assets() {
 						</a>
 					</div>
 				) : (
-					<div className="space-y-6">
+					<div className="space-y-3 md:space-y-6">
 						<div className="text-darkGrey">
-							<ul className="px-8 grid grid-cols-6 items-center">
+							<ul className="md:px-8 grid grid-cols-4 md:grid-cols-6 items-center text-xs md:text-base">
 								<li className="col-span-2">Asset</li>
-								<li className="col-span-2 flex space-x-3">
+								<li className="col-span-1 md:col-span-2 flex space-x-3">
 									<span>Total supplied</span>
-									<Sortable />
+									<Sortable className="hidden md:block" />
 								</li>
-								<li className="col-span-2 flex items-center justify-between">
+								<li className="col-span-1 md:col-span-2 flex items-center justify-between">
 									<div className="flex space-x-3">
-										<span className="whitespace-nowrap">Total borrowed</span>
-										<Sortable />
+										<span className="">Total borrowed</span>
+										<Sortable className="hidden md:block" />
 									</div>
-									<div className="bg-primary text-sm px-3 py-2 space-x-7 rounded flex items-center justify-between">
+									<div className="block md:hidden">
+										<Filter />
+									</div>
+									<div className="bg-primary text-sm px-3 py-2 space-x-7 rounded md:flex items-center justify-between hidden">
 										<span>Filter</span>
 										<Dropdown />
 									</div>
@@ -200,31 +212,38 @@ type AssetProps = {
 const Asset = ({ market, setOpen }: AssetProps) => {
 	return (
 		<div
-			className="border border-darkGrey rounded-lg px-8 py-3 cursor-pointer grid grid-cols-3"
+			className="border border-darkGrey rounded-lg p-2 md:px-8 md:py-3 cursor-pointer grid grid-cols-4 md:grid-cols-3"
 			onClick={() => setOpen(market)}
 		>
-			<div className="flex space-x-2 items-center col-span-1">
-				<Image
-					width={32}
-					height={32}
+			<div className="flex space-x-2 items-center col-span-2 md:col-span-1 flex-grow">
+				<img
+					className="w-4 h-4 md:w-8 md:h-8"
 					src={market.marketLogo ?? ""}
 					alt={market.marketName ?? ""}
 				/>
 				<div className="space-y-1">
-					<span className="text-[18px] block">{market.marketName}</span>
-					<span className="text-sm text-grey block">{market.marketSymbol}</span>
+					<span className="text-xs md:text-[18px] block whitespace-nowrap truncate">
+						{market.marketName}
+					</span>
+					<span className="text-[10px] md:text-sm text-grey block">
+						{market.marketSymbol}
+					</span>
 				</div>
 			</div>
-			<div className=" space-y-1">
-				<span className="text-[18px] block">{market.amountSupplied}</span>
-				<span className="text-sm text-grey block">
-					${market.amountSuppliedUSD}
+			<div className="space-y-1 flex-shrink">
+				<span className="text-xs md:text-[18px] block">
+					{market.amountSupplied.toPrecision(7)}
+				</span>
+				<span className="text-[10px] md:text-sm text-grey block">
+					${market.amountSuppliedUSD.toPrecision(7)}
 				</span>
 			</div>
-			<div className=" space-y-1">
-				<span className="text-[18px] block">{market.amountBorrowed}</span>
-				<span className="text-sm text-grey block">
-					${market.amountBorrowedUSD}
+			<div className="space-y-1 flex-shrink">
+				<span className="text-xs md:text-[18px] block">
+					{market.amountBorrowed.toPrecision(7)}
+				</span>
+				<span className="text-[10px] md:text-sm text-grey block">
+					${market.amountBorrowedUSD.toPrecision(7)}
 				</span>
 			</div>
 		</div>
