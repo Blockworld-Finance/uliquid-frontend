@@ -6,6 +6,15 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useCallback, useMemo, useState } from "react";
 import { prepareSendTransaction, sendTransaction } from "@wagmi/core";
 
+import {
+	Info,
+	Send,
+	Filter,
+	Wallet,
+	Starlay,
+	Dropdown,
+	Sortable
+} from "@icons";
 import useData from "@hooks/useData";
 import { Liquidate } from "./liquidate";
 import Modal from "@components/common/Modal";
@@ -14,15 +23,6 @@ import Spinner from "@components/common/Spinner";
 import { getLendingProtocolLiquidateTx } from "src/queries";
 import { useProtocols, useUserData } from "src/hooks/useQueries";
 import { LendingMarketUser, LiquidationQuote } from "src/schema";
-import {
-	Dropdown,
-	Filter,
-	Info,
-	Send,
-	Sortable,
-	Starlay,
-	Wallet
-} from "@icons";
 
 const data = Array(10).fill(10);
 
