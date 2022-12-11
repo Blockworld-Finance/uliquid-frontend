@@ -74,6 +74,7 @@ h3 {
 }
 
 .pattern {
+	background-size: contain;
 	background-repeat: no-repeat;
 	background-position: top center;
 	background-image: url("/pattern.png");

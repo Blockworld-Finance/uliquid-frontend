@@ -38,22 +38,13 @@ export default function ProtocolCard({ protocol }: Props) {
 							/>
 						</div>
 					))}
-					<span className="text-xs">and so on</span>
+					{chains.length > 3 && <span className="text-xs">and so on</span>}
 				</div>
 				<p className="text-grey text-xs md:text-base leading-6 line-clamp-3 tx">
 					{protocol.description}
 				</p>
 			</div>
 			<div className="flex justify-between items-end">
-				{/* <div className="text-darkGrey space-y-3">
-					<span className="text-xs">Assets up for liquidation</span>
-					<div className="flex items-center space-x-1">
-						<BitCoin />
-						<BitCoin />
-						<BitCoin />
-						<BitCoin />
-					</div>
-				</div> */}
 				<div>
 					<span className="text-sm underline">See more</span>
 				</div>

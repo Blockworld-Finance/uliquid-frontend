@@ -284,9 +284,8 @@ export function Liquidate({
 									{tokenValue?.getTokenValue.toPrecision(6) ?? 0}{" "}
 									{collateral?.marketSymbol} ($
 									{(
-										tokenValue?.getTokenValue ??
-										0 * tokenValue?.getTokenUSDValue ??
-										0
+										(tokenValue?.getTokenValue ?? 0) *
+											tokenValue?.getTokenUSDValue ?? 0
 									).toPrecision(6)}
 									)
 								</span>

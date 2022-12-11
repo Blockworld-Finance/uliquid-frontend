@@ -24,8 +24,6 @@ import { getLendingProtocolLiquidateTx } from "src/queries";
 import { useProtocols, useUserData } from "src/hooks/useQueries";
 import { LendingMarketUser, LiquidationQuote } from "src/schema";
 
-const data = Array(10).fill(10);
-
 export default function Assets() {
 	const {
 		data: { activeChain, activeProtocol, activeVersion }

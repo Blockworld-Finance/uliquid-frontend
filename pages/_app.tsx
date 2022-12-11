@@ -11,12 +11,25 @@ import { chain, WagmiConfig, createClient, configureChains } from "wagmi";
 
 import { init } from "src/utils/store";
 import { DataProvider } from "src/hooks/useData";
+import {
+	avalancheChain,
+	asterChain,
+	BNBSmartChain
+} from "src/utils/customChains";
 
 import "../styles/globals.css";
 import "@rainbow-me/rainbowkit/styles.css";
 
 const { chains, provider } = configureChains(
-	[chain.mainnet, chain.polygon, chain.optimism, chain.arbitrum],
+	[
+		chain.mainnet,
+		chain.polygon,
+		chain.optimism,
+		chain.arbitrum,
+		avalancheChain,
+		asterChain,
+		BNBSmartChain
+	],
 	[alchemyProvider({ apiKey: process.env.ALCHEMY_ID }), publicProvider()]
 );
 

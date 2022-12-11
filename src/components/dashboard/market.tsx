@@ -17,7 +17,7 @@ export default function MarketPlace() {
 				<Stats />
 				{isConnected && (
 					<Input
-						className="self-center w-full"
+						className="self-center w-full md:w-fit"
 						LeadingIcon={() => <Search />}
 						placeholder="Search assets"
 					/>
