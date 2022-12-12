@@ -129,3 +129,7 @@ h3 {
 		transform: rotate(360deg);
 	}
 }
+
+.t-origin-t-c {
+	transform-origin: top center;
+}

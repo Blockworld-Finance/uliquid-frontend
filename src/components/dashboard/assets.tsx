@@ -6,15 +6,6 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useCallback, useMemo, useState } from "react";
 import { prepareSendTransaction, sendTransaction } from "@wagmi/core";
 
-import {
-	Info,
-	Send,
-	Filter,
-	Wallet,
-	Starlay,
-	Dropdown,
-	Sortable
-} from "@icons";
 import useData from "@hooks/useData";
 import { Liquidate } from "./liquidate";
 import Modal from "@components/common/Modal";
@@ -23,6 +14,7 @@ import Spinner from "@components/common/Spinner";
 import { getLendingProtocolLiquidateTx } from "src/queries";
 import { useProtocols, useUserData } from "src/hooks/useQueries";
 import { LendingMarketUser, LiquidationQuote } from "src/schema";
+import { Info, Send, Filter, Wallet, Dropdown, Sortable } from "@icons";
 
 export default function Assets() {
 	const {
@@ -32,9 +24,16 @@ export default function Assets() {
 	const [view, setView] = useState(false);
 	const [show, setShow] = useState(false);
 	const [shown, setShown] = useState(false);
-	const { data, isLoading } = useUserData();
 	const { data: protocols } = useProtocols();
 	const { isConnected, address } = useAccount();
+	const [liquidationInfo, setLiquidationInfo] = useState({
+		debtAmount: 0,
+		debtSymbol: "",
+		protocolFee: 0,
+		collateralAmount: 0,
+		collateralSymbol: ""
+	});
+	const { data, isLoading, isRefetching } = useUserData();
 	const [asset, setAsset] = useState<LendingMarketUser>();
 	const hasNoAsset = useMemo(
 		() =>
@@ -64,9 +63,13 @@ export default function Assets() {
 		}
 	}, [data]);
 
-	const getLiquidateTx = (liquidationQuote: LiquidationQuote) => {
+	const getLiquidateTx = (
+		liquidationQuote: LiquidationQuote,
+		info: typeof liquidationInfo
+	) => {
 		setView(true);
 		setOpen(false);
+		setLiquidationInfo(info);
 		getLendingProtocolLiquidateTx({
 			user: address,
 			protocol: name,
@@ -134,7 +137,7 @@ export default function Assets() {
 						<div className="text-darkGrey">
 							<ul className="md:px-8 grid grid-cols-4 md:grid-cols-6 items-center text-xs md:text-base">
 								<li className="col-span-2">Asset</li>
-								<li className="col-span-1 md:col-span-2 flex space-x-3">
+								<li className="col-span-1 md:col-span-2 flex space-x-3 pr-1">
 									<span>Total supplied</span>
 									<Sortable className="hidden md:block" />
 								</li>
@@ -153,20 +156,25 @@ export default function Assets() {
 								</li>
 							</ul>
 						</div>
-						{isLoading && (
+						{isLoading || isRefetching ? (
 							<div className="grid place-items-center py-10">
 								<Spinner size={4} />
 							</div>
+						) : (
+							<>
+								{data && data.getLendingProtocolUserData.markets
+									? data.getLendingProtocolUserData.markets.map((m, i) => (
+											<Asset key={i} setOpen={selectAsset} market={m} />
+									  ))
+									: !isLoading && (
+											<div className="text-center space-y-5 py-24">
+												<p className="mb-14 text-2xl text-grey">
+													No assets found
+												</p>
+											</div>
+									  )}
+							</>
 						)}
-						{data && data.getLendingProtocolUserData.markets
-							? data.getLendingProtocolUserData.markets.map((m, i) => (
-									<Asset key={i} setOpen={selectAsset} market={m} />
-							  ))
-							: !isLoading && (
-									<div className="text-center space-y-5 py-24">
-										<p className="mb-14 text-2xl text-grey">No assets found</p>
-									</div>
-							  )}
 					</div>
 				)
 			) : (
@@ -185,7 +193,7 @@ export default function Assets() {
 				<NoAsset protocolURL={url} />
 			</Modal>
 			<Modal open={view} setOpen={setView} type="dark">
-				<Confirmation />
+				<Confirmation {...liquidationInfo} />
 			</Modal>
 			<Modal open={show} setOpen={setShow} type="dark">
 				<Submitted />
@@ -230,32 +238,53 @@ const Asset = ({ market, setOpen }: AssetProps) => {
 			</div>
 			<div className="space-y-1 flex-shrink">
 				<span className="text-xs md:text-[18px] block">
-					{market.amountSupplied.toPrecision(7)}
+					{market.amountSupplied ? market.amountSupplied.toPrecision(7) : 0}
 				</span>
 				<span className="text-[10px] md:text-sm text-grey block">
-					${market.amountSuppliedUSD.toPrecision(7)}
+					$
+					{market.amountSuppliedUSD
+						? market.amountSuppliedUSD.toPrecision(7)
+						: 0}
 				</span>
 			</div>
 			<div className="space-y-1 flex-shrink">
 				<span className="text-xs md:text-[18px] block">
-					{market.amountBorrowed.toPrecision(7)}
+					{market.amountBorrowed ? market.amountBorrowed.toPrecision(7) : 0}
 				</span>
 				<span className="text-[10px] md:text-sm text-grey block">
-					${market.amountBorrowedUSD.toPrecision(7)}
+					$
+					{market.amountBorrowedUSD
+						? market.amountBorrowedUSD.toPrecision(7)
+						: 0}
 				</span>
 			</div>
 		</div>
 	);
 };
 
-const Confirmation = () => {
+type ConfirmationProps = {
+	debtAmount: number;
+	debtSymbol: string;
+	protocolFee: number;
+	collateralSymbol: string;
+	collateralAmount: number;
+};
+const Confirmation = ({
+	debtAmount,
+	debtSymbol,
+	protocolFee,
+	collateralSymbol,
+	collateralAmount
+}: ConfirmationProps) => {
 	return (
 		<div className="text-center">
 			<Spinner size={4} className="mx-auto mt-3" />
 			<h3 className="text-[18px] my-5">Waiting for confirmation</h3>
 			<p className="text-grey">
-				Paying <span className="text-white">1BTC</span> out of{" "}
-				<span className="text-white">2BTC</span> debt, using ETH collateral.
+				Liquidating {collateralAmount} {collateralSymbol} to repay {debtAmount}{" "}
+				{debtSymbol}
+				<br />
+				Protocol fee of {protocolFee} included
 			</p>
 			<p className="text-grey">Service charge of 1% included</p>
 			<div className="flex justify-center items-center space-x-2 mt-6">
@@ -287,24 +316,34 @@ const Submitted = () => {
 };
 
 const NoAsset = ({ protocolURL }) => {
+	const {
+		data: { activeProtocol }
+	} = useData();
+	const { data } = useProtocols();
+
 	return (
 		<div className="text-center">
-			<Starlay className="mx-auto mt-3" />
+			<img
+				src={data[activeProtocol].logo}
+				alt={data[activeProtocol].name}
+				className="w-16 h-16 mx-auto mt-3"
+			/>
 			<h3 className="text-[18px] my-5">
 				Yet to lend the asset on this protocol.
 			</h3>
 			<p className="text-grey">
-				Visit starlay to make your first borrow of this asset.
+				Visit {data[activeProtocol].name} to make your first borrow of this
+				asset.
 			</p>
 
 			<div className="flex justify-center items-center space-x-2 mt-6">
 				<a
-					href={protocolURL}
 					target="_blank"
+					href={protocolURL}
 					rel="noopener noreferrer"
 					className="mx-auto block w-max"
 				>
-					<Button>Go to starlay</Button>
+					<Button>Go to {data[activeProtocol].name}</Button>
 				</a>
 			</div>
 		</div>

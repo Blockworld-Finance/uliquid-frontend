@@ -7,7 +7,11 @@ import { getProtocols, getUserData } from "src/queries";
 
 export function useProtocols(data?: NormalizedProtocols) {
 	return useQuery(["protocols"], getProtocols, {
-		...(data && { initialData: data })
+		...(data && { initialData: data }),
+		refetchOnMount: false,
+		refetchInterval: false,
+		refetchOnReconnect: false,
+		refetchOnWindowFocus: false
 	});
 }
 

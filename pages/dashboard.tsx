@@ -1,13 +1,16 @@
+import { useQueryClient } from "react-query";
+
+import useData from "src/hooks/useData";
 import Tabs from "@components/common/tabs";
 import Layout from "@components/common/layout";
-import MarketPlace from "@components/dashboard/market";
 import { useProtocols } from "src/hooks/useQueries";
 import { getProtocols, getURLS } from "src/queries";
-import useData from "src/hooks/useData";
+import MarketPlace from "@components/dashboard/market";
 
 export default function Dashboard({ data: ddata, urls }) {
-	const { data } = useProtocols(ddata);
 	const { dispatch } = useData();
+	const queryclient = useQueryClient();
+	const { data } = useProtocols(ddata);
 
 	return (
 		<Layout urls={urls}>
@@ -18,13 +21,21 @@ export default function Dashboard({ data: ddata, urls }) {
 						icon: p.logo,
 						render: <MarketPlace />
 					}))}
-					onTabChnaged={(_t, index) =>
+					onTabChnaged={(_t, tIndex) => {
+						let index = tIndex;
+						if (index > 2) {
+							const removed = data.splice(index, 1);
+							data.splice(2, 0, removed[0]);
+							queryclient.setQueryData(["protocols"], data);
+							index = 2;
+						}
+
 						dispatch({
 							activeChain: 0,
 							activeVersion: 0,
 							activeProtocol: index
-						})
-					}
+						});
+					}}
 				/>
 			</div>
 		</Layout>

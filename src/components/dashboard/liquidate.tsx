@@ -20,7 +20,7 @@ import { LendingMarketUser, LiquidationQuote } from "src/schema";
 type Props = {
 	asset?: LendingMarketUser;
 	collateral?: LendingMarketUser;
-	getTx: (l: LiquidationQuote) => void;
+	getTx: (l: LiquidationQuote, _x: any) => void;
 };
 
 export function Liquidate({
@@ -309,7 +309,10 @@ export function Liquidate({
 							<div className="flex justify-between items-center">
 								<h3 className="text-grey">Price impact</h3>
 								<h3>
-									{liquidation?.swapQuote.priceImpact.toPrecision(8) ?? 0}%
+									{liquidation?.swapQuote.priceImpact > 0.00001
+										? liquidation?.swapQuote.priceImpact.toPrecision(8) ?? 0
+										: 0}
+									%
 								</h3>
 							</div>
 							<div className="flex justify-between items-center text-grey">
@@ -325,7 +328,7 @@ export function Liquidate({
 							</div>
 							<div className="flex justify-between items-center">
 								<p>Protocol fee</p>
-								<p>{(liquidation?.fee / 1000000) * 100 ?? 0}%</p>
+								<p>{(liquidation?.fee / 1000000) * 100 ?? 0}</p>
 							</div>
 						</div>
 					</div>
@@ -336,7 +339,15 @@ export function Liquidate({
 				size="large"
 				disabled={!isInputValid}
 				className="w-full font-semibold"
-				onClick={() => getTx(liquidation)}
+				onClick={() =>
+					getTx(liquidation, {
+						debtSymbol: asset.marketSymbol,
+						debtAmount: liquidation.debtAmount,
+						collateralSymbol: collateral.marketSymbol,
+						collateralAmount: liquidation.collateralAmount,
+						protocolFee: (liquidation?.fee / 1000000) * 100 ?? 0
+					})
+				}
 			>
 				Liquidate
 			</Button>
