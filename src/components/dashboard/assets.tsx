@@ -156,7 +156,7 @@ export default function Assets() {
 								</li>
 							</ul>
 						</div>
-						{isLoading || isRefetching ? (
+						{isLoading ? (
 							<div className="grid place-items-center py-10">
 								<Spinner size={4} />
 							</div>

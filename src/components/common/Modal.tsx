@@ -51,11 +51,13 @@ export default function Modal({
 				} fixed -translate-x-1/2 left-1/2 -translate-y-1/2 top-1/2 px-6 z-10`}
 			>
 				<div className="relative">
-					<Close
-						className="absolute top-0 right-0 cursor-pointer"
+					<div
 						onClick={() => setOpen(false)}
-					/>
-					<div>{children}</div>
+						className="absolute top-0 right-0 cursor-pointer z-50"
+					>
+						<Close />
+					</div>
+					<div>{open && children}</div>
 				</div>
 			</div>
 		</>

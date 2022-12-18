@@ -213,11 +213,19 @@ export function Liquidate({
 										</ClickOutside>
 									</div>
 								</div>
-								<small className="text-sm text-grey">
+								<small className="text-sm text-grey flex items-center justify-between">
 									<span>
-										Debt = {asset?.amountBorrowed.toPrecision(8) ?? 0}
+										Debt = {asset?.amountBorrowed.toPrecision(6) ?? 0}
 									</span>
-									<span>Max</span>
+									<span
+										className="px-1 py-[2px] bg-[#008DE4] rounded-full text-white cursor-pointer"
+										onClick={() => {
+											if (inputRef.current)
+												inputRef.current.value = `${asset.amountBorrowed}`;
+										}}
+									>
+										Max
+									</span>
 								</small>
 							</div>
 						</div>

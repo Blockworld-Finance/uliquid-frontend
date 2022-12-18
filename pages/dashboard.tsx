@@ -29,7 +29,6 @@ export default function Dashboard({ data: ddata, urls }) {
 							queryclient.setQueryData(["protocols"], data);
 							index = 2;
 						}
-
 						dispatch({
 							activeChain: 0,
 							activeVersion: 0,
