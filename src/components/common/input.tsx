@@ -56,7 +56,7 @@ export default function Input(
 						<LeadingIcon />
 					</span>
 				)}
-				<div className="flex items-center">
+				<div className="flex items-center w-full">
 					<input
 						{...rest}
 						ref={innerRef}

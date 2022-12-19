@@ -4,20 +4,23 @@ import {
 	RainbowKitProvider
 } from "@rainbow-me/rainbowkit";
 import { useState } from "react";
+import Router from "next/router";
+import NProgress from "nprogress";
 import { publicProvider } from "wagmi/providers/public";
 import { alchemyProvider } from "wagmi/providers/alchemy";
 import { Hydrate, QueryClient, QueryClientProvider } from "react-query";
 import { chain, WagmiConfig, createClient, configureChains } from "wagmi";
 
+import {
+	asterChain,
+	BNBSmartChain,
+	avalancheChain
+} from "src/utils/customChains";
 import { init } from "src/utils/store";
 import { DataProvider } from "src/hooks/useData";
-import {
-	avalancheChain,
-	asterChain,
-	BNBSmartChain
-} from "src/utils/customChains";
 
 import "../styles/globals.css";
+import "nprogress/nprogress.css";
 import "@rainbow-me/rainbowkit/styles.css";
 
 const { chains, provider } = configureChains(
@@ -43,6 +46,12 @@ const wagmiClient = createClient({
 	connectors,
 	autoConnect: true
 });
+
+NProgress.configure({ showSpinner: false });
+
+Router.events.on("routeChangeError", () => NProgress.done());
+Router.events.on("routeChangeStart", () => NProgress.start());
+Router.events.on("routeChangeComplete", () => NProgress.done());
 
 function MyApp({ Component, pageProps }) {
 	const [queryClient] = useState(() => new QueryClient());

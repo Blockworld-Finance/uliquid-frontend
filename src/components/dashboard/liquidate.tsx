@@ -383,8 +383,9 @@ const AssetPicker = ({ open, close, select }: AssetPickerProps) => {
 
 			const cache = data?.getLendingProtocolUserData?.markets.filter(
 				m =>
-					m.marketName.toLowerCase().includes(value) ||
-					m.marketSymbol.toLowerCase().includes(value)
+					m.marketName.toLowerCase().includes(value.toLowerCase()) ||
+					m.marketSymbol.toLowerCase().includes(value.toLowerCase()) ||
+					m.marketAddress.toLowerCase().includes(value.toLowerCase())
 			);
 
 			setList(cache);

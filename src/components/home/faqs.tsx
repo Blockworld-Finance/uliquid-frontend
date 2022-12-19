@@ -1,13 +1,26 @@
-import Accordion from "@components/common/accordion";
-import Input from "@components/common/input";
-import { Search } from "@icons";
+import { ChangeEventHandler, useState } from "react";
+
 import { TFAQ } from "@types";
+import { Search } from "@icons";
+import Input from "@components/common/input";
+import Accordion from "@components/common/accordion";
 
 type Props = {
 	faqs: TFAQ[];
 };
 
 export default function FAQs({ faqs }: Props) {
+	const [list, setList] = useState(faqs);
+
+	const filterFAQs: ChangeEventHandler<HTMLInputElement> = e => {
+		if (e.target.value) {
+			const cache = faqs.filter(q =>
+				q.question.toLowerCase().includes(e.target.value.toLowerCase())
+			);
+			setList(cache);
+		}
+	};
+
 	return (
 		<div className="mb-36" id="faqs">
 			<div className="space-y-2 md:space-y-4">
@@ -18,13 +31,14 @@ export default function FAQs({ faqs }: Props) {
 			</div>
 			<div className="mt-8">
 				<Input
-					className="self-center max-w-md"
-					LeadingIcon={() => <Search />}
+					onChange={filterFAQs}
 					placeholder="Search assets"
+					LeadingIcon={() => <Search />}
+					className="self-center max-w-md"
 				/>
 			</div>
 			<div>
-				{faqs.map((faq, key) => (
+				{list.map((faq, key) => (
 					<Accordion key={key} {...faq} />
 				))}
 			</div>

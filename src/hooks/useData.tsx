@@ -1,5 +1,6 @@
 import { Component, createContext, ReactNode, useContext } from "react";
 import { AppData } from "@types";
+import { navigate } from "src/utils/helpers";
 
 interface Props<T extends object> {
 	init: T;
@@ -39,6 +40,12 @@ export class DataProvider<T extends object> extends Component<
 				this.setState(this.getItem());
 			});
 		}
+
+		if (true)
+			window.addEventListener("popstate", event => {
+				console.log(event);
+				this.updateState(event.state);
+			});
 	}
 
 	componentWillUnmount() {
@@ -72,7 +79,10 @@ export class DataProvider<T extends object> extends Component<
 	};
 
 	updateState(data: Partial<T>) {
-		this.setState((p) => ({ ...p, ...data }));
+		this.setState(p => {
+			navigate({ ...p, ...data });
+			return { ...p, ...data };
+		});
 		// this.persist({ ...this.state, ...data });
 	}
 
@@ -88,7 +98,9 @@ export class DataProvider<T extends object> extends Component<
 		const { isMounted } = this.state;
 		const { children } = this.props;
 		return (
-			<AppContext.Provider value={{ data: this.state, dispatch: this.dispatch }}>
+			<AppContext.Provider
+				value={{ data: this.state, dispatch: this.dispatch }}
+			>
 				{isMounted && children}
 			</AppContext.Provider>
 		);
@@ -107,7 +119,7 @@ export default function useData<T extends object = AppData>() {
 
 	return {
 		data: data as T,
-		dispatch: (_: Partial<T> | "clear") => dispatch(_),
+		dispatch: (_: Partial<T> | "clear") => dispatch(_)
 	};
 }
 
