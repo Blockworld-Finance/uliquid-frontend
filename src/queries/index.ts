@@ -201,6 +201,101 @@ export const getLiquidation = async ({
 	return data.getLiquidationQuote as LiquidationQuote;
 };
 
+type TLeverageProps = {
+	user: string;
+	debt: string;
+	chainId: number;
+	version: string;
+	protocol: string;
+	slippage: number;
+	debtAmount: number;
+	collateral: string;
+	signal?: AbortSignal;
+	collateralizationRatio: number;
+	initialCollateralAmount: number;
+};
+
+export const getLeverageQuote = async ({
+	user,
+	debt,
+	chainId,
+	signal,
+	version,
+	protocol,
+	slippage,
+	collateral,
+	debtAmount,
+	collateralizationRatio,
+	initialCollateralAmount
+}: TLeverageProps) => {
+	const query = gql`
+		query GetLendingProtocolLeverageQuote(
+			$user: String!
+			$debt: String!
+			$chainId: Int!
+			$version: String!
+			$slippage: Float!
+			$protocol: String!
+			$collateral: String!
+			$collateralizationRatio: Int!
+			$initialCollateralAmount: Float!
+		) {
+			getLendingProtocolLeverageQuote(
+				debt: $debt
+				user: $user
+				chainId: $chainId
+				version: $version
+				protocol: $protocol
+				slippage: $slippage
+				collateral: $collateral
+				collateralizationRatio: $collateralizationRatio
+				initialCollateralAmount: $initialCollateralAmount
+			) {
+				debt
+				loops
+				reason
+				slippage
+				collateral
+				canLeverage
+				swapQuote {
+					tokenIn
+					tokenOut
+					amountIn
+					amountOut
+					path {
+						pool
+						tokenIn
+						tokenOut
+					}
+					priceImpact
+				}
+				leveragedDebtAmount
+				estimatedHealthFactor
+				collateralizationRatio
+				leveragedDebtAmountUSD
+				initialCollateralAmount
+				leveragedCollateralAmount
+				leveragedCollateralAmountUSD
+			}
+		}
+	`;
+
+	const data = await client(signal).request(query, {
+		user,
+		debt,
+		chainId,
+		version,
+		slippage,
+		protocol,
+		debtAmount,
+		collateral,
+		collateralizationRatio,
+		initialCollateralAmount
+	});
+
+	return data.getLiquidationQuote as LiquidationQuote;
+};
+
 type TTokenValueProps = {
 	token: string;
 	quoteToken: string;
@@ -245,9 +340,9 @@ export const getTokenUSDValue = async ({
 
 type TGLPLiquidateTxProps = {
 	user: string;
-	protocol: string;
 	chainId: number;
 	version: string;
+	protocol: string;
 	liquidationQuote: LiquidationQuote;
 };
 
@@ -287,6 +382,55 @@ export const getLendingProtocolLiquidateTx = async ({
 		version,
 		protocol,
 		liquidationQuote
+	});
+
+	return data;
+};
+
+type TGLPLeverageTxProps = {
+	user: string;
+	chainId: number;
+	version: string;
+	protocol: string;
+	leverageQuote: LiquidationQuote;
+};
+
+export const getLendingProtocolLeverageTx = async ({
+	user,
+	chainId,
+	version,
+	protocol,
+	leverageQuote
+}: TGLPLeverageTxProps) => {
+	const query = gql`
+		query GetLendingProtocolLeverageTx(
+			$user: String!
+			$protocol: String!
+			$chainId: Int!
+			$version: String!
+			$leverageQuote: LeverageQuoteInput
+		) {
+			getLendingProtocolLeverageTx(
+				user: $user
+				protocol: $protocol
+				chainId: $chainId
+				version: $version
+				leverageQuote: $leverageQuote
+			) {
+				from
+				to
+				data
+				error
+			}
+		}
+	`;
+
+	const data = await client().request(query, {
+		user,
+		chainId,
+		version,
+		protocol,
+		leverageQuote
 	});
 
 	return data;

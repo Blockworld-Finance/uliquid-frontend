@@ -21,6 +21,7 @@ export default function Dashboard({ data: ddata, urls }) {
 						icon: p.logo,
 						render: <MarketPlace />
 					}))}
+					className={"py-4 md:py-6 text-xs md:text-2xl"}
 					onTabChnaged={(_t, tIndex) => {
 						let index = tIndex;
 						if (index > 2) {

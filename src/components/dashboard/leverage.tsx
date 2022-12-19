@@ -1,22 +1,13 @@
-import {
-	useRef,
-	useState,
-	useEffect,
-	useCallback,
-	ChangeEventHandler
-} from "react";
-import Image from "next/image";
-import { useAccount } from "wagmi";
-
-import useData from "@hooks/useData";
-import Input from "@components/common/input";
-import Button from "@components/common/button";
-import { ClickOutside } from "@hooks/useClickOutside";
-import { Info, GasPump, Dropdown, Search } from "@icons";
-import { useProtocols, useUserData } from "@hooks/useQueries";
-import { getLiquidation, getTokenUSDValue } from "src/queries";
-import { LendingMarketUser, LiquidationQuote } from "src/schema";
 import { AssetPicker } from "@components/common/asset-picker";
+import Button from "@components/common/button";
+import { DropDown } from "@components/common/tabs";
+import { ClickOutside } from "@hooks/useClickOutside";
+import useData from "@hooks/useData";
+import { useProtocols } from "@hooks/useQueries";
+import { Dropdown, GasPump, Help, Info } from "@icons";
+import { LendingMarketUser, LiquidationQuote } from "@schema";
+import Image from "next/image";
+import { useRef, useState } from "react";
 
 type Props = {
 	asset?: LendingMarketUser;
@@ -24,7 +15,7 @@ type Props = {
 	getTx: (l: LiquidationQuote, _x: any) => void;
 };
 
-export function Liquidate({
+export default function Leverage({
 	getTx,
 	asset: initialAsset,
 	collateral: initialCollateral
@@ -32,107 +23,19 @@ export function Liquidate({
 	const {
 		data: { activeProtocol, activeChain, activeVersion }
 	} = useData();
-	const { data } = useProtocols();
-	const { address } = useAccount();
-	const interval = useRef<NodeJS.Timer>();
-	const [open, setOpen] = useState(false);
+	const inputRef = useRef<HTMLInputElement>(null);
+	const [asset, setAsset] = useState(initialAsset);
 	const [view, setView] = useState(false);
+	const [open, setOpen] = useState(false);
 	const [show, setShow] = useState(false);
+	const { data } = useProtocols();
 	const [tokenValue, setTokenValue] = useState<{
 		getTokenValue: number;
 		getTokenUSDValue: number;
 	}>();
-	const inputRef = useRef<HTMLInputElement>(null);
-	const [asset, setAsset] = useState(initialAsset);
-	const [isInputValid, setInputValid] = useState(false);
-	let { current: control } = useRef(new AbortController());
-	const [collateral, setCollateral] = useState(initialCollateral);
-
-	const { name, logo, versions = [] } = data[activeProtocol];
 	const [liquidation, setLiquidation] = useState<LiquidationQuote>();
-
-	const pollLiquidationQoute = useCallback(() => {
-		const amount = Number(inputRef.current?.value ?? 0);
-		if (amount && amount <= asset?.amountBorrowed) {
-			getLiquidation({
-				user: address,
-				protocol: name,
-				debtAmount: amount,
-				// signal: control.signal,
-				debt: asset?.marketAddress,
-				slippage: (1 / 100) * 1000000,
-				collateral: collateral.marketAddress,
-				version: versions[activeVersion].name,
-				chainId: versions[activeVersion].chains[activeChain].id
-			})
-				.then(d => {
-					setLiquidation(d);
-				})
-				.catch(e => {});
-		}
-	}, [
-		name,
-		address,
-		inputRef,
-		versions,
-		activeChain,
-		activeVersion,
-		asset?.marketAddress,
-		asset?.amountBorrowed,
-		collateral?.marketAddress
-	]);
-
-	useEffect(() => {
-		if (!interval.current) {
-			interval.current = setInterval(() => {
-				pollLiquidationQoute();
-			}, 10000);
-		}
-	}, [pollLiquidationQoute]);
-
-	useEffect(() => {
-		if (asset && collateral)
-			getTokenUSDValue({
-				token: asset?.marketAddress,
-				quoteToken: collateral?.marketAddress,
-				getTokenUsdValueToken2: collateral?.marketAddress,
-				chainId: versions[activeVersion].chains[activeChain].id,
-				getTokenUsdValueChainId2: versions[activeVersion].chains[activeChain].id
-			}).then(d => {
-				setTokenValue(d);
-			});
-	}, [activeChain, activeVersion, asset, collateral, versions]);
-
-	const getLiquidationQuote: ChangeEventHandler<HTMLInputElement> = useCallback(
-		e => {
-			if (e.target.value.length) {
-				if (Number(e.target.value) <= asset?.amountBorrowed) {
-					control.abort();
-					setInputValid(true);
-					// eslint-disable-next-line react-hooks/exhaustive-deps
-					control = new AbortController();
-					getLiquidation({
-						user: address,
-						protocol: name,
-						signal: control.signal,
-						debt: asset?.marketAddress,
-						slippage: (1 / 100) * 1000000,
-						debtAmount: Number(e.target.value),
-						collateral: collateral.marketAddress,
-						version: versions[activeVersion].name,
-						chainId: versions[activeVersion].chains[activeChain].id
-					})
-						.then(d => {
-							setLiquidation(d);
-						})
-						.catch(e => {});
-				} else {
-					setInputValid(false);
-				}
-			}
-		},
-		[asset, collateral, versions, name, address]
-	);
+	const [collateral, setCollateral] = useState(initialCollateral);
+	const { name, logo, versions = [] } = data[activeProtocol];
 
 	return (
 		<>
@@ -168,21 +71,20 @@ export function Liquidate({
 
 				<div className="space-y-2 my-4">
 					<div className="bg-primary p-3 rounded-lg space-y-3">
-						<small className="text-sm text-darkGrey">Debt</small>
-						<div className="grid gap-4 grid-cols-5 space-x-4 items-center">
-							<div className="flex-grow border border-darkGrey rounded-lg py-3 px-4 col-span-3">
+						<small className="text-sm text-darkGrey">Leverage token</small>
+						<div className="grid gap-2 grid-cols-12 space-x-4 items-center">
+							<div className="flex-grow border border-darkGrey rounded-lg py-3 px-4 col-span-7">
 								<input
 									step={0.01}
 									type="number"
 									ref={inputRef}
-									onChange={getLiquidationQuote}
 									className="w-full text-3xl text-white bg-primary border-none focus:outline-none"
 								/>
 								<small className="text-sm text-grey">
 									${liquidation?.debtAmountUSD ?? 0}
 								</small>
 							</div>
-							<div className="space-y-2 col-span-2">
+							<div className="space-y-2 col-span-5">
 								<div className="flex items-center justify-between">
 									<div className="flex items-center space-x-2 flex-initial">
 										<Image
@@ -231,19 +133,11 @@ export function Liquidate({
 						</div>
 					</div>
 
-					<div className="bg-primary p-3 rounded-lg space-y-3">
-						<small className="text-sm text-darkGrey">Collateral</small>
-						<div className="grid gap-4 grid-cols-5 space-x-4 items-center">
-							<div className="flex-grow border border-darkGrey rounded-lg py-3 px-4 col-span-3">
-								<input
-									readOnly
-									value={liquidation?.collateralAmount ?? 0}
-									className="w-full text-3xl text-white bg-primary border-none focus:outline-none"
-								/>
-								<small className="text-sm text-grey">
-									${liquidation?.collateralAmountUSD ?? 0}
-								</small>
-							</div>
+					<div className="bg-primary p-3 rounded-lg">
+						<div className="flex items-center justify-between">
+							<small className="text-sm text-darkGrey flex items-center">
+								<span>Debt</span> <Help className="ml-2" />
+							</small>
 							<div className="space-y-2 col-span-2">
 								<div className="flex items-center justify-between">
 									<div className="flex items-center space-x-2">
@@ -276,9 +170,6 @@ export function Liquidate({
 										</ClickOutside>
 									</div>
 								</div>
-								<small className="text-sm text-grey">
-									Bal = {collateral?.amountSupplied.toPrecision(8) ?? 0}
-								</small>
 							</div>
 						</div>
 					</div>
@@ -342,24 +233,9 @@ export function Liquidate({
 					</div>
 				</div>
 			</div>
-
-			<Button
-				size="large"
-				disabled={!isInputValid}
-				className="w-full font-semibold"
-				onClick={() =>
-					getTx(liquidation, {
-						debtSymbol: asset.marketSymbol,
-						debtAmount: liquidation.debtAmount,
-						collateralSymbol: collateral.marketSymbol,
-						collateralAmount: liquidation.collateralAmount,
-						protocolFee: (liquidation?.fee / 1000000) * 100 ?? 0
-					})
-				}
-			>
+			<Button size="large" className="w-full font-semibold">
 				Liquidate
 			</Button>
 		</>
 	);
 }
-

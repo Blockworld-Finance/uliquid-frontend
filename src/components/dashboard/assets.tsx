@@ -15,6 +15,8 @@ import { getLendingProtocolLiquidateTx } from "src/queries";
 import { useProtocols, useUserData } from "src/hooks/useQueries";
 import { LendingMarketUser, LiquidationQuote } from "src/schema";
 import { Info, Send, Filter, Wallet, Dropdown, Sortable } from "@icons";
+import Tabs from "@components/common/tabs";
+import Leverage from "./leverage";
 
 export default function Assets() {
 	const {
@@ -199,11 +201,32 @@ export default function Assets() {
 				<Submitted />
 			</Modal>
 			<Modal open={open} setOpen={setOpen}>
-				<Liquidate
-					asset={asset}
-					getTx={getLiquidateTx}
-					collateral={defaultCollateral}
-					key={`${asset?.marketSymbol ?? "NOASSET"}-${open}`}
+				<Tabs
+					className="py-2"
+					data={[
+						{
+							title: "Liquidate",
+							render: (
+								<Liquidate
+									asset={asset}
+									getTx={getLiquidateTx}
+									collateral={defaultCollateral}
+									key={`${asset?.marketSymbol ?? "NOASSET"}-${open}`}
+								/>
+							)
+						},
+						{
+							title: "Leverage",
+							render: (
+								<Leverage
+									asset={asset}
+									getTx={getLiquidateTx}
+									collateral={defaultCollateral}
+									key={`${asset?.marketSymbol ?? "NOASSET"}-${open}-lev`}
+								/>
+							)
+						}
+					]}
 				/>
 			</Modal>
 		</div>

@@ -1,21 +1,22 @@
 /* eslint-disable @next/next/no-img-element */
-import { ClickOutside } from "@hooks/useClickOutside";
+import { useCallback, useMemo, useState } from "react";
+
 import { Dropdown } from "@icons";
-import Image from "next/image";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { ClickOutside } from "@hooks/useClickOutside";
 
 type TabData = {
 	title: string;
-	icon: string;
+	icon?: string;
 	render: JSX.Element;
 };
 
 type Props = {
 	data: TabData[];
+	className?: string;
 	onTabChnaged?: (t: TabData, index: number) => void;
 };
 
-export default function Tabs({ data, onTabChnaged }: Props) {
+export default function Tabs({ data, onTabChnaged, className }: Props) {
 	const [open, setOpen] = useState(false);
 	const [active, setActive] = useState(0);
 
@@ -36,43 +37,47 @@ export default function Tabs({ data, onTabChnaged }: Props) {
 					index < 3 ? (
 						<span
 							key={index}
-							className={`space-x-2 cursor-pointer flex items-center py-4 md:py-6 text-xs md:text-2xl ${
-								active === index ? "text-blue" : "text-grey"
+							className={`space-x-2 cursor-pointer flex items-center ${className} ${
+								active === index ? "text-blue font-semibold" : "text-grey"
 							}`}
 							onClick={() => {
 								changeTab(index);
 							}}
 						>
-							<img
-								src={tab.icon}
-								alt={tab.title}
-								className="w-4 h-4 md:w-8 md:h-8"
-							/>
+							{tab.icon && (
+								<img
+									src={tab.icon}
+									alt={tab.title}
+									className="w-4 h-4 md:w-8 md:h-8"
+								/>
+							)}
 							<span>{tab.title}</span>
 						</span>
 					) : null
 				)}
-				<span
-					className={`relative bg-navy cursor-pointer md:py-6 text-xs md:text-base py-4 px-6 rounded-lg`}
-				>
+				{data.length > 3 ? (
 					<span
-						className="flex items-center space-x-2"
-						onClick={() => setOpen(!open)}
+						className={`relative bg-navy cursor-pointer md:py-6 text-xs md:text-base py-4 px-6 rounded-lg`}
 					>
-						<span>Other protocols</span>
-						<Dropdown />
+						<span
+							className="flex items-center space-x-2"
+							onClick={() => setOpen(!open)}
+						>
+							<span>Other protocols</span>
+							<Dropdown />
+						</span>
+						<DropDown
+							open={open}
+							hidden={data}
+							active={active}
+							setOpen={setOpen}
+							changeTab={changeTab}
+						/>
 					</span>
-					<DropDown
-						open={open}
-						hidden={data}
-						active={active}
-						setOpen={setOpen}
-						changeTab={changeTab}
-					/>
-				</span>
+				) : null}
 			</div>
 		);
-	}, [data, changeTab, active, open, setOpen]);
+	}, [data, changeTab, active, open, setOpen, className]);
 
 	return (
 		<div>

@@ -279,6 +279,40 @@ export type LiquidationQuoteInput = {
 	slippage: number;
 };
 
+export type LeverageQuote = {
+	debt: string;
+	loops: number;
+	reason: string;
+	slippage: number;
+	collateral: string;
+	canLeverage: boolean;
+	swapQuote: SwapQuote;
+	leveragedDebtAmount: number;
+	estimatedHealthFactor: number;
+	leveragedDebtAmountUSD: number;
+	collateralizationRatio: number;
+	initialCollateralAmount: number;
+	leveragedCollateralAmount: number;
+	leveragedCollateralAmountUSD: number;
+};
+
+export type LeverageQuoteInput = {
+	debt: string;
+	loops: number;
+	reason: string;
+	slippage: number;
+	collateral: string;
+	canLeverage: Boolean;
+	swapQuote: SwapQuoteInput;
+	leveragedDebtAmount: number;
+	estimatedHealthFactor: number;
+	collateralizationRatio: number;
+	leveragedDebtAmountUSD: number;
+	initialCollateralAmount: number;
+	leveragedCollateralAmount: number;
+	leveragedCollateralAmountUSD: number;
+};
+
 // """
 // LiquidationResult
 
