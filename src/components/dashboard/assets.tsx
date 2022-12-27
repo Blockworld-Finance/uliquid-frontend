@@ -219,7 +219,7 @@ export default function Assets() {
 							title: "Leverage",
 							render: (
 								<Leverage
-									asset={asset}
+									debt={asset}
 									getTx={getLiquidateTx}
 									collateral={defaultCollateral}
 									key={`${asset?.marketSymbol ?? "NOASSET"}-${open}-lev`}

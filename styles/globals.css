@@ -35,6 +35,14 @@
 	-webkit-transition: all ease-in-out 0.5s;
 }
 
+.no-transition * {
+	transition: none;
+	-o-transition: none;
+	-ms-transition: none;
+	-moz-transition: none;
+	-webkit-transition: none;
+}
+
 html,
 body {
 	margin: 0;

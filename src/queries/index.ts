@@ -1,7 +1,14 @@
 import { gql } from "graphql-request";
 import client from "src/utils/client";
 import { LendingProtocolUserData, LiquidationQuote } from "src/schema";
-import { GetProtocolResponse, NormalizedProtocols, TFAQ, TGuide } from "@types";
+import {
+	AnyObject,
+	GetProtocolResponse,
+	NormalizedProtocols,
+	TFAQ,
+	TGetLendingProtocolMarkets,
+	TGuide
+} from "@types";
 
 export const getProtocols = async () => {
 	const query = gql`
@@ -444,6 +451,7 @@ export type TGetURLsResponse = {
 		documentation: string;
 	};
 };
+
 export const getURLS = async () => {
 	const query = gql`
 		{
@@ -497,6 +505,45 @@ export const getGuide = async () => {
 		}
 	`;
 
-	const data = (await client().request(query)) as TGetFAQsResponse;
+	const data = (await client().request(query)) as TGetGuideResponse;
+	return data;
+};
+
+export const getLendingProtocolMarkets = async (
+	protocol: string,
+	options: AnyObject
+) => {
+	const query = gql`
+		query GetLendingProtocolMarkets(
+			$chainId: Int
+			$version: String
+			$protocol: String!
+		) {
+			getLendingProtocolMarkets(
+				chainId: $chainId
+				version: $version
+				protocol: $protocol
+			) {
+				name
+				logo
+				symbol
+				address
+				version
+				protocol
+				totalSupplied
+				totalBorrowed
+				totalAvailable
+				totalSuppliedUSD
+				totalBorrowedUSD
+				totalAvailableUSD
+				minCollateralizationRatio
+			}
+		}
+	`;
+
+	const data = (await client().request(query, {
+		protocol,
+		...options
+	})) as TGetLendingProtocolMarkets;
 	return data;
 };

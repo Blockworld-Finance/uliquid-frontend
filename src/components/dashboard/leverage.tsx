@@ -1,34 +1,37 @@
-import { AssetPicker } from "@components/common/asset-picker";
-import Button from "@components/common/button";
-import { DropDown } from "@components/common/tabs";
-import { ClickOutside } from "@hooks/useClickOutside";
-import useData from "@hooks/useData";
-import { useProtocols } from "@hooks/useQueries";
-import { Dropdown, GasPump, Help, Info } from "@icons";
-import { LendingMarketUser, LiquidationQuote } from "@schema";
 import Image from "next/image";
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
+
+import useData from "@hooks/useData";
+import Button from "@components/common/button";
+import Slider from "@components/common/slider";
+import { useProtocols } from "@hooks/useQueries";
+import { ClickOutside } from "@hooks/useClickOutside";
+import { Dropdown, GasPump, Help, Info } from "@icons";
+import useProtocolMarkets from "@hooks/useProtocolMarkets";
+import { LendingMarketUser, LiquidationQuote } from "@schema";
+import { AssetPicker } from "@components/common/asset-picker";
 
 type Props = {
-	asset?: LendingMarketUser;
+	debt?: LendingMarketUser;
 	collateral?: LendingMarketUser;
 	getTx: (l: LiquidationQuote, _x: any) => void;
 };
 
 export default function Leverage({
 	getTx,
-	asset: initialAsset,
+	debt: initialDebt,
 	collateral: initialCollateral
 }: Props) {
 	const {
 		data: { activeProtocol, activeChain, activeVersion }
 	} = useData();
-	const inputRef = useRef<HTMLInputElement>(null);
-	const [asset, setAsset] = useState(initialAsset);
+	const { data } = useProtocols();
 	const [view, setView] = useState(false);
 	const [open, setOpen] = useState(false);
 	const [show, setShow] = useState(false);
-	const { data } = useProtocols();
+	const [ratio, setRatio] = useState<number>();
+	const [debt, setDebt] = useState(initialDebt);
+	const inputRef = useRef<HTMLInputElement>(null);
 	const [tokenValue, setTokenValue] = useState<{
 		getTokenValue: number;
 		getTokenUSDValue: number;
@@ -36,6 +39,27 @@ export default function Leverage({
 	const [liquidation, setLiquidation] = useState<LiquidationQuote>();
 	const [collateral, setCollateral] = useState(initialCollateral);
 	const { name, logo, versions = [] } = data[activeProtocol];
+	const { data: markets } = useProtocolMarkets(name, {
+		version: versions[activeVersion].name,
+		chainId: versions[activeVersion].chains[activeChain].id
+	});
+
+	const [color, setColor] = useState();
+
+	const market = useMemo(() => {
+		const m = markets.getLendingProtocolMarkets.find(
+			m => (m.name = debt.marketName)
+		);
+		return {
+			marketData: m,
+			redThreshold: Math.ceil(
+				m.minCollateralizationRatio / 2 + m.minCollateralizationRatio
+			),
+			orangeThreshold: Math.ceil(
+				m.minCollateralizationRatio * 2 + m.minCollateralizationRatio
+			)
+		};
+	}, [markets, debt]);
 
 	return (
 		<>
@@ -90,10 +114,10 @@ export default function Leverage({
 										<Image
 											width={32}
 											height={32}
-											src={asset?.marketLogo ?? ""}
-											alt={asset?.marketName ?? ""}
+											src={collateral?.marketLogo ?? ""}
+											alt={collateral?.marketName ?? ""}
 										/>
-										<span className="">{asset?.marketSymbol}</span>
+										<span className="">{collateral?.marketSymbol}</span>
 									</div>
 									<div className="">
 										<ClickOutside
@@ -109,21 +133,19 @@ export default function Leverage({
 											</div>
 											<AssetPicker
 												open={view}
-												select={setAsset}
+												select={setCollateral}
 												close={() => setView(false)}
 											/>
 										</ClickOutside>
 									</div>
 								</div>
 								<small className="text-sm text-grey flex items-center justify-between">
-									<span>
-										Debt = {asset?.amountBorrowed.toPrecision(6) ?? 0}
-									</span>
+									<span>Debt = {debt?.amountBorrowed.toPrecision(6) ?? 0}</span>
 									<span
 										className="px-1 py-[2px] bg-[#008DE4] rounded-full text-white cursor-pointer"
 										onClick={() => {
 											if (inputRef.current)
-												inputRef.current.value = `${asset.amountBorrowed}`;
+												inputRef.current.value = `${debt.amountBorrowed}`;
 										}}
 									>
 										Max
@@ -144,10 +166,10 @@ export default function Leverage({
 										<Image
 											width={32}
 											height={32}
-											src={collateral?.marketLogo ?? ""}
-											alt={collateral?.marketName ?? ""}
+											src={debt?.marketLogo ?? ""}
+											alt={debt?.marketName ?? ""}
 										/>
-										<span>{collateral?.marketSymbol}</span>
+										<span>{debt?.marketSymbol}</span>
 									</div>
 									<div className="">
 										<ClickOutside
@@ -164,12 +186,61 @@ export default function Leverage({
 											</div>
 											<AssetPicker
 												open={open}
-												select={setCollateral}
+												select={setDebt}
 												close={() => setOpen(false)}
 											/>
 										</ClickOutside>
 									</div>
 								</div>
+							</div>
+						</div>
+						<div>
+							<h1 className="text-3xl">
+								{ratio
+									? `${
+											1000 - ratio + market.marketData.minCollateralizationRatio
+									  }%`
+									: ""}
+							</h1>
+							<div className="no-transition">
+								<label htmlFor="" className="text-sm text-darkGrey">
+									Collatreral ratio
+								</label>
+								<Slider
+									onChange={v => {
+										setRatio(typeof v === "number" ? v : v[0]);
+									}}
+									min={market.marketData.minCollateralizationRatio}
+									max={1000}
+									value={ratio}
+								/>
+							</div>
+						</div>
+						<div className="space-y-3 mt-3">
+							<h2 className="text-darkGrey text-base">Output</h2>
+							<div className="flex items-center justify-between">
+								<span className="text-sm">Collateral</span>
+								<span className="flex items-center justify-between space-x-2 font-semibold">
+									<Image
+										width={18}
+										height={18}
+										src={collateral?.marketLogo ?? ""}
+										alt={collateral?.marketName ?? ""}
+									/>
+									<span className="">{collateral?.marketSymbol}</span>
+								</span>
+							</div>
+							<div className="flex items-center justify-between">
+								<span className="text-sm">Debt</span>
+								<span className="flex items-center space-x-2 font-semibold">
+									<Image
+										width={18}
+										height={18}
+										src={debt?.marketLogo ?? ""}
+										alt={debt?.marketName ?? ""}
+									/>
+									<span className="">{debt?.marketSymbol}</span>
+								</span>
 							</div>
 						</div>
 					</div>
@@ -179,7 +250,7 @@ export default function Leverage({
 							<div className="flex space-x-2 items-center">
 								<Info />
 								<span>
-									1{asset?.marketSymbol} ={" "}
+									1{debt?.marketSymbol} ={" "}
 									{tokenValue?.getTokenValue.toPrecision(6) ?? 0}{" "}
 									{collateral?.marketSymbol} ($
 									{(
@@ -203,7 +274,7 @@ export default function Leverage({
 						>
 							<div className="flex justify-between items-center">
 								<h3 className="text-grey">Expected output</h3>
-								<h3> {asset?.marketSymbol ?? ""}</h3>
+								<h3> {debt?.marketSymbol ?? ""}</h3>
 							</div>
 							<div className="flex justify-between items-center">
 								<h3 className="text-grey">Price impact</h3>

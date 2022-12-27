@@ -69,3 +69,21 @@ type GetLiquidationResult = {
 		tokenOut: string;
 	};
 };
+
+type TGetLendingProtocolMarkets = {
+	getLendingProtocolMarkets: {
+		logo: string;
+		name: string;
+		symbol: string;
+		version: string;
+		address: string;
+		protocol: string;
+		totalSupplied: number;
+		totalBorrowed: number;
+		totalAvailable: number;
+		totalSuppliedUSD: number;
+		totalBorrowedUSD: number;
+		totalAvailableUSD: number;
+		minCollateralizationRatio: number;
+	}[];
+};
