@@ -21,7 +21,9 @@ import { DataProvider } from "src/hooks/useData";
 
 import "../styles/globals.css";
 import "nprogress/nprogress.css";
+import "rc-slider/assets/index.css";
 import "@rainbow-me/rainbowkit/styles.css";
+import { useTokenBalance } from "@hooks/useQueries";
 
 const { chains, provider } = configureChains(
 	[

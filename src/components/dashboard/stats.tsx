@@ -9,8 +9,11 @@ export default function Stats() {
 	const {
 		healthFactor = "",
 		totalBorrowedUSD = 0,
-		totalSuppliedUSD = 0
+		totalSuppliedUSD = 0,
+		markets
 	} = data?.getLendingProtocolUserData ?? {};
+
+	// console.log(markets);
 
 	return (
 		<div className="flex items-center my-10 space-x-3 md:space-x-8">
@@ -23,7 +26,9 @@ export default function Stats() {
 						Total networth
 					</div>
 					<div className="text-sm md:text-2xl">
-						{isConnected ? (totalSuppliedUSD - totalBorrowedUSD).toPrecision(7) : "--:--"}
+						{isConnected
+							? (totalSuppliedUSD - totalBorrowedUSD).toPrecision(7)
+							: "--:--"}
 					</div>
 				</div>
 			</div>

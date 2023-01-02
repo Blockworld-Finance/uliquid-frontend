@@ -39,7 +39,7 @@ export default function Button({
 				type={type}
 				ref={innerRef}
 				disabled={loading || disabled}
-				className={`${variants[variant]} ${sizes[size]} ${className} rounded-md text-sm md:text-[18px] leading-6 py-3 px-4 text-primary`}
+				className={`${variants[variant]} ${sizes[size]} ${className} rounded-md text-sm md:text-[18px] leading-6 py-3 px-4 text-primary disabled:bg-slate-500`}
 			>
 				{loading ? <Spinner color="white" /> : children}
 			</button>

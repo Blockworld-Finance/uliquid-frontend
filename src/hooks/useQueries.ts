@@ -2,8 +2,13 @@ import { useAccount } from "wagmi";
 import { useQuery } from "react-query";
 
 import useData from "./useData";
-import { NormalizedProtocols } from "@types";
-import { getProtocols, getUserData } from "src/queries";
+import { AnyObject, NormalizedProtocols } from "@types";
+import {
+	getLendingProtocolMarkets,
+	getProtocols,
+	getTokenBalances,
+	getUserData
+} from "src/queries";
 
 export function useProtocols(data?: NormalizedProtocols) {
 	return useQuery(["protocols"], getProtocols, {
@@ -37,4 +42,47 @@ export function useUserData() {
 			enabled: isConnected
 		}
 	);
+}
+
+export function useTokenBalance() {
+	const { address, isConnected } = useAccount();
+	const {
+		data: { activeChain, activeVersion, activeProtocol }
+	} = useData();
+	const { data } = useProtocols();
+
+	return useQuery(
+		[
+			"token-balance",
+			address,
+			data[activeProtocol].versions[activeVersion].chains[activeChain].id
+		],
+		() =>
+			getTokenBalances({
+				user: address,
+				chainId:
+					data[activeProtocol].versions[activeVersion].chains[activeChain].id
+			}),
+		{ enabled: isConnected }
+	);
+}
+
+export default function useProtocolMarkets(
+	protocol: string,
+	options: AnyObject = {}
+) {
+	return useQuery([protocol, options.chainId, options.version], () =>
+		getLendingProtocolMarkets(protocol, {
+			...options
+		})
+	);
+}
+
+export function useNativeTokenUSDValue() {
+	const {
+		data: { activeChain, activeVersion, activeProtocol }
+	} = useData();
+	const { data } = useProtocols();
+
+	// return useQuery(["token", data[activeProtocol].versions[activeVersion].chains[activeChain]])
 }
