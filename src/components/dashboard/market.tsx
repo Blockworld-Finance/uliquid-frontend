@@ -1,4 +1,4 @@
-import { useAccount } from "wagmi";
+import { useAccount, useFeeData } from "wagmi";
 
 import Stats from "./stats";
 import Assets from "./assets";
@@ -7,6 +7,7 @@ import BlockChain from "./blockchain";
 import Input from "@components/common/input";
 
 export default function MarketPlace() {
+	useFeeData();
 	const { isConnected } = useAccount();
 
 	return (

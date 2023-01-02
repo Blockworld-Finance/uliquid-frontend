@@ -6,17 +6,27 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useCallback, useMemo, useState } from "react";
 import { prepareSendTransaction, sendTransaction } from "@wagmi/core";
 
+import {
+	getLendingProtocolLeverageTx,
+	getLendingProtocolLiquidateTx
+} from "src/queries";
+import useProtocolMarkets, {
+	useUserData,
+	useProtocols
+} from "src/hooks/useQueries";
+import {
+	LiquidationQuote,
+	LendingMarketUser,
+	LeverageQuoteInput
+} from "src/schema";
+import Leverage from "./leverage";
 import useData from "@hooks/useData";
 import { Liquidate } from "./liquidate";
+import Tabs from "@components/common/tabs";
 import Modal from "@components/common/Modal";
 import Button from "@components/common/button";
 import Spinner from "@components/common/Spinner";
-import { getLendingProtocolLiquidateTx } from "src/queries";
-import { useProtocols, useUserData } from "src/hooks/useQueries";
-import { LendingMarketUser, LiquidationQuote } from "src/schema";
 import { Info, Send, Filter, Wallet, Dropdown, Sortable } from "@icons";
-import Tabs from "@components/common/tabs";
-import Leverage from "./leverage";
 
 export default function Assets() {
 	const {
@@ -50,6 +60,10 @@ export default function Assets() {
 		logo = "",
 		versions = []
 	} = protocols[activeProtocol];
+	useProtocolMarkets(name, {
+		version: versions[activeVersion].name,
+		chainId: versions[activeVersion].chains[activeChain].id
+	});
 
 	const defaultCollateral = useMemo(() => {
 		if (data) {
@@ -98,6 +112,53 @@ export default function Assets() {
 
 				setView(false);
 				setShow(true);
+			})
+			.catch(e => {
+				console.log(e);
+				setView(false);
+			});
+	};
+
+	const getLeverageTx = (
+		leverageQuote: LeverageQuoteInput,
+		info: typeof liquidationInfo
+	) => {
+		setView(true);
+		setOpen(false);
+		setLiquidationInfo(info);
+		getLendingProtocolLeverageTx({
+			leverageQuote,
+			user: address,
+			protocol: name,
+			version: versions[activeVersion].name,
+			chainId: versions[activeVersion].chains[activeChain].id
+		})
+			.then(async d => {
+				console.log(d);
+
+				for (let tx in d.getLendingProtocolLeverageTx) {
+					const config = await prepareSendTransaction({
+						request: {
+							gasLimit: 7000000,
+							to: d.getLendingProtocolLeverageTx[tx].to,
+							data: d.getLendingProtocolLeverageTx[tx].data,
+							from: d.getLendingProtocolLeverageTx[tx].from,
+							chainId: versions[activeVersion].chains[activeChain].id
+						},
+						chainId: versions[activeVersion].chains[activeChain].id
+					});
+
+					const result = await sendTransaction(config);
+
+					console.log(result);
+
+					const receipt = await result.wait();
+
+					console.log(receipt);
+				}
+
+				// setView(false);
+				// setShow(true);
 			})
 			.catch(e => {
 				console.log(e);
@@ -220,7 +281,7 @@ export default function Assets() {
 							render: (
 								<Leverage
 									debt={asset}
-									getTx={getLiquidateTx}
+									getTx={getLeverageTx}
 									collateral={defaultCollateral}
 									key={`${asset?.marketSymbol ?? "NOASSET"}-${open}-lev`}
 								/>

@@ -87,3 +87,11 @@ type TGetLendingProtocolMarkets = {
 		minCollateralizationRatio: number;
 	}[];
 };
+
+type TLeverageInput = {
+	user: string;
+	chainId: number;
+	version: string;
+	protocol: string;
+	leverageQuote: LeverageQuoteInput;
+};

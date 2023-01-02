@@ -3,9 +3,9 @@ import Image from "next/image";
 import { useState } from "react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 
-import { Close, Discord, Github, Menu, Twitter } from "@icons";
 import { TGetURLsResponse } from "src/queries";
 import { ClickOutside } from "@hooks/useClickOutside";
+import { Close, Discord, Github, Menu, Twitter } from "@icons";
 
 export default function Header({
 	getURLs: { twitter, github, discord, documentation }
@@ -27,9 +27,9 @@ export default function Header({
 						<a href={documentation} target="_blank" rel="noopener noreferrer">
 							<li>Docs</li>
 						</a>
-						<a href="#faqs">
+						<Link href="/#faqs">
 							<li>FAQs</li>
-						</a>
+						</Link>
 					</ul>
 					<ConnectButton />
 				</div>

@@ -1,6 +1,11 @@
 import { gql } from "graphql-request";
 import client from "src/utils/client";
-import { LendingProtocolUserData, LiquidationQuote } from "src/schema";
+import {
+	LendingProtocolUserData,
+	LeverageQuote,
+	LeverageQuoteInput,
+	LiquidationQuote
+} from "src/schema";
 import {
 	AnyObject,
 	GetProtocolResponse,
@@ -215,7 +220,6 @@ type TLeverageProps = {
 	version: string;
 	protocol: string;
 	slippage: number;
-	debtAmount: number;
 	collateral: string;
 	signal?: AbortSignal;
 	collateralizationRatio: number;
@@ -225,13 +229,12 @@ type TLeverageProps = {
 export const getLeverageQuote = async ({
 	user,
 	debt,
-	chainId,
 	signal,
+	chainId,
 	version,
 	protocol,
 	slippage,
 	collateral,
-	debtAmount,
 	collateralizationRatio,
 	initialCollateralAmount
 }: TLeverageProps) => {
@@ -294,13 +297,12 @@ export const getLeverageQuote = async ({
 		version,
 		slippage,
 		protocol,
-		debtAmount,
 		collateral,
 		collateralizationRatio,
 		initialCollateralAmount
 	});
 
-	return data.getLiquidationQuote as LiquidationQuote;
+	return data.getLendingProtocolLeverageQuote as LeverageQuoteInput;
 };
 
 type TTokenValueProps = {
@@ -399,7 +401,7 @@ type TGLPLeverageTxProps = {
 	chainId: number;
 	version: string;
 	protocol: string;
-	leverageQuote: LiquidationQuote;
+	leverageQuote: LeverageQuoteInput;
 };
 
 export const getLendingProtocolLeverageTx = async ({
@@ -546,4 +548,26 @@ export const getLendingProtocolMarkets = async (
 		...options
 	})) as TGetLendingProtocolMarkets;
 	return data;
+};
+
+export type TGetTokenBalanceProps = {
+	user: string;
+	chainId: number;
+};
+export const getTokenBalances = async ({
+	user,
+	chainId
+}: TGetTokenBalanceProps) => {
+	const query = gql`
+		query GetTokenBalances($user: String!, $chainId: Int!) {
+			getTokenBalances(user: $user, chainId: $chainId)
+		}
+	`;
+
+	const data = (await client().request(query, {
+		user,
+		chainId
+	})) as AnyObject<string>;
+
+	return JSON.parse(data.getTokenBalances) as AnyObject<number>;
 };

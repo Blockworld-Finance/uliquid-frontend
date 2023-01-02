@@ -9,14 +9,13 @@ import Image from "next/image";
 import { useAccount } from "wagmi";
 
 import useData from "@hooks/useData";
-import Input from "@components/common/input";
 import Button from "@components/common/button";
+import { Info, GasPump, Dropdown } from "@icons";
+import { useProtocols } from "@hooks/useQueries";
 import { ClickOutside } from "@hooks/useClickOutside";
-import { Info, GasPump, Dropdown, Search } from "@icons";
-import { useProtocols, useUserData } from "@hooks/useQueries";
+import { AssetPicker } from "@components/common/asset-picker";
 import { getLiquidation, getTokenUSDValue } from "src/queries";
 import { LendingMarketUser, LiquidationQuote } from "src/schema";
-import { AssetPicker } from "@components/common/asset-picker";
 
 type Props = {
 	asset?: LendingMarketUser;
@@ -52,24 +51,23 @@ export function Liquidate({
 	const [liquidation, setLiquidation] = useState<LiquidationQuote>();
 
 	const pollLiquidationQoute = useCallback(() => {
-		const amount = Number(inputRef.current?.value ?? 0);
-		if (amount && amount <= asset?.amountBorrowed) {
-			getLiquidation({
-				user: address,
-				protocol: name,
-				debtAmount: amount,
-				// signal: control.signal,
-				debt: asset?.marketAddress,
-				slippage: (1 / 100) * 1000000,
-				collateral: collateral.marketAddress,
-				version: versions[activeVersion].name,
-				chainId: versions[activeVersion].chains[activeChain].id
+		const amount = Number(inputRef.current?.value ?? 0) ?? 0;
+		setInputValid(amount && amount <= asset?.amountBorrowed);
+		getLiquidation({
+			user: address,
+			protocol: name,
+			debtAmount: amount,
+			// signal: control.signal,
+			debt: asset?.marketAddress,
+			slippage: (1 / 100) * 1000000,
+			collateral: collateral.marketAddress,
+			version: versions[activeVersion].name,
+			chainId: versions[activeVersion].chains[activeChain].id
+		})
+			.then(d => {
+				setLiquidation(d);
 			})
-				.then(d => {
-					setLiquidation(d);
-				})
-				.catch(e => {});
-		}
+			.catch(e => {});
 	}, [
 		name,
 		address,
@@ -85,7 +83,7 @@ export function Liquidate({
 	useEffect(() => {
 		if (!interval.current) {
 			interval.current = setInterval(() => {
-				pollLiquidationQoute();
+				// pollLiquidationQoute();
 			}, 10000);
 		}
 	}, [pollLiquidationQoute]);
@@ -362,4 +360,3 @@ export function Liquidate({
 		</>
 	);
 }
-

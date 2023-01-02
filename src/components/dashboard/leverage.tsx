@@ -1,20 +1,24 @@
 import Image from "next/image";
-import { useMemo, useRef, useState } from "react";
+import { useAccount, useFeeData } from "wagmi";
+import { useRef, useMemo, useState, useEffect, useCallback } from "react";
 
+import useProtocolMarkets, {
+	useProtocols,
+	useTokenBalance
+} from "@hooks/useQueries";
 import useData from "@hooks/useData";
 import Button from "@components/common/button";
 import Slider from "@components/common/slider";
-import { useProtocols } from "@hooks/useQueries";
 import { ClickOutside } from "@hooks/useClickOutside";
 import { Dropdown, GasPump, Help, Info } from "@icons";
-import useProtocolMarkets from "@hooks/useProtocolMarkets";
-import { LendingMarketUser, LiquidationQuote } from "@schema";
 import { AssetPicker } from "@components/common/asset-picker";
+import { LendingMarketUser, LeverageQuoteInput } from "@schema";
+import { getLeverageQuote, getTokenUSDValue } from "src/queries";
 
 type Props = {
 	debt?: LendingMarketUser;
 	collateral?: LendingMarketUser;
-	getTx: (l: LiquidationQuote, _x: any) => void;
+	getTx: (l: LeverageQuoteInput, _x: any) => void;
 };
 
 export default function Leverage({
@@ -26,19 +30,25 @@ export default function Leverage({
 		data: { activeProtocol, activeChain, activeVersion }
 	} = useData();
 	const { data } = useProtocols();
+	const { address } = useAccount();
 	const [view, setView] = useState(false);
 	const [open, setOpen] = useState(false);
 	const [show, setShow] = useState(false);
-	const [ratio, setRatio] = useState<number>();
+	const [gasPrice, setGasPrice] = useState(0);
+	const { data: balance } = useTokenBalance();
+	let control = useRef(new AbortController());
 	const [debt, setDebt] = useState(initialDebt);
 	const inputRef = useRef<HTMLInputElement>(null);
 	const [tokenValue, setTokenValue] = useState<{
-		getTokenValue: number;
 		getTokenUSDValue: number;
+		getTokenValue: number;
 	}>();
-	const [liquidation, setLiquidation] = useState<LiquidationQuote>();
-	const [collateral, setCollateral] = useState(initialCollateral);
+	const [isInputValid, setInputValid] = useState(false);
+	const { data: fees, isError, isLoading } = useFeeData();
+	const [isConfirming, setIsConfirming] = useState(false);
 	const { name, logo, versions = [] } = data[activeProtocol];
+	const [leverage, setLeverage] = useState<LeverageQuoteInput>();
+	const [collateral, setCollateral] = useState(initialCollateral);
 	const { data: markets } = useProtocolMarkets(name, {
 		version: versions[activeVersion].name,
 		chainId: versions[activeVersion].chains[activeChain].id
@@ -46,10 +56,14 @@ export default function Leverage({
 
 	const [color, setColor] = useState();
 
+	console.log(data[activeProtocol].versions[activeVersion].chains[activeChain]);
+
 	const market = useMemo(() => {
-		const m = markets.getLendingProtocolMarkets.find(
-			m => (m.name = debt.marketName)
-		);
+		const m =
+			markets?.getLendingProtocolMarkets.find(
+				m => (m.name = debt.marketName)
+			) ?? ({} as any);
+
 		return {
 			marketData: m,
 			redThreshold: Math.ceil(
@@ -60,6 +74,76 @@ export default function Leverage({
 			)
 		};
 	}, [markets, debt]);
+	const [ratio, setRatio] = useState<number>(
+		market.marketData.minCollateralizationRatio ?? 125
+	);
+
+	const getLeverage = useCallback(
+		(ratio: number) => {
+			control.current.abort();
+			setShow(false);
+			setIsConfirming(false);
+			const amount = Number(inputRef.current?.value ?? 0) ?? 0;
+			control.current = new AbortController();
+			getLeverageQuote({
+				user: address,
+				protocol: name,
+				debt: debt.marketAddress,
+				slippage: (2 / 100) * 1000000,
+				signal: control.current.signal,
+				collateral: collateral.marketAddress,
+				version: versions[activeVersion].name,
+				initialCollateralAmount: Number(inputRef.current?.value),
+				collateralizationRatio:
+					((1000 - ratio + market.marketData.minCollateralizationRatio) / 100) *
+					1000000,
+				chainId: versions[activeVersion].chains[activeChain].id
+			})
+				.then(d => {
+					setLeverage(d);
+					console.log(
+						Number(fees?.gasPrice._hex),
+						500000 * d.loops,
+						tokenValue.getTokenUSDValue
+					);
+
+					setGasPrice(
+						(Number(fees?.gasPrice._hex) *
+							(500000 * d.loops) *
+							tokenValue.getTokenUSDValue) /
+							10 ** 18
+					);
+					setInputValid(amount && amount <= balance[collateral.marketAddress]);
+				})
+				.catch(e => {});
+		},
+		[
+			debt,
+			name,
+			address,
+			balance,
+			versions,
+			collateral,
+			activeChain,
+			activeVersion,
+			fees?.gasPrice,
+			tokenValue?.getTokenUSDValue,
+			market.marketData.minCollateralizationRatio
+		]
+	);
+
+	useEffect(() => {
+		if (debt && collateral)
+			getTokenUSDValue({
+				token: debt?.marketAddress,
+				quoteToken: collateral?.marketAddress,
+				getTokenUsdValueToken2: collateral?.marketAddress,
+				chainId: versions[activeVersion].chains[activeChain].id,
+				getTokenUsdValueChainId2: versions[activeVersion].chains[activeChain].id
+			}).then(d => {
+				setTokenValue(d);
+			});
+	}, [activeChain, activeVersion, debt, collateral, versions]);
 
 	return (
 		<>
@@ -91,6 +175,18 @@ export default function Leverage({
 							)}
 						</div>
 					</div>
+					{leverage && (
+						<div className="space-y-2">
+							<small className="text-sm text-darkGrey">
+								Est. Health Factor
+							</small>
+							<div className="flex space-x-2 items-center">
+								<p className="text-blue">
+									{leverage.estimatedHealthFactor.toFixed(2) ?? 0}
+								</p>
+							</div>
+						</div>
+					)}
 				</div>
 
 				<div className="space-y-2 my-4">
@@ -102,10 +198,28 @@ export default function Leverage({
 									step={0.01}
 									type="number"
 									ref={inputRef}
+									pattern="[0-9]*"
+									inputMode="numeric"
+									onChange={() => getLeverage(ratio)}
+									defaultValue={balance?.[collateral.marketAddress] ?? 0}
+									onKeyDown={evt => {
+										let charCode = evt.which ? evt.which : evt.keyCode;
+										if (charCode > 31 && (charCode < 48 || charCode > 57))
+											return false;
+										return true;
+									}}
 									className="w-full text-3xl text-white bg-primary border-none focus:outline-none"
 								/>
 								<small className="text-sm text-grey">
-									${liquidation?.debtAmountUSD ?? 0}
+									$
+									{(
+										tokenValue?.getTokenUSDValue *
+										Number(
+											inputRef.current?.value ??
+												balance?.[collateral.marketAddress] ??
+												0
+										)
+									).toPrecision(6) ?? 0}
 								</small>
 							</div>
 							<div className="space-y-2 col-span-5">
@@ -140,12 +254,16 @@ export default function Leverage({
 									</div>
 								</div>
 								<small className="text-sm text-grey flex items-center justify-between">
-									<span>Debt = {debt?.amountBorrowed.toPrecision(6) ?? 0}</span>
+									<span>Bal = {balance?.[collateral.marketAddress] ?? 0}</span>
 									<span
 										className="px-1 py-[2px] bg-[#008DE4] rounded-full text-white cursor-pointer"
 										onClick={() => {
-											if (inputRef.current)
-												inputRef.current.value = `${debt.amountBorrowed}`;
+											if (inputRef.current) {
+												inputRef.current.value = `${
+													balance?.[collateral.marketAddress] ?? 0
+												}`;
+												getLeverage(ratio);
+											}
 										}}
 									>
 										Max
@@ -207,12 +325,13 @@ export default function Leverage({
 									Collatreral ratio
 								</label>
 								<Slider
-									onChange={v => {
-										setRatio(typeof v === "number" ? v : v[0]);
-									}}
-									min={market.marketData.minCollateralizationRatio}
 									max={1000}
 									value={ratio}
+									onChange={v => {
+										setRatio(typeof v === "number" ? v : v[0]);
+										getLeverage(typeof v === "number" ? v : v[0]);
+									}}
+									min={market.marketData.minCollateralizationRatio}
 								/>
 							</div>
 						</div>
@@ -227,7 +346,10 @@ export default function Leverage({
 										src={collateral?.marketLogo ?? ""}
 										alt={collateral?.marketName ?? ""}
 									/>
-									<span className="">{collateral?.marketSymbol}</span>
+									<span className="">
+										{leverage?.leveragedCollateralAmount.toPrecision(6)}{" "}
+										{collateral?.marketSymbol}
+									</span>
 								</span>
 							</div>
 							<div className="flex items-center justify-between">
@@ -239,7 +361,10 @@ export default function Leverage({
 										src={debt?.marketLogo ?? ""}
 										alt={debt?.marketName ?? ""}
 									/>
-									<span className="">{debt?.marketSymbol}</span>
+									<span className="">
+										{leverage?.leveragedDebtAmount.toPrecision(6)}{" "}
+										{debt?.marketSymbol}
+									</span>
 								</span>
 							</div>
 						</div>
@@ -263,8 +388,8 @@ export default function Leverage({
 
 							<div className="flex space-x-2 items-center">
 								<GasPump />
-								<span>$0.28</span>
-								{liquidation && <Dropdown onClick={() => setShow(!show)} />}
+								<span>${gasPrice}</span>
+								{leverage && <Dropdown onClick={() => setShow(!show)} />}
 							</div>
 						</div>
 						<div
@@ -273,39 +398,51 @@ export default function Leverage({
 							} overflow-y-hidden`}
 						>
 							<div className="flex justify-between items-center">
-								<h3 className="text-grey">Expected output</h3>
-								<h3> {debt?.marketSymbol ?? ""}</h3>
-							</div>
-							<div className="flex justify-between items-center">
 								<h3 className="text-grey">Price impact</h3>
 								<h3>
-									{liquidation?.swapQuote.priceImpact > 0.00001
-										? liquidation?.swapQuote.priceImpact.toPrecision(8) ?? 0
+									{leverage?.swapQuote.priceImpact > 0.00001
+										? leverage?.swapQuote.priceImpact.toPrecision(8) ?? 0
 										: 0}
 									%
 								</h3>
 							</div>
 							<div className="flex justify-between items-center text-grey">
-								<p>Maximum spent after slippage (0.3%)</p>
+								<p>Maximum debt incurred after slippage (0.3%)</p>
 								<p>
-									{liquidation?.collateralAmount ?? 0}{" "}
-									{collateral?.marketSymbol}
+									{(leverage?.leveragedDebtAmount ?? 0) +
+										((leverage?.leveragedDebtAmount ?? 0) *
+											(leverage?.slippage ?? 0)) /
+											10 ** 6}
 								</p>
 							</div>
 							<div className="flex justify-between items-center text-grey">
 								<p>Network fee</p>
 								<p>$0.28</p>
 							</div>
-							<div className="flex justify-between items-center">
-								<p>Protocol fee</p>
-								<p>{(liquidation?.fee / 1000000) * 100 ?? 0}</p>
-							</div>
 						</div>
 					</div>
 				</div>
 			</div>
-			<Button size="large" className="w-full font-semibold">
-				Liquidate
+			<Button
+				size="large"
+				disabled={!isInputValid}
+				className="w-full font-semibold"
+				onClick={() => {
+					if (!isConfirming) {
+						setIsConfirming(true);
+						setShow(true);
+						return;
+					}
+
+					getTx(leverage, {
+						debtSymbol: debt.marketSymbol,
+						collateralSymbol: collateral.marketSymbol,
+						collateralAmount: 0,
+						protocolFee: 0
+					});
+				}}
+			>
+				{isConfirming ? "Confirm Leverage" : "Leverage"}
 			</Button>
 		</>
 	);

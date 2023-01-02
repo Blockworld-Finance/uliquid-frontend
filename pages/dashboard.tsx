@@ -3,7 +3,7 @@ import { useQueryClient } from "react-query";
 import useData from "src/hooks/useData";
 import Tabs from "@components/common/tabs";
 import Layout from "@components/common/layout";
-import { useProtocols } from "src/hooks/useQueries";
+import { useProtocols, useTokenBalance } from "src/hooks/useQueries";
 import { getProtocols, getURLS } from "src/queries";
 import MarketPlace from "@components/dashboard/market";
 
@@ -11,6 +11,8 @@ export default function Dashboard({ data: ddata, urls }) {
 	const { dispatch } = useData();
 	const queryclient = useQueryClient();
 	const { data } = useProtocols(ddata);
+
+	useTokenBalance();
 
 	return (
 		<Layout urls={urls}>
