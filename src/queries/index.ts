@@ -31,6 +31,7 @@ export const getProtocols = async () => {
 							id
 							name
 							logo
+							nativeToken
 						}
 					}
 				}
@@ -345,6 +346,24 @@ export const getTokenUSDValue = async ({
 	});
 
 	return data as { getTokenValue: number; getTokenUSDValue: number };
+};
+
+export const getNativeTokenUSDValue = async (
+	token: string,
+	chainId: number
+) => {
+	const query = gql`
+		query ExampleQuery($token: String!, $chainId: Int!) {
+			getTokenUSDValue(token: $token, chainId: $chainId)
+		}
+	`;
+
+	const data = await client().request(query, {
+		token,
+		chainId
+	});
+
+	return data as { getTokenUSDValue: number };
 };
 
 type TGLPLiquidateTxProps = {

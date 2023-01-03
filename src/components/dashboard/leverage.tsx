@@ -4,7 +4,8 @@ import { useRef, useMemo, useState, useEffect, useCallback } from "react";
 
 import useProtocolMarkets, {
 	useProtocols,
-	useTokenBalance
+	useTokenBalance,
+	useNativeTokenUSDValue
 } from "@hooks/useQueries";
 import useData from "@hooks/useData";
 import Button from "@components/common/button";
@@ -39,9 +40,10 @@ export default function Leverage({
 	let control = useRef(new AbortController());
 	const [debt, setDebt] = useState(initialDebt);
 	const inputRef = useRef<HTMLInputElement>(null);
+	const { data: usdValue } = useNativeTokenUSDValue();
 	const [tokenValue, setTokenValue] = useState<{
-		getTokenUSDValue: number;
 		getTokenValue: number;
+		getTokenUSDValue: number;
 	}>();
 	const [isInputValid, setInputValid] = useState(false);
 	const { data: fees, isError, isLoading } = useFeeData();
@@ -55,8 +57,6 @@ export default function Leverage({
 	});
 
 	const [color, setColor] = useState();
-
-	console.log(data[activeProtocol].versions[activeVersion].chains[activeChain]);
 
 	const market = useMemo(() => {
 		const m =
@@ -104,17 +104,17 @@ export default function Leverage({
 					console.log(
 						Number(fees?.gasPrice._hex),
 						500000 * d.loops,
-						tokenValue.getTokenUSDValue,
+						usdValue.getTokenUSDValue,
 						(Number(fees?.gasPrice._hex) *
 							(500000 * d.loops) *
-							tokenValue.getTokenUSDValue) /
+							usdValue.getTokenUSDValue) /
 							10 ** 18
 					);
 
 					setGasPrice(
 						(Number(fees?.gasPrice._hex) *
 							(500000 * d.loops) *
-							tokenValue.getTokenUSDValue) /
+							usdValue.getTokenUSDValue) /
 							10 ** 18
 					);
 					setInputValid(amount && amount <= balance[collateral.marketAddress]);
@@ -131,7 +131,7 @@ export default function Leverage({
 			activeChain,
 			activeVersion,
 			fees?.gasPrice,
-			tokenValue?.getTokenUSDValue,
+			usdValue?.getTokenUSDValue,
 			market.marketData.minCollateralizationRatio
 		]
 	);
@@ -392,7 +392,7 @@ export default function Leverage({
 
 							<div className="flex space-x-2 items-center">
 								<GasPump />
-								<span>${gasPrice}</span>
+								<span>${gasPrice.toFixed(4)}</span>
 								{leverage && <Dropdown onClick={() => setShow(!show)} />}
 							</div>
 						</div>
@@ -421,7 +421,7 @@ export default function Leverage({
 							</div>
 							<div className="flex justify-between items-center text-grey">
 								<p>Network fee</p>
-								<p>$0.28</p>
+								<p>${gasPrice.toFixed(4)}</p>
 							</div>
 						</div>
 					</div>

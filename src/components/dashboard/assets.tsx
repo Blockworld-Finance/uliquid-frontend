@@ -12,7 +12,8 @@ import {
 } from "src/queries";
 import useProtocolMarkets, {
 	useUserData,
-	useProtocols
+	useProtocols,
+	useNativeTokenUSDValue
 } from "src/hooks/useQueries";
 import {
 	LiquidationQuote,
@@ -29,6 +30,7 @@ import Spinner from "@components/common/Spinner";
 import { Info, Send, Filter, Wallet, Dropdown, Sortable } from "@icons";
 
 export default function Assets() {
+	useNativeTokenUSDValue();
 	const {
 		data: { activeChain, activeProtocol, activeVersion }
 	} = useData();

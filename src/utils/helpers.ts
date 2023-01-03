@@ -9,3 +9,10 @@ export const navigate = (params: AnyObject) => {
 	if (window)
 		window.history.pushState({ ...params }, "", `${window.location.href}`);
 };
+
+export const formatNumber = (num: number, decimalPlaces?: number) => {
+	// console.log(num);
+
+	if (typeof num !== "number") return 0;
+	return Number(num.toFixed(decimalPlaces ?? 4)).toLocaleString();
+};

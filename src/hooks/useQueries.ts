@@ -4,10 +4,12 @@ import { useQuery } from "react-query";
 import useData from "./useData";
 import { AnyObject, NormalizedProtocols } from "@types";
 import {
-	getLendingProtocolMarkets,
+	getUserData,
 	getProtocols,
 	getTokenBalances,
-	getUserData
+	getLendingProtocolMarkets,
+	getTokenUSDValue,
+	getNativeTokenUSDValue
 } from "src/queries";
 
 export function useProtocols(data?: NormalizedProtocols) {
@@ -83,6 +85,19 @@ export function useNativeTokenUSDValue() {
 		data: { activeChain, activeVersion, activeProtocol }
 	} = useData();
 	const { data } = useProtocols();
+	const { isConnected } = useAccount();
 
-	// return useQuery(["token", data[activeProtocol].versions[activeVersion].chains[activeChain]])
+	return useQuery(
+		["token", data[activeProtocol].versions[activeVersion].chains[activeChain]],
+		() =>
+			getNativeTokenUSDValue(
+				data[activeProtocol].versions[activeVersion].chains[activeChain]
+					.nativeToken,
+				data[activeProtocol].versions[activeVersion].chains[activeChain].id
+			),
+		{
+			enabled: isConnected,
+			refetchOnWindowFocus: false
+		}
+	);
 }

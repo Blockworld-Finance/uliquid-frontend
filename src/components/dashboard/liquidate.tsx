@@ -6,12 +6,17 @@ import {
 	ChangeEventHandler
 } from "react";
 import Image from "next/image";
-import { useAccount } from "wagmi";
+import { useAccount, useFeeData } from "wagmi";
 
 import useData from "@hooks/useData";
 import Button from "@components/common/button";
 import { Info, GasPump, Dropdown } from "@icons";
-import { useProtocols } from "@hooks/useQueries";
+import {
+	useProtocols,
+	useTokenBalance,
+	useNativeTokenUSDValue
+} from "@hooks/useQueries";
+import { formatNumber } from "src/utils/helpers";
 import { ClickOutside } from "@hooks/useClickOutside";
 import { AssetPicker } from "@components/common/asset-picker";
 import { getLiquidation, getTokenUSDValue } from "src/queries";
@@ -37,14 +42,19 @@ export function Liquidate({
 	const [open, setOpen] = useState(false);
 	const [view, setView] = useState(false);
 	const [show, setShow] = useState(false);
+	let control = useRef(new AbortController());
+	const [gasPrice, setGasPrice] = useState(0);
 	const [tokenValue, setTokenValue] = useState<{
 		getTokenValue: number;
 		getTokenUSDValue: number;
 	}>();
+	const { data: balance } = useTokenBalance();
 	const inputRef = useRef<HTMLInputElement>(null);
 	const [asset, setAsset] = useState(initialAsset);
+	const { data: usdValue } = useNativeTokenUSDValue();
 	const [isInputValid, setInputValid] = useState(false);
-	let { current: control } = useRef(new AbortController());
+	const [isConfirming, setIsConfirming] = useState(false);
+	const { data: fees, isError, isLoading } = useFeeData();
 	const [collateral, setCollateral] = useState(initialCollateral);
 
 	const { name, logo, versions = [] } = data[activeProtocol];
@@ -102,34 +112,47 @@ export function Liquidate({
 	}, [activeChain, activeVersion, asset, collateral, versions]);
 
 	const getLiquidationQuote: ChangeEventHandler<HTMLInputElement> = useCallback(
-		e => {
-			if (e.target.value.length) {
-				if (Number(e.target.value) <= asset?.amountBorrowed) {
-					control.abort();
-					setInputValid(true);
-					// eslint-disable-next-line react-hooks/exhaustive-deps
-					control = new AbortController();
-					getLiquidation({
-						user: address,
-						protocol: name,
-						signal: control.signal,
-						debt: asset?.marketAddress,
-						slippage: (1 / 100) * 1000000,
-						debtAmount: Number(e.target.value),
-						collateral: collateral.marketAddress,
-						version: versions[activeVersion].name,
-						chainId: versions[activeVersion].chains[activeChain].id
-					})
-						.then(d => {
-							setLiquidation(d);
-						})
-						.catch(e => {});
-				} else {
-					setInputValid(false);
-				}
-			}
+		_e => {
+			control.current.abort();
+			setShow(false);
+			setIsConfirming(false);
+			const amount = Number(inputRef.current?.value ?? 0) ?? 0;
+			control.current = new AbortController();
+			getLiquidation({
+				user: address,
+				protocol: name,
+				debtAmount: amount,
+				debt: asset?.marketAddress,
+				slippage: (1 / 100) * 1000000,
+				signal: control.current.signal,
+				collateral: collateral.marketAddress,
+				version: versions[activeVersion].name,
+				chainId: versions[activeVersion].chains[activeChain].id
+			})
+				.then(d => {
+					setLiquidation(d);
+					setGasPrice(
+						(Number(fees?.gasPrice._hex) *
+							2000000 *
+							usdValue.getTokenUSDValue) /
+							10 ** 18
+					);
+					setInputValid(amount && amount <= balance[collateral.marketAddress]);
+				})
+				.catch(e => {});
 		},
-		[asset, collateral, versions, name, address]
+		[
+			name,
+			asset,
+			address,
+			balance,
+			versions,
+			collateral,
+			activeChain,
+			activeVersion,
+			fees.gasPrice._hex,
+			usdValue.getTokenUSDValue
+		]
 	);
 
 	return (
@@ -177,7 +200,7 @@ export function Liquidate({
 									className="w-full text-3xl text-white bg-primary border-none focus:outline-none"
 								/>
 								<small className="text-sm text-grey">
-									${liquidation?.debtAmountUSD ?? 0}
+									${formatNumber(liquidation?.debtAmountUSD) ?? 0}
 								</small>
 							</div>
 							<div className="space-y-2 col-span-2">
@@ -235,11 +258,11 @@ export function Liquidate({
 							<div className="flex-grow border border-darkGrey rounded-lg py-3 px-4 col-span-3">
 								<input
 									readOnly
-									value={liquidation?.collateralAmount ?? 0}
+									value={formatNumber(liquidation?.collateralAmount) ?? 0}
 									className="w-full text-3xl text-white bg-primary border-none focus:outline-none"
 								/>
 								<small className="text-sm text-grey">
-									${liquidation?.collateralAmountUSD ?? 0}
+									${formatNumber(liquidation?.collateralAmountUSD) ?? 0}
 								</small>
 							</div>
 							<div className="space-y-2 col-span-2">
@@ -287,19 +310,19 @@ export function Liquidate({
 								<Info />
 								<span>
 									1{asset?.marketSymbol} ={" "}
-									{tokenValue?.getTokenValue.toPrecision(6) ?? 0}{" "}
+									{formatNumber(tokenValue?.getTokenValue) ?? 0}{" "}
 									{collateral?.marketSymbol} ($
-									{(
+									{formatNumber(
 										(tokenValue?.getTokenValue ?? 0) *
 											tokenValue?.getTokenUSDValue ?? 0
-									).toPrecision(6)}
+									)}
 									)
 								</span>
 							</div>
 
 							<div className="flex space-x-2 items-center">
 								<GasPump />
-								<span>$0.28</span>
+								<span>${gasPrice.toFixed(4)}</span>
 								{liquidation && <Dropdown onClick={() => setShow(!show)} />}
 							</div>
 						</div>
@@ -330,7 +353,7 @@ export function Liquidate({
 							</div>
 							<div className="flex justify-between items-center text-grey">
 								<p>Network fee</p>
-								<p>$0.28</p>
+								<p>${gasPrice.toFixed(4)}</p>
 							</div>
 							<div className="flex justify-between items-center">
 								<p>Protocol fee</p>
@@ -345,7 +368,13 @@ export function Liquidate({
 				size="large"
 				disabled={!isInputValid}
 				className="w-full font-semibold"
-				onClick={() =>
+				onClick={() => {
+					if (!isConfirming) {
+						setIsConfirming(true);
+						setShow(true);
+						return;
+					}
+
 					getTx(
 						liquidation,
 						<p className="text-grey">
@@ -355,8 +384,8 @@ export function Liquidate({
 							<br />
 							Protocol fee of {(liquidation?.fee / 1000000) * 100 ?? 0} included
 						</p>
-					)
-				}
+					);
+				}}
 			>
 				Liquidate
 			</Button>

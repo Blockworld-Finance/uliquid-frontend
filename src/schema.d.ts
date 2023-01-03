@@ -10,6 +10,7 @@ export type Chain = {
 	id: number;
 	name: string;
 	logo: string;
+	nativeToken: string;
 	protocols: Protocol[];
 	contracts: Contract[];
 };
