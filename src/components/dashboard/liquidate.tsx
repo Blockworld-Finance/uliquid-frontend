@@ -346,13 +346,16 @@ export function Liquidate({
 				disabled={!isInputValid}
 				className="w-full font-semibold"
 				onClick={() =>
-					getTx(liquidation, {
-						debtSymbol: asset.marketSymbol,
-						debtAmount: liquidation.debtAmount,
-						collateralSymbol: collateral.marketSymbol,
-						collateralAmount: liquidation.collateralAmount,
-						protocolFee: (liquidation?.fee / 1000000) * 100 ?? 0
-					})
+					getTx(
+						liquidation,
+						<p className="text-grey">
+							Liquidating {liquidation.collateralAmount}{" "}
+							{collateral.marketSymbol} to repay {liquidation.debtAmount}{" "}
+							{asset.marketSymbol}
+							<br />
+							Protocol fee of {(liquidation?.fee / 1000000) * 100 ?? 0} included
+						</p>
+					)
 				}
 			>
 				Liquidate

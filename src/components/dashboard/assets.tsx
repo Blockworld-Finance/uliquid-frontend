@@ -36,16 +36,10 @@ export default function Assets() {
 	const [view, setView] = useState(false);
 	const [show, setShow] = useState(false);
 	const [shown, setShown] = useState(false);
+	const { data, isLoading } = useUserData();
 	const { data: protocols } = useProtocols();
 	const { isConnected, address } = useAccount();
-	const [liquidationInfo, setLiquidationInfo] = useState({
-		debtAmount: 0,
-		debtSymbol: "",
-		protocolFee: 0,
-		collateralAmount: 0,
-		collateralSymbol: ""
-	});
-	const { data, isLoading, isRefetching } = useUserData();
+	const [liquidationInfo, setLiquidationInfo] = useState(<></>);
 	const [asset, setAsset] = useState<LendingMarketUser>();
 	const hasNoAsset = useMemo(
 		() =>
@@ -81,11 +75,11 @@ export default function Assets() {
 
 	const getLiquidateTx = (
 		liquidationQuote: LiquidationQuote,
-		info: typeof liquidationInfo
+		message: JSX.Element
 	) => {
 		setView(true);
 		setOpen(false);
-		setLiquidationInfo(info);
+		setLiquidationInfo(message);
 		getLendingProtocolLiquidateTx({
 			user: address,
 			protocol: name,
@@ -94,7 +88,6 @@ export default function Assets() {
 			chainId: versions[activeVersion].chains[activeChain].id
 		})
 			.then(async d => {
-				let x = 0;
 				for (let tx in d.getLendingProtocolLiquidateTx) {
 					const config = await prepareSendTransaction({
 						request: {
@@ -107,7 +100,7 @@ export default function Assets() {
 					});
 
 					const result = await sendTransaction(config);
-					const receipt = await result.wait();
+					await result.wait();
 				}
 
 				setView(false);
@@ -121,11 +114,11 @@ export default function Assets() {
 
 	const getLeverageTx = (
 		leverageQuote: LeverageQuoteInput,
-		info: typeof liquidationInfo
+		message: JSX.Element
 	) => {
 		setView(true);
 		setOpen(false);
-		setLiquidationInfo(info);
+		setLiquidationInfo(message);
 		getLendingProtocolLeverageTx({
 			leverageQuote,
 			user: address,
@@ -134,8 +127,6 @@ export default function Assets() {
 			chainId: versions[activeVersion].chains[activeChain].id
 		})
 			.then(async d => {
-				console.log(d);
-
 				for (let tx in d.getLendingProtocolLeverageTx) {
 					const config = await prepareSendTransaction({
 						request: {
@@ -147,18 +138,11 @@ export default function Assets() {
 						},
 						chainId: versions[activeVersion].chains[activeChain].id
 					});
-
 					const result = await sendTransaction(config);
-
-					console.log(result);
-
-					const receipt = await result.wait();
-
-					console.log(receipt);
+					await result.wait();
 				}
-
-				// setView(false);
-				// setShow(true);
+				setView(false);
+				setShow(true);
 			})
 			.catch(e => {
 				console.log(e);
@@ -256,7 +240,7 @@ export default function Assets() {
 				<NoAsset protocolURL={url} />
 			</Modal>
 			<Modal open={view} setOpen={setView} type="dark">
-				<Confirmation {...liquidationInfo} />
+				<Confirmation message={liquidationInfo} />
 			</Modal>
 			<Modal open={show} setOpen={setShow} type="dark">
 				<Submitted />
@@ -346,30 +330,12 @@ const Asset = ({ market, setOpen }: AssetProps) => {
 	);
 };
 
-type ConfirmationProps = {
-	debtAmount: number;
-	debtSymbol: string;
-	protocolFee: number;
-	collateralSymbol: string;
-	collateralAmount: number;
-};
-const Confirmation = ({
-	debtAmount,
-	debtSymbol,
-	protocolFee,
-	collateralSymbol,
-	collateralAmount
-}: ConfirmationProps) => {
+const Confirmation = ({ message }: { message: JSX.Element }) => {
 	return (
 		<div className="text-center">
 			<Spinner size={4} className="mx-auto mt-3" />
 			<h3 className="text-[18px] my-5">Waiting for confirmation</h3>
-			<p className="text-grey">
-				Liquidating {collateralAmount} {collateralSymbol} to repay {debtAmount}{" "}
-				{debtSymbol}
-				<br />
-				Protocol fee of {protocolFee} included
-			</p>
+			{message}
 			<p className="text-grey">Service charge of 1% included</p>
 			<div className="flex justify-center items-center space-x-2 mt-6">
 				<Info />

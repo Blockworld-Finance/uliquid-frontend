@@ -104,7 +104,11 @@ export default function Leverage({
 					console.log(
 						Number(fees?.gasPrice._hex),
 						500000 * d.loops,
-						tokenValue.getTokenUSDValue
+						tokenValue.getTokenUSDValue,
+						(Number(fees?.gasPrice._hex) *
+							(500000 * d.loops) *
+							tokenValue.getTokenUSDValue) /
+							10 ** 18
 					);
 
 					setGasPrice(
@@ -434,12 +438,16 @@ export default function Leverage({
 						return;
 					}
 
-					getTx(leverage, {
-						debtSymbol: debt.marketSymbol,
-						collateralSymbol: collateral.marketSymbol,
-						collateralAmount: 0,
-						protocolFee: 0
-					});
+					getTx(
+						leverage,
+						<p className="text-grey">
+							leveraging {leverage?.initialCollateralAmount} collateral symbol
+							for
+							{leverage?.leveragedCollateralAmount} {collateral.marketSymbol}{" "}
+							collateral and
+							{leverage?.leveragedDebtAmount} {debt.marketSymbol} debt
+						</p>
+					);
 				}}
 			>
 				{isConfirming ? "Confirm Leverage" : "Leverage"}
