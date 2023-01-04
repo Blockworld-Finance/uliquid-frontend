@@ -46,6 +46,11 @@ export default function Assets() {
 	);
 	const [liquidationInfo, setLiquidationInfo] = useState(<></>);
 	const [asset, setAsset] = useState<LendingMarketUser>();
+	const [sortDir, setSortDir] = useState({
+		currentSort: "",
+		amountSupplied: "asc",
+		amountBorrowed: "asc"
+	});
 
 	const { name = "", versions = [], categories } = protocols[activeProtocol];
 	useProtocolMarkets(name, {
@@ -78,6 +83,7 @@ export default function Assets() {
 			setAssetList([...cache.sort((a, b) => a[prop] - b[prop])]);
 		if (dir === "desc")
 			setAssetList([...cache.sort((a, b) => b[prop] - a[prop])]);
+		setSortDir({ ...sortDir, [prop]: dir, currentSort: prop });
 	};
 
 	const getLiquidateTx = (
@@ -179,10 +185,21 @@ export default function Assets() {
 								<div
 									className="hidden md:block"
 									onClick={() => {
-										sortAssetList("amountSupplied", "desc");
+										sortAssetList(
+											"amountSupplied",
+											sortDir.amountSupplied === "asc" ? "desc" : "asc"
+										);
 									}}
 								>
-									<Sortable />
+									<Sortable
+										className={`${
+											sortDir.currentSort === "amountSupplied"
+												? `${
+														sortDir.amountSupplied === "asc" ? "" : "rotate-180"
+												  }`
+												: "rotate-0"
+										}`}
+									/>
 								</div>
 							</li>
 							<li className="col-span-1 md:col-span-2 flex items-center justify-between">
@@ -191,10 +208,23 @@ export default function Assets() {
 									<div
 										className="hidden md:block"
 										onClick={() => {
-											sortAssetList("amountBorrowed", "desc");
+											sortAssetList(
+												"amountBorrowed",
+												sortDir.amountBorrowed === "asc" ? "desc" : "asc"
+											);
 										}}
 									>
-										<Sortable />
+										<Sortable
+											className={`${
+												sortDir.currentSort === "amountBorrowed"
+													? `${
+															sortDir.amountBorrowed === "asc"
+																? ""
+																: "rotate-180"
+													  }`
+													: "rotate-0"
+											}`}
+										/>
 									</div>
 								</div>
 							</li>
