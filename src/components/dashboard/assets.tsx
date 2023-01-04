@@ -197,13 +197,6 @@ export default function Assets() {
 										<Sortable />
 									</div>
 								</div>
-								<div className="block md:hidden">
-									<Filter />
-								</div>
-								<div className="bg-primary text-sm px-3 py-2 space-x-7 rounded md:flex items-center justify-between hidden">
-									<span>Filter</span>
-									<Dropdown />
-								</div>
 							</li>
 						</ul>
 					</div>
