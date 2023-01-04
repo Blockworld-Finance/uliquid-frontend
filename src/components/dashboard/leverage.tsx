@@ -38,6 +38,7 @@ export default function Leverage({
 	const [gasPrice, setGasPrice] = useState(0);
 	const { data: balance } = useTokenBalance();
 	let control = useRef(new AbortController());
+	const [slippage, setSlippage] = useState(2.0);
 	const [debt, setDebt] = useState(initialDebt);
 	const inputRef = useRef<HTMLInputElement>(null);
 	const { data: usdValue } = useNativeTokenUSDValue();
@@ -49,6 +50,7 @@ export default function Leverage({
 	const { data: fees, isError, isLoading } = useFeeData();
 	const [isConfirming, setIsConfirming] = useState(false);
 	const { name, logo, versions = [] } = data[activeProtocol];
+	const [changeSlippage, setChangeSlippage] = useState(false);
 	const [leverage, setLeverage] = useState<LeverageQuoteInput>();
 	const [collateral, setCollateral] = useState(initialCollateral);
 	const { data: markets } = useProtocolMarkets(name, {
@@ -79,9 +81,9 @@ export default function Leverage({
 	);
 
 	const getLeverage = useCallback(
-		(ratio: number) => {
+		(ratio: number, slippage = 2, close = true) => {
 			control.current.abort();
-			setShow(false);
+			close && setShow(false);
 			setIsConfirming(false);
 			const amount = Number(inputRef.current?.value ?? 0) ?? 0;
 			control.current = new AbortController();
@@ -89,9 +91,9 @@ export default function Leverage({
 				user: address,
 				protocol: name,
 				debt: debt.marketAddress,
-				slippage: (2 / 100) * 1000000,
 				signal: control.current.signal,
 				collateral: collateral.marketAddress,
+				slippage: (slippage / 100) * 1000000,
 				version: versions[activeVersion].name,
 				initialCollateralAmount: Number(inputRef.current?.value),
 				collateralizationRatio:
@@ -397,7 +399,55 @@ export default function Leverage({
 								<h3>{leverage?.swapQuote?.priceImpact?.toFixed(2) ?? 0}%</h3>
 							</div>
 							<div className="flex justify-between items-center text-grey">
-								<p>Maximum debt incurred after slippage (0.3%)</p>
+								<div>
+									<p>Maximum debt incurred after slippage (0.3%)</p>
+									{changeSlippage ? (
+										<ClickOutside
+											className="space-x-2"
+											onclickoutside={() => setChangeSlippage(false)}
+										>
+											<Button
+												size="default"
+												onClick={() => {
+													setSlippage(1.0);
+													setChangeSlippage(false);
+												}}
+												className="rounded-full !text-xs !leading-3 !py-2 h-auto"
+											>
+												Auto
+											</Button>
+											<input
+												max={50}
+												min={0.1}
+												step={0.5}
+												type={"number"}
+												inputMode={"numeric"}
+												style={{
+													appearance: "textfield"
+												}}
+												defaultValue={slippage}
+												onChange={e => {
+													setSlippage(Number(e.target.value));
+													getLeverage(ratio, Number(e.target.value), false);
+												}}
+												className="text-xs text-right text-white rounded-full border border-darkGrey p-1 bg-transparent"
+											/>
+										</ClickOutside>
+									) : (
+										<div className="space-x-2">
+											<span>({slippage}%)</span>
+											<Button
+												size="default"
+												onClick={() => {
+													setChangeSlippage(!changeSlippage);
+												}}
+												className="rounded-full !text-xs !leading-3 !py-2 h-auto"
+											>
+												Change
+											</Button>
+										</div>
+									)}
+								</div>
 								<p>
 									{(leverage?.leveragedDebtAmount ?? 0) +
 										((leverage?.leveragedDebtAmount ?? 0) *

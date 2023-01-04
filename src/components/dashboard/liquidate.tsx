@@ -21,6 +21,7 @@ import { ClickOutside } from "@hooks/useClickOutside";
 import { AssetPicker } from "@components/common/asset-picker";
 import { getLiquidation, getTokenUSDValue } from "src/queries";
 import { LendingMarketUser, LiquidationQuote } from "src/schema";
+import Input from "@components/common/input";
 
 type Props = {
 	asset?: LendingMarketUser;
@@ -49,12 +50,14 @@ export function Liquidate({
 		getTokenUSDValue: number;
 	}>();
 	const { data: balance } = useTokenBalance();
+	const [slippage, setSlippage] = useState(1.0);
 	const inputRef = useRef<HTMLInputElement>(null);
 	const [asset, setAsset] = useState(initialAsset);
 	const { data: usdValue } = useNativeTokenUSDValue();
 	const [isInputValid, setInputValid] = useState(false);
 	const [isConfirming, setIsConfirming] = useState(false);
 	const { data: fees, isError, isLoading } = useFeeData();
+	const [changeSlippage, setChangeSlippage] = useState(false);
 	const [collateral, setCollateral] = useState(initialCollateral);
 
 	const { name, logo, versions = [] } = data[activeProtocol];
@@ -111,10 +114,10 @@ export function Liquidate({
 			});
 	}, [activeChain, activeVersion, asset, collateral, versions]);
 
-	const getLiquidationQuote: ChangeEventHandler<HTMLInputElement> = useCallback(
-		_e => {
+	const getLiquidationQuote = useCallback(
+		(slippage: number, close = true) => {
 			control.current.abort();
-			setShow(false);
+			close && setShow(false);
 			setIsConfirming(false);
 			const amount = Number(inputRef.current?.value ?? 0) ?? 0;
 			control.current = new AbortController();
@@ -123,7 +126,7 @@ export function Liquidate({
 				protocol: name,
 				debtAmount: amount,
 				debt: asset?.marketAddress,
-				slippage: (1 / 100) * 1000000,
+				slippage: (slippage / 100) * 1000000,
 				signal: control.current.signal,
 				collateral: collateral.marketAddress,
 				version: versions[activeVersion].name,
@@ -196,7 +199,8 @@ export function Liquidate({
 									step={0.01}
 									type="number"
 									ref={inputRef}
-									onChange={getLiquidationQuote}
+									inputMode="numeric"
+									onChange={() => getLiquidationQuote(slippage)}
 									className="w-full text-3xl text-white bg-primary border-none focus:outline-none"
 								/>
 								<small className="text-sm text-grey">
@@ -337,12 +341,58 @@ export function Liquidate({
 							</div>
 							<div className="flex justify-between items-center">
 								<h3 className="text-grey">Price impact</h3>
-								<h3>
-									{liquidation?.swapQuote?.priceImpact?.toFixed(2) ?? 0}%
-								</h3>
+								<h3>{liquidation?.swapQuote?.priceImpact?.toFixed(2) ?? 0}%</h3>
 							</div>
-							<div className="flex justify-between items-center text-grey">
-								<p>Maximum spent after slippage (0.3%)</p>
+							<div className="flex justify-between items-start text-grey">
+								<div>
+									<p>Maximum spent after slippage</p>
+									{changeSlippage ? (
+										<ClickOutside
+											className="space-x-2"
+											onclickoutside={() => setChangeSlippage(false)}
+										>
+											<Button
+												size="default"
+												onClick={() => {
+													setSlippage(1.0);
+													setChangeSlippage(false);
+												}}
+												className="rounded-full !text-xs !leading-3 !py-2 h-auto"
+											>
+												Auto
+											</Button>
+											<input
+												max={50}
+												min={0.1}
+												step={0.5}
+												type={"number"}
+												inputMode={"numeric"}
+												style={{
+													appearance: "textfield"
+												}}
+												defaultValue={slippage}
+												onChange={e => {
+													setSlippage(Number(e.target.value));
+													getLiquidationQuote(Number(e.target.value), false);
+												}}
+												className="text-xs text-right text-white rounded-full border border-darkGrey p-1 bg-transparent"
+											/>
+										</ClickOutside>
+									) : (
+										<div className="space-x-2">
+											<span>({slippage}%)</span>
+											<Button
+												size="default"
+												onClick={() => {
+													setChangeSlippage(!changeSlippage);
+												}}
+												className="rounded-full !text-xs !leading-3 !py-2 h-auto"
+											>
+												Change
+											</Button>
+										</div>
+									)}
+								</div>
 								<p>
 									{liquidation?.collateralAmount ?? 0}{" "}
 									{collateral?.marketSymbol}
@@ -354,7 +404,7 @@ export function Liquidate({
 							</div>
 							<div className="flex justify-between items-center">
 								<p>Protocol fee</p>
-								<p>{(liquidation?.fee / 1000000) * 100 ?? 0}</p>
+								<p>{(liquidation?.fee / 1000000) * 100 ?? 0} %</p>
 							</div>
 						</div>
 					</div>
