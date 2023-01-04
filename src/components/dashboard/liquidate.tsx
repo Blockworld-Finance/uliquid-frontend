@@ -1,27 +1,20 @@
-import {
-	useRef,
-	useState,
-	useEffect,
-	useCallback,
-	ChangeEventHandler
-} from "react";
 import Image from "next/image";
 import { useAccount, useFeeData } from "wagmi";
+import { useRef, useState, useEffect, useCallback } from "react";
 
-import useData from "@hooks/useData";
-import Button from "@components/common/button";
-import { Info, GasPump, Dropdown } from "@icons";
 import {
 	useProtocols,
 	useTokenBalance,
 	useNativeTokenUSDValue
 } from "@hooks/useQueries";
+import useData from "@hooks/useData";
+import Button from "@components/common/button";
 import { formatNumber } from "src/utils/helpers";
+import { Info, GasPump, Dropdown } from "@icons";
 import { ClickOutside } from "@hooks/useClickOutside";
 import { AssetPicker } from "@components/common/asset-picker";
 import { getLiquidation, getTokenUSDValue } from "src/queries";
 import { LendingMarketUser, LiquidationQuote } from "src/schema";
-import Input from "@components/common/input";
 
 type Props = {
 	asset?: LendingMarketUser;
