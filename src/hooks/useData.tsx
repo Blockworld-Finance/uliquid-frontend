@@ -43,7 +43,6 @@ export class DataProvider<T extends object> extends Component<
 
 		if (true)
 			window.addEventListener("popstate", event => {
-				console.log(event);
 				this.updateState(event.state);
 			});
 	}

@@ -46,8 +46,6 @@ export const getProtocols = async () => {
 
 	const chains = [];
 	data.getProtocols.forEach((protocol, p) => {
-		console.log(protocol.categories, protocol.name);
-
 		const cats = {
 			Lending: false,
 			Leverage: false

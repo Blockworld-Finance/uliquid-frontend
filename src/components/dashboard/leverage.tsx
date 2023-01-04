@@ -101,15 +101,6 @@ export default function Leverage({
 			})
 				.then(d => {
 					setLeverage(d);
-					console.log(
-						Number(fees?.gasPrice._hex),
-						500000 * d.loops,
-						usdValue.getTokenUSDValue,
-						(Number(fees?.gasPrice._hex) *
-							(500000 * d.loops) *
-							usdValue.getTokenUSDValue) /
-							10 ** 18
-					);
 
 					setGasPrice(
 						(Number(fees?.gasPrice._hex) *

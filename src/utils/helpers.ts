@@ -15,8 +15,6 @@ export const formatNumber = (
 	decimalPlaces: number = 4,
 	rounding: "toFixed" | "toPrecision" = "toFixed"
 ) => {
-	// console.log(num);
-
 	if (typeof num !== "number") return 0;
 	return Number(num[rounding](decimalPlaces)).toLocaleString("en-UK", {
 		minimumFractionDigits: decimalPlaces

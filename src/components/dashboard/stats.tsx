@@ -13,8 +13,6 @@ export default function Stats() {
 		markets
 	} = data?.getLendingProtocolUserData ?? {};
 
-	// console.log(markets);
-
 	return (
 		<div className="flex items-center my-10 space-x-3 md:space-x-8">
 			<div className="flex items-center space-x-2 md:space-x-4">
