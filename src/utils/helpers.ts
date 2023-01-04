@@ -10,9 +10,15 @@ export const navigate = (params: AnyObject) => {
 		window.history.pushState({ ...params }, "", `${window.location.href}`);
 };
 
-export const formatNumber = (num: number, decimalPlaces?: number) => {
+export const formatNumber = (
+	num: number,
+	decimalPlaces: number = 4,
+	rounding: "toFixed" | "toPrecision" = "toFixed"
+) => {
 	// console.log(num);
 
 	if (typeof num !== "number") return 0;
-	return Number(num.toFixed(decimalPlaces ?? 4)).toLocaleString();
+	return Number(num[rounding](decimalPlaces)).toLocaleString("en-UK", {
+		minimumFractionDigits: decimalPlaces
+	});
 };

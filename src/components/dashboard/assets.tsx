@@ -1,9 +1,8 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
-import Image from "next/image";
 import { useAccount } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { prepareSendTransaction, sendTransaction } from "@wagmi/core";
 
 import {
@@ -28,6 +27,7 @@ import Modal from "@components/common/Modal";
 import Button from "@components/common/button";
 import Spinner from "@components/common/Spinner";
 import { Info, Send, Filter, Wallet, Dropdown, Sortable } from "@icons";
+import { formatNumber } from "src/utils/helpers";
 
 export default function Assets() {
 	useNativeTokenUSDValue();
@@ -41,21 +41,13 @@ export default function Assets() {
 	const { data, isLoading } = useUserData();
 	const { data: protocols } = useProtocols();
 	const { isConnected, address } = useAccount();
+	const [assetList, setAssetList] = useState(
+		data?.getLendingProtocolUserData?.markets ?? []
+	);
 	const [liquidationInfo, setLiquidationInfo] = useState(<></>);
 	const [asset, setAsset] = useState<LendingMarketUser>();
-	const hasNoAsset = useMemo(
-		() =>
-			data &&
-			data?.getLendingProtocolUserData?.totalSuppliedUSD === 0 &&
-			data?.getLendingProtocolUserData?.totalBorrowedUSD === 0,
-		[data]
-	);
-	const {
-		url = "",
-		name = "",
-		logo = "",
-		versions = []
-	} = protocols[activeProtocol];
+
+	const { name = "", versions = [], categories } = protocols[activeProtocol];
 	useProtocolMarkets(name, {
 		version: versions[activeVersion].name,
 		chainId: versions[activeVersion].chains[activeChain].id
@@ -74,6 +66,19 @@ export default function Assets() {
 			);
 		}
 	}, [data]);
+
+	useEffect(() => {
+		if (data?.getLendingProtocolUserData?.markets)
+			setAssetList(data?.getLendingProtocolUserData?.markets);
+	}, [data?.getLendingProtocolUserData?.markets]);
+
+	const sortAssetList = (prop: string, dir: "asc" | "desc") => {
+		const cache = data.getLendingProtocolUserData.markets;
+		if (dir === "asc")
+			setAssetList([...cache.sort((a, b) => a[prop] - b[prop])]);
+		if (dir === "desc")
+			setAssetList([...cache.sort((a, b) => b[prop] - a[prop])]);
+	};
 
 	const getLiquidateTx = (
 		liquidationQuote: LiquidationQuote,
@@ -155,7 +160,8 @@ export default function Assets() {
 	const selectAsset = useCallback((asset: LendingMarketUser) => {
 		if (asset.amountBorrowed === 0 && asset.amountSupplied === 0) {
 			setShown(true);
-			return;
+		} else {
+			setShown(false);
 		}
 		setOpen(true);
 		setAsset(asset);
@@ -164,68 +170,63 @@ export default function Assets() {
 	return (
 		<div className="bg-navy p-4 md:p-10 rounded-xl">
 			{isConnected ? (
-				hasNoAsset ? (
-					<div className="text-center space-y-5 py-24">
-						<Image width={90} height={90} src={logo} alt={name} />
-						<h2 className="font-semibold text-4xl">No debt</h2>
-						<p className="mb-14 text-2xl text-grey">
-							You have not borrowed from {name} yet, Kindly do so to access this
-							page.
-						</p>
-						<a
-							href={url}
-							target="_blank"
-							rel="noopener noreferrer"
-							className="mx-auto block w-max"
-						>
-							<Button variant="secodary">Go to {name}</Button>
-						</a>
+				<div className="space-y-3 md:space-y-6">
+					<div className="text-darkGrey">
+						<ul className="md:px-8 grid grid-cols-4 md:grid-cols-6 items-center text-xs md:text-base">
+							<li className="col-span-2">Asset</li>
+							<li className="col-span-1 md:col-span-2 flex space-x-3 pr-1">
+								<span>Total supplied</span>
+								<div
+									className="hidden md:block"
+									onClick={() => {
+										sortAssetList("amountSupplied", "desc");
+									}}
+								>
+									<Sortable />
+								</div>
+							</li>
+							<li className="col-span-1 md:col-span-2 flex items-center justify-between">
+								<div className="flex space-x-3">
+									<span className="">Total borrowed</span>
+									<div
+										className="hidden md:block"
+										onClick={() => {
+											sortAssetList("amountBorrowed", "desc");
+										}}
+									>
+										<Sortable />
+									</div>
+								</div>
+								<div className="block md:hidden">
+									<Filter />
+								</div>
+								<div className="bg-primary text-sm px-3 py-2 space-x-7 rounded md:flex items-center justify-between hidden">
+									<span>Filter</span>
+									<Dropdown />
+								</div>
+							</li>
+						</ul>
 					</div>
-				) : (
-					<div className="space-y-3 md:space-y-6">
-						<div className="text-darkGrey">
-							<ul className="md:px-8 grid grid-cols-4 md:grid-cols-6 items-center text-xs md:text-base">
-								<li className="col-span-2">Asset</li>
-								<li className="col-span-1 md:col-span-2 flex space-x-3 pr-1">
-									<span>Total supplied</span>
-									<Sortable className="hidden md:block" />
-								</li>
-								<li className="col-span-1 md:col-span-2 flex items-center justify-between">
-									<div className="flex space-x-3">
-										<span className="">Total borrowed</span>
-										<Sortable className="hidden md:block" />
-									</div>
-									<div className="block md:hidden">
-										<Filter />
-									</div>
-									<div className="bg-primary text-sm px-3 py-2 space-x-7 rounded md:flex items-center justify-between hidden">
-										<span>Filter</span>
-										<Dropdown />
-									</div>
-								</li>
-							</ul>
+					{isLoading ? (
+						<div className="grid place-items-center py-10">
+							<Spinner size={4} />
 						</div>
-						{isLoading ? (
-							<div className="grid place-items-center py-10">
-								<Spinner size={4} />
-							</div>
-						) : (
-							<>
-								{data && data.getLendingProtocolUserData.markets
-									? data.getLendingProtocolUserData.markets.map((m, i) => (
-											<Asset key={i} setOpen={selectAsset} market={m} />
-									  ))
-									: !isLoading && (
-											<div className="text-center space-y-5 py-24">
-												<p className="mb-14 text-2xl text-grey">
-													No assets found
-												</p>
-											</div>
-									  )}
-							</>
-						)}
-					</div>
-				)
+					) : (
+						<>
+							{assetList.length
+								? assetList.map((m, i) => (
+										<Asset key={i} setOpen={selectAsset} market={m} />
+								  ))
+								: !isLoading && (
+										<div className="text-center space-y-5 py-24">
+											<p className="mb-14 text-2xl text-grey">
+												No assets found
+											</p>
+										</div>
+								  )}
+						</>
+					)}
+				</div>
 			) : (
 				<div className="text-center space-y-5 py-24">
 					<Wallet className="mx-auto" />
@@ -238,9 +239,9 @@ export default function Assets() {
 					</span>
 				</div>
 			)}
-			<Modal open={shown} setOpen={setShown} type="dark">
+			{/* <Modal open={shown} setOpen={setShown} type="dark">
 				<NoAsset protocolURL={url} />
-			</Modal>
+			</Modal> */}
 			<Modal open={view} setOpen={setView} type="dark">
 				<Confirmation message={liquidationInfo} />
 			</Modal>
@@ -262,17 +263,21 @@ export default function Assets() {
 								/>
 							)
 						},
-						{
-							title: "Leverage",
-							render: (
-								<Leverage
-									debt={asset}
-									getTx={getLeverageTx}
-									collateral={defaultCollateral}
-									key={`${asset?.marketSymbol ?? "NOASSET"}-${open}-lev`}
-								/>
-							)
-						}
+						...(categories.Leverage
+							? [
+									{
+										title: "Leverage",
+										render: (
+											<Leverage
+												debt={asset}
+												getTx={getLeverageTx}
+												collateral={defaultCollateral}
+												key={`${asset?.marketSymbol ?? "NOASSET"}-${open}-lev`}
+											/>
+										)
+									}
+							  ]
+							: [])
 					]}
 				/>
 			</Modal>
@@ -308,23 +313,27 @@ const Asset = ({ market, setOpen }: AssetProps) => {
 			</div>
 			<div className="space-y-1 flex-shrink">
 				<span className="text-xs md:text-[18px] block">
-					{market.amountSupplied ? market.amountSupplied.toPrecision(7) : 0}
+					{market.amountSupplied
+						? formatNumber(market.amountSupplied, 7, "toPrecision")
+						: 0}
 				</span>
 				<span className="text-[10px] md:text-sm text-grey block">
 					$
 					{market.amountSuppliedUSD
-						? market.amountSuppliedUSD.toPrecision(7)
+						? formatNumber(market.amountSuppliedUSD, 7, "toPrecision")
 						: 0}
 				</span>
 			</div>
 			<div className="space-y-1 flex-shrink">
 				<span className="text-xs md:text-[18px] block">
-					{market.amountBorrowed ? market.amountBorrowed.toPrecision(7) : 0}
+					{market.amountBorrowed
+						? formatNumber(market.amountBorrowed, 7, "toPrecision")
+						: 0}
 				</span>
 				<span className="text-[10px] md:text-sm text-grey block">
 					$
 					{market.amountBorrowedUSD
-						? market.amountBorrowedUSD.toPrecision(7)
+						? formatNumber(market.amountBorrowedUSD, 7, "toPrecision")
 						: 0}
 				</span>
 			</div>

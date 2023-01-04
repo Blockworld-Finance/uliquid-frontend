@@ -403,12 +403,7 @@ export default function Leverage({
 						>
 							<div className="flex justify-between items-center">
 								<h3 className="text-grey">Price impact</h3>
-								<h3>
-									{leverage?.swapQuote.priceImpact > 0.00001
-										? leverage?.swapQuote.priceImpact.toPrecision(8) ?? 0
-										: 0}
-									%
-								</h3>
+								<h3>{leverage?.swapQuote?.priceImpact?.toFixed(2) ?? 0}%</h3>
 							</div>
 							<div className="flex justify-between items-center text-grey">
 								<p>Maximum debt incurred after slippage (0.3%)</p>

@@ -23,6 +23,9 @@ export const getProtocols = async () => {
 				name
 				logo
 				description
+				categories {
+					name
+				}
 				versions {
 					protocolName
 					name
@@ -43,8 +46,20 @@ export const getProtocols = async () => {
 
 	const chains = [];
 	data.getProtocols.forEach((protocol, p) => {
+		console.log(protocol.categories, protocol.name);
+
+		const cats = {
+			Lending: false,
+			Leverage: false
+		};
+
+		protocol.categories.forEach(cat => {
+			cats[cat.name] = true;
+		});
+
 		chains[p] = {
 			versions: [],
+			categories: cats,
 			url: protocol.url,
 			name: protocol.name,
 			logo: protocol.logo,

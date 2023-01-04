@@ -151,7 +151,7 @@ export function Liquidate({
 			activeChain,
 			activeVersion,
 			fees.gasPrice._hex,
-			usdValue.getTokenUSDValue
+			usdValue?.getTokenUSDValue
 		]
 	);
 
@@ -338,10 +338,7 @@ export function Liquidate({
 							<div className="flex justify-between items-center">
 								<h3 className="text-grey">Price impact</h3>
 								<h3>
-									{liquidation?.swapQuote.priceImpact > 0.00001
-										? liquidation?.swapQuote.priceImpact.toPrecision(8) ?? 0
-										: 0}
-									%
+									{liquidation?.swapQuote?.priceImpact?.toFixed(2) ?? 0}%
 								</h3>
 							</div>
 							<div className="flex justify-between items-center text-grey">

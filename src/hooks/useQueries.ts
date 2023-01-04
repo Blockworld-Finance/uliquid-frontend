@@ -7,9 +7,8 @@ import {
 	getUserData,
 	getProtocols,
 	getTokenBalances,
-	getLendingProtocolMarkets,
-	getTokenUSDValue,
-	getNativeTokenUSDValue
+	getNativeTokenUSDValue,
+	getLendingProtocolMarkets
 } from "src/queries";
 
 export function useProtocols(data?: NormalizedProtocols) {

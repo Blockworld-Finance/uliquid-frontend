@@ -10,6 +10,8 @@ export interface AnyObject<T = any, D = any> extends D {
 	[key: string]: T;
 }
 
+type CategoryNames = "Lending" | "Leverage";
+
 type GetProtocolResponse = {
 	getProtocols: {
 		url: string;
@@ -17,6 +19,7 @@ type GetProtocolResponse = {
 		name: string;
 		description: string;
 		versions: Version[];
+		categories: { name: CategoryNames }[];
 	}[];
 };
 
@@ -35,6 +38,10 @@ type NormalizedProtocol = {
 	url: string;
 	name: string;
 	logo: string;
+	categories: {
+		Lending: boolean;
+		Leverage: boolean;
+	};
 	description: string;
 	versions: {
 		name: string;
