@@ -11,7 +11,6 @@ export default function Dashboard({ data: ddata, urls }) {
 	const { dispatch } = useData();
 	const queryclient = useQueryClient();
 	const { data } = useProtocols(ddata);
-
 	useTokenBalance();
 
 	return (

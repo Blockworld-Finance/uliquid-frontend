@@ -26,8 +26,8 @@ import Tabs from "@components/common/tabs";
 import Modal from "@components/common/Modal";
 import Button from "@components/common/button";
 import Spinner from "@components/common/Spinner";
-import { Info, Send, Filter, Wallet, Dropdown, Sortable } from "@icons";
 import { formatNumber } from "src/utils/helpers";
+import { Info, Send, Wallet, Sortable } from "@icons";
 
 export default function Assets() {
 	useNativeTokenUSDValue();
@@ -37,7 +37,6 @@ export default function Assets() {
 	const [open, setOpen] = useState(false);
 	const [view, setView] = useState(false);
 	const [show, setShow] = useState(false);
-	const [shown, setShown] = useState(false);
 	const { data, isLoading } = useUserData();
 	const { data: protocols } = useProtocols();
 	const { isConnected, address } = useAccount();
@@ -164,11 +163,6 @@ export default function Assets() {
 	};
 
 	const selectAsset = useCallback((asset: LendingMarketUser) => {
-		if (asset.amountBorrowed === 0 && asset.amountSupplied === 0) {
-			setShown(true);
-		} else {
-			setShown(false);
-		}
 		setOpen(true);
 		setAsset(asset);
 	}, []);
@@ -262,9 +256,6 @@ export default function Assets() {
 					</span>
 				</div>
 			)}
-			{/* <Modal open={shown} setOpen={setShown} type="dark">
-				<NoAsset protocolURL={url} />
-			</Modal> */}
 			<Modal open={view} setOpen={setView} type="dark">
 				<Confirmation message={liquidationInfo} />
 			</Modal>
@@ -286,7 +277,8 @@ export default function Assets() {
 								/>
 							)
 						},
-						...(categories.Leverage
+						...(categories.Leverage &&
+						asset?.marketAddress !== defaultCollateral?.marketAddress
 							? [
 									{
 										title: "Leverage",

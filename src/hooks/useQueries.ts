@@ -56,13 +56,13 @@ export function useTokenBalance() {
 		[
 			"token-balance",
 			address,
-			data[activeProtocol].versions[activeVersion].chains[activeChain].id
+			data?.[activeProtocol]?.versions[activeVersion].chains[activeChain].id
 		],
 		() =>
 			getTokenBalances({
 				user: address,
 				chainId:
-					data[activeProtocol].versions[activeVersion].chains[activeChain].id
+					data?.[activeProtocol].versions[activeVersion].chains[activeChain].id
 			}),
 		{ enabled: isConnected }
 	);
