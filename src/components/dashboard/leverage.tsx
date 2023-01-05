@@ -1,20 +1,22 @@
 import Image from "next/image";
 import { useAccount, useFeeData } from "wagmi";
-import { useRef, useMemo, useState, useEffect, useCallback } from "react";
+import { useRef, useMemo, useState, useCallback } from "react";
 
 import useProtocolMarkets, {
 	useProtocols,
 	useTokenBalance,
+	useTokenUSDValues,
 	useNativeTokenUSDValue
 } from "@hooks/useQueries";
 import useData from "@hooks/useData";
 import Button from "@components/common/button";
 import Slider from "@components/common/slider";
+import { getLeverageQuote } from "src/queries";
+import Spinner from "@components/common/Spinner";
 import { ClickOutside } from "@hooks/useClickOutside";
 import { Dropdown, GasPump, Help, Info } from "@icons";
 import { AssetPicker } from "@components/common/asset-picker";
 import { LendingMarketUser, LeverageQuoteInput } from "@schema";
-import { getLeverageQuote, getTokenUSDValue } from "src/queries";
 
 type Props = {
 	debt?: LendingMarketUser;
@@ -40,25 +42,21 @@ export default function Leverage({
 	let control = useRef(new AbortController());
 	const [slippage, setSlippage] = useState(2.0);
 	const [debt, setDebt] = useState(initialDebt);
+	const [loading, setLoading] = useState(false);
 	const inputRef = useRef<HTMLInputElement>(null);
-	const { data: usdValue } = useNativeTokenUSDValue();
-	const [tokenValue, setTokenValue] = useState<{
-		getTokenValue: number;
-		getTokenUSDValue: number;
-	}>();
 	const [isInputValid, setInputValid] = useState(false);
-	const { data: fees, isError, isLoading } = useFeeData();
-	const [isConfirming, setIsConfirming] = useState(false);
+	const { data: usdValue, isLoading: nativeTokenLoading } =
+		useNativeTokenUSDValue();
+		const [isConfirming, setIsConfirming] = useState(false);
+	const { data: fees, isLoading: feeLoading } = useFeeData();
 	const { name, logo, versions = [] } = data[activeProtocol];
 	const [changeSlippage, setChangeSlippage] = useState(false);
 	const [leverage, setLeverage] = useState<LeverageQuoteInput>();
 	const [collateral, setCollateral] = useState(initialCollateral);
-	const { data: markets } = useProtocolMarkets(name, {
+	const { data: markets, isLoading: marketLoading } = useProtocolMarkets(name, {
 		version: versions[activeVersion].name,
 		chainId: versions[activeVersion].chains[activeChain].id
 	});
-
-	const [color, setColor] = useState();
 
 	const market = useMemo(() => {
 		const m =
@@ -80,8 +78,22 @@ export default function Leverage({
 		market.marketData.minCollateralizationRatio ?? 125
 	);
 
+	const { data: tokenValue, isLoading: tokenLoading } = useTokenUSDValues({
+		token: debt?.marketAddress,
+		quoteToken: collateral?.marketAddress,
+		getTokenUsdValueToken2: collateral?.marketAddress,
+		chainId: versions[activeVersion].chains[activeChain].id,
+		getTokenUsdValueChainId2: versions[activeVersion].chains[activeChain].id
+	});
+
+	const preparing = useMemo(
+		() => tokenLoading || nativeTokenLoading || feeLoading || marketLoading,
+		[tokenLoading, nativeTokenLoading, feeLoading, marketLoading]
+	);
+
 	const getLeverage = useCallback(
 		(ratio: number, slippage = 2, close = true) => {
+			setLoading(true);
 			control.current.abort();
 			close && setShow(false);
 			setIsConfirming(false);
@@ -110,7 +122,12 @@ export default function Leverage({
 							usdValue.getTokenUSDValue) /
 							10 ** 18
 					);
-					setInputValid(amount && amount <= balance[collateral.marketAddress]);
+					setInputValid(
+						amount &&
+							amount <= balance[collateral.marketAddress] &&
+							debt.marketAddress !== collateral.marketAddress
+					);
+					setLoading(false);
 				})
 				.catch(e => {});
 		},
@@ -129,20 +146,11 @@ export default function Leverage({
 		]
 	);
 
-	useEffect(() => {
-		if (debt && collateral)
-			getTokenUSDValue({
-				token: debt?.marketAddress,
-				quoteToken: collateral?.marketAddress,
-				getTokenUsdValueToken2: collateral?.marketAddress,
-				chainId: versions[activeVersion].chains[activeChain].id,
-				getTokenUsdValueChainId2: versions[activeVersion].chains[activeChain].id
-			}).then(d => {
-				setTokenValue(d);
-			});
-	}, [activeChain, activeVersion, debt, collateral, versions]);
-
-	return (
+	return preparing ? (
+		<div className="my-8 flex justify-center items-center">
+			<Spinner size={3} />
+		</div>
+	) : (
 		<>
 			<div className="max-h-[60vh] overflow-y-scroll overscroll-y-contain mt-4">
 				<div className="flex space-x-10">
@@ -465,6 +473,7 @@ export default function Leverage({
 			</div>
 			<Button
 				size="large"
+				loading={loading}
 				disabled={!isInputValid}
 				className="w-full font-semibold"
 				onClick={() => {

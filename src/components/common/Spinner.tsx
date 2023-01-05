@@ -11,7 +11,7 @@ export default function Spinner({ size = 1, className, color = "" }: Props) {
 		<div
 			style={{
 				width: `${sides}px`,
-				height: `${sides}px`,
+				height: `${sides}px`
 			}}
 			className={`ld-ring dt ${className}`}
 		>
@@ -19,7 +19,7 @@ export default function Spinner({ size = 1, className, color = "" }: Props) {
 				style={{
 					width: `${sides}px`,
 					height: `${sides}px`,
-					...(color && { borderTopColor: color }),
+					...(color && { borderTopColor: color, borderLeftColor: color })
 				}}
 			></span>
 		</div>

@@ -277,8 +277,7 @@ export default function Assets() {
 								/>
 							)
 						},
-						...(categories.Leverage &&
-						asset?.marketAddress !== defaultCollateral?.marketAddress
+						...(categories.Leverage
 							? [
 									{
 										title: "Leverage",

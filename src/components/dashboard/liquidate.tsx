@@ -1,19 +1,21 @@
 import Image from "next/image";
 import { useAccount, useFeeData } from "wagmi";
-import { useRef, useState, useEffect, useCallback } from "react";
+import { useRef, useState, useEffect, useCallback, useMemo } from "react";
 
 import {
 	useProtocols,
 	useTokenBalance,
-	useNativeTokenUSDValue
+	useNativeTokenUSDValue,
+	useTokenUSDValues
 } from "@hooks/useQueries";
 import useData from "@hooks/useData";
+import { getLiquidation } from "src/queries";
 import Button from "@components/common/button";
 import { formatNumber } from "src/utils/helpers";
 import { Info, GasPump, Dropdown } from "@icons";
+import Spinner from "@components/common/Spinner";
 import { ClickOutside } from "@hooks/useClickOutside";
 import { AssetPicker } from "@components/common/asset-picker";
-import { getLiquidation, getTokenUSDValue } from "src/queries";
 import { LendingMarketUser, LiquidationQuote } from "src/schema";
 
 type Props = {
@@ -38,23 +40,34 @@ export function Liquidate({
 	const [show, setShow] = useState(false);
 	let control = useRef(new AbortController());
 	const [gasPrice, setGasPrice] = useState(0);
-	const [tokenValue, setTokenValue] = useState<{
-		getTokenValue: number;
-		getTokenUSDValue: number;
-	}>();
 	const { data: balance } = useTokenBalance();
+	const [loading, setLoading] = useState(false);
 	const [slippage, setSlippage] = useState(1.0);
 	const inputRef = useRef<HTMLInputElement>(null);
 	const [asset, setAsset] = useState(initialAsset);
-	const { data: usdValue } = useNativeTokenUSDValue();
 	const [isInputValid, setInputValid] = useState(false);
 	const [isConfirming, setIsConfirming] = useState(false);
-	const { data: fees, isError, isLoading } = useFeeData();
+	const { data: usdValue, isLoading: nativeTokenLoading } =
+		useNativeTokenUSDValue();
+	const { data: fees, isLoading: feeLoading } = useFeeData();
 	const [changeSlippage, setChangeSlippage] = useState(false);
 	const [collateral, setCollateral] = useState(initialCollateral);
 
 	const { name, logo, versions = [] } = data[activeProtocol];
 	const [liquidation, setLiquidation] = useState<LiquidationQuote>();
+
+	const { data: tokenValue, isLoading: tokenLoading } = useTokenUSDValues({
+		token: asset?.marketAddress,
+		quoteToken: collateral?.marketAddress,
+		getTokenUsdValueToken2: collateral?.marketAddress,
+		chainId: versions[activeVersion].chains[activeChain].id,
+		getTokenUsdValueChainId2: versions[activeVersion].chains[activeChain].id
+	});
+
+	const preparing = useMemo(
+		() => tokenLoading || nativeTokenLoading || feeLoading,
+		[tokenLoading, nativeTokenLoading, feeLoading]
+	);
 
 	const pollLiquidationQoute = useCallback(() => {
 		const amount = Number(inputRef.current?.value ?? 0) ?? 0;
@@ -63,7 +76,6 @@ export function Liquidate({
 			user: address,
 			protocol: name,
 			debtAmount: amount,
-			// signal: control.signal,
 			debt: asset?.marketAddress,
 			slippage: (1 / 100) * 1000000,
 			collateral: collateral.marketAddress,
@@ -94,21 +106,9 @@ export function Liquidate({
 		}
 	}, [pollLiquidationQoute]);
 
-	useEffect(() => {
-		if (asset && collateral)
-			getTokenUSDValue({
-				token: asset?.marketAddress,
-				quoteToken: collateral?.marketAddress,
-				getTokenUsdValueToken2: collateral?.marketAddress,
-				chainId: versions[activeVersion].chains[activeChain].id,
-				getTokenUsdValueChainId2: versions[activeVersion].chains[activeChain].id
-			}).then(d => {
-				setTokenValue(d);
-			});
-	}, [activeChain, activeVersion, asset, collateral, versions]);
-
 	const getLiquidationQuote = useCallback(
 		(slippage: number, close = true) => {
+			setLoading(true);
 			control.current.abort();
 			close && setShow(false);
 			setIsConfirming(false);
@@ -134,6 +134,7 @@ export function Liquidate({
 							10 ** 18
 					);
 					setInputValid(amount && amount <= balance[collateral.marketAddress]);
+					setLoading(false);
 				})
 				.catch(e => {});
 		},
@@ -151,7 +152,11 @@ export function Liquidate({
 		]
 	);
 
-	return (
+	return preparing ? (
+		<div className="my-8 flex justify-center items-center">
+			<Spinner size={3} />
+		</div>
+	) : (
 		<>
 			<div className="max-h-[60vh] overflow-y-scroll overscroll-y-contain mt-4">
 				<div className="flex space-x-10">
@@ -406,6 +411,7 @@ export function Liquidate({
 
 			<Button
 				size="large"
+				loading={loading}
 				disabled={!isInputValid}
 				className="w-full font-semibold"
 				onClick={() => {

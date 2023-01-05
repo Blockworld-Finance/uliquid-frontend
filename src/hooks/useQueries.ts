@@ -8,7 +8,8 @@ import {
 	getProtocols,
 	getTokenBalances,
 	getNativeTokenUSDValue,
-	getLendingProtocolMarkets
+	getLendingProtocolMarkets,
+	getTokenUSDValue
 } from "src/queries";
 
 export function useProtocols(data?: NormalizedProtocols) {
@@ -87,7 +88,10 @@ export function useNativeTokenUSDValue() {
 	const { isConnected } = useAccount();
 
 	return useQuery(
-		["token", data[activeProtocol].versions[activeVersion].chains[activeChain]],
+		[
+			"native-token-usd-value",
+			data[activeProtocol].versions[activeVersion].chains[activeChain]
+		],
 		() =>
 			getNativeTokenUSDValue(
 				data[activeProtocol].versions[activeVersion].chains[activeChain]
@@ -98,5 +102,40 @@ export function useNativeTokenUSDValue() {
 			enabled: isConnected,
 			refetchOnWindowFocus: false
 		}
+	);
+}
+
+type TUVProps = {
+	token: string;
+	chainId: number;
+	quoteToken: string;
+	getTokenUsdValueToken2: string;
+	getTokenUsdValueChainId2: number;
+};
+
+export function useTokenUSDValues({
+	token,
+	chainId,
+	quoteToken,
+	getTokenUsdValueToken2,
+	getTokenUsdValueChainId2
+}: TUVProps) {
+	return useQuery(
+		[
+			"token-usd-value",
+			token,
+			chainId,
+			quoteToken,
+			getTokenUsdValueChainId2,
+			getTokenUsdValueToken2
+		],
+		() =>
+			getTokenUSDValue({
+				token,
+				chainId,
+				quoteToken,
+				getTokenUsdValueToken2,
+				getTokenUsdValueChainId2
+			}),
 	);
 }
