@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { useAccount, useFeeData } from "wagmi";
+import { useAccount, useFeeData, useNetwork, useSwitchNetwork } from "wagmi";
 import { useRef, useState, useEffect, useCallback, useMemo } from "react";
 
 import {
@@ -19,6 +19,8 @@ import Spinner from "@components/common/Spinner";
 import { ClickOutside } from "@hooks/useClickOutside";
 import { AssetPicker } from "@components/common/asset-picker";
 import { LendingMarketUser, LiquidationQuote } from "src/schema";
+import Alert from "@components/common/alert";
+import { toast } from "react-toastify";
 
 type Props = {
 	asset?: LendingMarketUser;
@@ -35,18 +37,17 @@ export function Liquidate({
 		data: { activeProtocol, activeChain, activeVersion }
 	} = useData();
 	const { data } = useProtocols();
-	const { address } = useAccount();
-	const interval = useRef<NodeJS.Timer>();
+	const { chain } = useNetwork();
 	const [open, setOpen] = useState(false);
 	const [view, setView] = useState(false);
 	const [show, setShow] = useState(false);
 	const [amount, setAmount] = useState(0);
-	let control = useRef(new AbortController());
 	const [gasPrice, setGasPrice] = useState(0);
 	const { data: balance } = useTokenBalance();
 	const [slippage, setSlippage] = useState(1.0);
 	const inputRef = useRef<HTMLInputElement>(null);
 	const [asset, setAsset] = useState(initialAsset);
+	const { chains, switchNetwork } = useSwitchNetwork();
 	const [isInputValid, setInputValid] = useState(false);
 	const [isConfirming, setIsConfirming] = useState(false);
 	const { data: usdValue, isLoading: nativeTokenLoading } =
@@ -132,6 +133,38 @@ export function Liquidate({
 				</div>
 
 				<div className="space-y-2 my-4">
+					{/* {collateral.marketAddress === ass.marketAddress && (
+						<Alert
+							message={<>You can&quot;t incur a debt of the same token</>}
+						/>
+					)} */}
+					{chain?.id !== versions[activeVersion].chains[activeChain].id && (
+						<Alert
+							message={
+								<>
+									Please switch to{" "}
+									{versions[activeVersion].chains[activeChain].name}.{" "}
+									<span
+										className="underline cursor-pointer"
+										onClick={() => {
+											const newChain = chains.find(
+												c =>
+													c.id ===
+													versions[activeVersion].chains[activeChain].id
+											);
+
+											console.log(newChain);
+
+											if (newChain) switchNetwork(newChain.id);
+											else toast.error("This chain is currently not supported");
+										}}
+									>
+										Switch network
+									</span>
+								</>
+							}
+						/>
+					)}
 					<div className="bg-primary p-3 rounded-lg space-y-3">
 						<small className="text-sm text-darkGrey">Debt</small>
 						<div className="grid gap-4 grid-cols-5 space-x-4 items-center">

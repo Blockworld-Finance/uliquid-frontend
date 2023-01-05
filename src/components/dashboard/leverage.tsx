@@ -21,6 +21,7 @@ import { ClickOutside } from "@hooks/useClickOutside";
 import { Dropdown, GasPump, Help, Info } from "@icons";
 import { AssetPicker } from "@components/common/asset-picker";
 import { LendingMarketUser, LeverageQuoteInput } from "@schema";
+import { toast } from "react-toastify";
 
 type Props = {
 	debt?: LendingMarketUser;
@@ -36,6 +37,7 @@ export default function Leverage({
 	const {
 		data: { activeProtocol, activeChain, activeVersion }
 	} = useData();
+	const { chain } = useNetwork();
 	const { data } = useProtocols();
 	const [view, setView] = useState(false);
 	const [open, setOpen] = useState(false);
@@ -43,8 +45,9 @@ export default function Leverage({
 	const [gasPrice, setGasPrice] = useState(0);
 	const { data: balance } = useTokenBalance();
 	const [slippage, setSlippage] = useState(2.0);
-	const inputRef = useRef<HTMLInputElement>(null);
 	const [debt, setDebt] = useState(initialDebt);
+	const inputRef = useRef<HTMLInputElement>(null);
+	const { chains, switchNetwork } = useSwitchNetwork();
 	const [isInputValid, setInputValid] = useState(false);
 	const { data: usdValue, isLoading: nativeTokenLoading } =
 		useNativeTokenUSDValue();
@@ -56,8 +59,6 @@ export default function Leverage({
 	const [amount, setAmount] = useState(
 		balance?.[collateral.marketAddress] ?? 0
 	);
-	const { chain } = useNetwork();
-	const { chains, error, pendingChainId, switchNetwork } = useSwitchNetwork();
 	const { data: markets, isLoading: marketLoading } = useProtocolMarkets(name, {
 		version: versions[activeVersion].name,
 		chainId: versions[activeVersion].chains[activeChain].id
@@ -209,6 +210,8 @@ export default function Leverage({
 
 											if (newChain) {
 												switchNetwork(newChain.id);
+											} else {
+												toast.error("This chain is currently not supported");
 											}
 										}}
 									>
