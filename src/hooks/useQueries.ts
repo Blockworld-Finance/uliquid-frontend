@@ -6,7 +6,7 @@ import {
 	getTokenBalances,
 	getLeverageQuote,
 	getNativeTokenUSDValue,
-	getLendingProtocolMarkets,
+	getLendingProtocolMarkets
 } from "src/queries";
 import { useRef } from "react";
 import { useAccount } from "wagmi";
@@ -15,6 +15,7 @@ import { useQuery } from "react-query";
 import useData from "./useData";
 import { AnyObject, NormalizedProtocols } from "@types";
 import { LeverageQuoteInput, LiquidationQuote } from "@schema";
+import { toast } from "react-toastify";
 
 export function useProtocols(data?: NormalizedProtocols) {
 	return useQuery(["protocols"], getProtocols, {
@@ -73,10 +74,7 @@ export function useTokenBalance() {
 	);
 }
 
-export default function useProtocolMarkets(
-	protocol: string,
-	options: AnyObject = {}
-) {
+export function useProtocolMarkets(protocol: string, options: AnyObject = {}) {
 	return useQuery([protocol, options.chainId, options.version], () =>
 		getLendingProtocolMarkets(protocol, {
 			...options
@@ -201,6 +199,10 @@ export function useLeverageQuote(
 		{
 			onSuccess: d => {
 				callback(d);
+			},
+			onError(err) {
+				console.log(err);
+				toast.error("error occured");
 			},
 			refetchInterval: 10000
 		}

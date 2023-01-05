@@ -9,9 +9,10 @@ import {
 	getLendingProtocolLeverageTx,
 	getLendingProtocolLiquidateTx
 } from "src/queries";
-import useProtocolMarkets, {
+import {
 	useUserData,
 	useProtocols,
+	useProtocolMarkets,
 	useNativeTokenUSDValue
 } from "src/hooks/useQueries";
 import {
@@ -283,9 +284,9 @@ export default function Assets() {
 										title: "Leverage",
 										render: (
 											<Leverage
-												debt={asset}
+												debt={defaultCollateral}
 												getTx={getLeverageTx}
-												collateral={defaultCollateral}
+												collateral={asset}
 												key={`${asset?.marketSymbol ?? "NOASSET"}-${open}-lev`}
 											/>
 										)
@@ -361,7 +362,6 @@ const Confirmation = ({ message }: { message: JSX.Element }) => {
 			<Spinner size={4} className="mx-auto mt-3" />
 			<h3 className="text-[18px] my-5">Waiting for confirmation</h3>
 			{message}
-			<p className="text-grey">Service charge of 1% included</p>
 			<div className="flex justify-center items-center space-x-2 mt-6">
 				<Info />
 				<p className="text-grey">Confirm this transaction in your wallet</p>
@@ -385,41 +385,6 @@ const Submitted = () => {
 					<a className="px-8 py-4 text-blue">Go home</a>
 				</Link>
 				<Button>Dashboard</Button>
-			</div>
-		</div>
-	);
-};
-
-const NoAsset = ({ protocolURL }) => {
-	const {
-		data: { activeProtocol }
-	} = useData();
-	const { data } = useProtocols();
-
-	return (
-		<div className="text-center">
-			<img
-				src={data[activeProtocol].logo}
-				alt={data[activeProtocol].name}
-				className="w-16 h-16 mx-auto mt-3"
-			/>
-			<h3 className="text-[18px] my-5">
-				Yet to lend the asset on this protocol.
-			</h3>
-			<p className="text-grey">
-				Visit {data[activeProtocol].name} to make your first borrow of this
-				asset.
-			</p>
-
-			<div className="flex justify-center items-center space-x-2 mt-6">
-				<a
-					target="_blank"
-					href={protocolURL}
-					rel="noopener noreferrer"
-					className="mx-auto block w-max"
-				>
-					<Button>Go to {data[activeProtocol].name}</Button>
-				</a>
 			</div>
 		</div>
 	);

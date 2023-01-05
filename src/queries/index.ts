@@ -579,7 +579,15 @@ export const getLendingProtocolMarkets = async (
 		protocol,
 		...options
 	})) as TGetLendingProtocolMarkets;
-	return data;
+
+	const markets: AnyObject<typeof data.getLendingProtocolMarkets[0]> = {};
+
+	if (data)
+		data.getLendingProtocolMarkets.forEach(m => {
+			markets[m.address] = m;
+		});
+
+	return markets;
 };
 
 export type TGetTokenBalanceProps = {

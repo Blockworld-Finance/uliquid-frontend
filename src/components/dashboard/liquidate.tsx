@@ -367,13 +367,17 @@ export function Liquidate({
 
 					getTx(
 						liquidation,
-						<p className="text-grey">
-							Liquidating {liquidation.collateralAmount}{" "}
-							{collateral.marketSymbol} to repay {liquidation.debtAmount}{" "}
-							{asset.marketSymbol}
-							<br />
-							Protocol fee of {(liquidation?.fee / 1000000) * 100 ?? 0} included
-						</p>
+						<>
+							<p className="text-grey">
+								Liquidating {liquidation.collateralAmount}{" "}
+								{collateral.marketSymbol} to repay {liquidation.debtAmount}{" "}
+								{asset.marketSymbol}
+								<br />
+								Protocol fee of {(liquidation?.fee / 1000000) * 100 ?? 0}{" "}
+								included
+							</p>
+							<p className="text-grey">Service charge of 1% included</p>
+						</>
 					);
 				}}
 			>
