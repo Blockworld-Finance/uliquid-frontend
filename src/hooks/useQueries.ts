@@ -9,8 +9,12 @@ import {
 	getTokenBalances,
 	getNativeTokenUSDValue,
 	getLendingProtocolMarkets,
-	getTokenUSDValue
+	getTokenUSDValue,
+	getLeverageQuote,
+	getLiquidation
 } from "src/queries";
+import { useRef } from "react";
+import { LeverageQuote, LeverageQuoteInput, LiquidationQuote, LiquidationQuoteInput } from "@schema";
 
 export function useProtocols(data?: NormalizedProtocols) {
 	return useQuery(["protocols"], getProtocols, {
@@ -137,5 +141,113 @@ export function useTokenUSDValues({
 				getTokenUsdValueToken2,
 				getTokenUsdValueChainId2
 			}),
+		{
+			refetchOnWindowFocus: false
+		}
+	);
+}
+
+type LQProps = {
+	slippage: number;
+	debtAddress: string;
+	collateralAddress: string;
+	initialCollateralAmount: number;
+	collateralizationRatio: number;
+};
+
+export function useLeverageQuote(
+	{
+		slippage,
+		debtAddress,
+		collateralAddress,
+		initialCollateralAmount,
+		collateralizationRatio
+	}: LQProps,
+	callback: (d: LeverageQuoteInput) => void
+) {
+	const { data } = useProtocols();
+	const { address } = useAccount();
+	let control = useRef(new AbortController());
+	const {
+		data: { activeProtocol, activeChain, activeVersion }
+	} = useData();
+	const { name, versions = [] } = data[activeProtocol];
+
+	return useQuery(
+		[
+			"leverage-quote",
+			slippage,
+			debtAddress,
+			collateralAddress,
+			collateralizationRatio,
+			initialCollateralAmount
+		],
+		() => {
+			control.current.abort();
+			control.current = new AbortController();
+			return getLeverageQuote({
+				user: address,
+				protocol: name,
+				debt: debtAddress,
+				collateralizationRatio,
+				collateral: collateralAddress,
+				signal: control.current.signal,
+				version: versions[activeVersion].name,
+				slippage: (slippage / 100) * 1000000,
+				initialCollateralAmount: initialCollateralAmount,
+				chainId: versions[activeVersion].chains[activeChain].id
+			});
+		},
+		{
+			onSuccess: d => {
+				callback(d);
+			},
+			refetchInterval: 10000
+		}
+	);
+}
+
+type LiQProps = {
+	amount: number;
+	slippage: number;
+	assetAddress: string;
+	collateralAddress: string;
+};
+
+export function useLiquidationQuote(
+	{ slippage, assetAddress, collateralAddress, amount }: LiQProps,
+	callback: (d: LiquidationQuote) => void
+) {
+	const { data } = useProtocols();
+	const { address } = useAccount();
+	let control = useRef(new AbortController());
+	const {
+		data: { activeProtocol, activeChain, activeVersion }
+	} = useData();
+	const { name, versions = [] } = data[activeProtocol];
+
+	return useQuery(
+		["leverage-quote", amount, slippage, assetAddress, collateralAddress],
+		() => {
+			control.current.abort();
+			control.current = new AbortController();
+			return getLiquidation({
+				user: address,
+				protocol: name,
+				debtAmount: amount,
+				debt: assetAddress,
+				collateral: collateralAddress,
+				signal: control.current.signal,
+				slippage: (slippage / 100) * 1000000,
+				version: versions[activeVersion].name,
+				chainId: versions[activeVersion].chains[activeChain].id
+			});
+		},
+		{
+			onSuccess: d => {
+				callback(d);
+			},
+			refetchInterval: 10000
+		}
 	);
 }

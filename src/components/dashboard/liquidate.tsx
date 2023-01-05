@@ -6,7 +6,9 @@ import {
 	useProtocols,
 	useTokenBalance,
 	useNativeTokenUSDValue,
-	useTokenUSDValues
+	useTokenUSDValues,
+	useLeverageQuote,
+	useLiquidationQuote
 } from "@hooks/useQueries";
 import useData from "@hooks/useData";
 import { getLiquidation } from "src/queries";
@@ -38,10 +40,10 @@ export function Liquidate({
 	const [open, setOpen] = useState(false);
 	const [view, setView] = useState(false);
 	const [show, setShow] = useState(false);
+	const [amount, setAmount] = useState(0);
 	let control = useRef(new AbortController());
 	const [gasPrice, setGasPrice] = useState(0);
 	const { data: balance } = useTokenBalance();
-	const [loading, setLoading] = useState(false);
 	const [slippage, setSlippage] = useState(1.0);
 	const inputRef = useRef<HTMLInputElement>(null);
 	const [asset, setAsset] = useState(initialAsset);
@@ -54,7 +56,6 @@ export function Liquidate({
 	const [collateral, setCollateral] = useState(initialCollateral);
 
 	const { name, logo, versions = [] } = data[activeProtocol];
-	const [liquidation, setLiquidation] = useState<LiquidationQuote>();
 
 	const { data: tokenValue, isLoading: tokenLoading } = useTokenUSDValues({
 		token: asset?.marketAddress,
@@ -69,87 +70,29 @@ export function Liquidate({
 		[tokenLoading, nativeTokenLoading, feeLoading]
 	);
 
-	const pollLiquidationQoute = useCallback(() => {
-		const amount = Number(inputRef.current?.value ?? 0) ?? 0;
-		setInputValid(amount && amount <= asset?.amountBorrowed);
-		getLiquidation({
-			user: address,
-			protocol: name,
-			debtAmount: amount,
-			debt: asset?.marketAddress,
-			slippage: (1 / 100) * 1000000,
-			collateral: collateral.marketAddress,
-			version: versions[activeVersion].name,
-			chainId: versions[activeVersion].chains[activeChain].id
-		})
-			.then(d => {
-				setLiquidation(d);
-			})
-			.catch(e => {});
-	}, [
-		name,
-		address,
-		inputRef,
-		versions,
-		activeChain,
-		activeVersion,
-		asset?.marketAddress,
-		asset?.amountBorrowed,
-		collateral?.marketAddress
-	]);
-
-	useEffect(() => {
-		if (!interval.current) {
-			interval.current = setInterval(() => {
-				// pollLiquidationQoute();
-			}, 10000);
-		}
-	}, [pollLiquidationQoute]);
-
-	const getLiquidationQuote = useCallback(
-		(slippage: number, close = true) => {
-			setLoading(true);
-			control.current.abort();
-			close && setShow(false);
-			setIsConfirming(false);
-			const amount = Number(inputRef.current?.value ?? 0) ?? 0;
-			control.current = new AbortController();
-			getLiquidation({
-				user: address,
-				protocol: name,
-				debtAmount: amount,
-				debt: asset?.marketAddress,
-				slippage: (slippage / 100) * 1000000,
-				signal: control.current.signal,
-				collateral: collateral.marketAddress,
-				version: versions[activeVersion].name,
-				chainId: versions[activeVersion].chains[activeChain].id
-			})
-				.then(d => {
-					setLiquidation(d);
-					setGasPrice(
-						(Number(fees?.gasPrice._hex) *
-							2000000 *
-							usdValue.getTokenUSDValue) /
-							10 ** 18
-					);
-					setInputValid(amount && amount <= balance[collateral.marketAddress]);
-					setLoading(false);
-				})
-				.catch(e => {});
+	const {
+		data: liquidation,
+		isLoading,
+		isRefetching
+	} = useLiquidationQuote(
+		{
+			amount,
+			slippage,
+			assetAddress: asset?.marketAddress,
+			collateralAddress: collateral.marketAddress
 		},
-		[
-			name,
-			asset,
-			address,
-			balance,
-			versions,
-			collateral,
-			activeChain,
-			activeVersion,
-			fees.gasPrice._hex,
-			usdValue?.getTokenUSDValue
-		]
+		(d: LiquidationQuote) => {
+			const amount = Number(inputRef.current?.value ?? 0) ?? 0;
+			setGasPrice(
+				(Number(fees?.gasPrice._hex) * 2000000 * usdValue.getTokenUSDValue) /
+					10 ** 18
+			);
+			setInputValid(
+				amount &&
+					amount <= balance[collateral.marketAddress] &&
+					asset.marketAddress !== collateral.marketAddress
+			);
+		}
 	);
 
 	return preparing ? (
@@ -197,8 +140,9 @@ export function Liquidate({
 									step={0.01}
 									type="number"
 									ref={inputRef}
+									value={amount}
 									inputMode="numeric"
-									onChange={() => getLiquidationQuote(slippage)}
+									onChange={e => setAmount(Number(e.target.value))}
 									className="w-full text-3xl text-white bg-primary border-none focus:outline-none"
 								/>
 								<small className="text-sm text-grey">
@@ -371,7 +315,7 @@ export function Liquidate({
 												defaultValue={slippage}
 												onChange={e => {
 													setSlippage(Number(e.target.value));
-													getLiquidationQuote(Number(e.target.value), false);
+													// getLiquidationQuote(Number(e.target.value), false);
 												}}
 												className="text-xs text-right text-white rounded-full border border-darkGrey p-1 bg-transparent"
 											/>
@@ -411,7 +355,7 @@ export function Liquidate({
 
 			<Button
 				size="large"
-				loading={loading}
+				loading={isLoading || isRefetching}
 				disabled={!isInputValid}
 				className="w-full font-semibold"
 				onClick={() => {

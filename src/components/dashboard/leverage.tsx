@@ -6,17 +6,17 @@ import useProtocolMarkets, {
 	useProtocols,
 	useTokenBalance,
 	useTokenUSDValues,
-	useNativeTokenUSDValue
+	useNativeTokenUSDValue,
+	useLeverageQuote
 } from "@hooks/useQueries";
 import useData from "@hooks/useData";
 import Button from "@components/common/button";
 import Slider from "@components/common/slider";
-import { getLeverageQuote } from "src/queries";
 import Spinner from "@components/common/Spinner";
 import { ClickOutside } from "@hooks/useClickOutside";
 import { Dropdown, GasPump, Help, Info } from "@icons";
 import { AssetPicker } from "@components/common/asset-picker";
-import { LendingMarketUser, LeverageQuoteInput } from "@schema";
+import { LendingMarketUser, LeverageQuote, LeverageQuoteInput } from "@schema";
 
 type Props = {
 	debt?: LendingMarketUser;
@@ -42,17 +42,18 @@ export default function Leverage({
 	let control = useRef(new AbortController());
 	const [slippage, setSlippage] = useState(2.0);
 	const [debt, setDebt] = useState(initialDebt);
-	const [loading, setLoading] = useState(false);
 	const inputRef = useRef<HTMLInputElement>(null);
 	const [isInputValid, setInputValid] = useState(false);
 	const { data: usdValue, isLoading: nativeTokenLoading } =
 		useNativeTokenUSDValue();
-		const [isConfirming, setIsConfirming] = useState(false);
+	const [isConfirming, setIsConfirming] = useState(false);
 	const { data: fees, isLoading: feeLoading } = useFeeData();
 	const { name, logo, versions = [] } = data[activeProtocol];
 	const [changeSlippage, setChangeSlippage] = useState(false);
-	const [leverage, setLeverage] = useState<LeverageQuoteInput>();
 	const [collateral, setCollateral] = useState(initialCollateral);
+	const [amount, setAmount] = useState(
+		balance?.[collateral.marketAddress] ?? 0
+	);
 	const { data: markets, isLoading: marketLoading } = useProtocolMarkets(name, {
 		version: versions[activeVersion].name,
 		chainId: versions[activeVersion].chains[activeChain].id
@@ -91,59 +92,30 @@ export default function Leverage({
 		[tokenLoading, nativeTokenLoading, feeLoading, marketLoading]
 	);
 
-	const getLeverage = useCallback(
-		(ratio: number, slippage = 2, close = true) => {
-			setLoading(true);
-			control.current.abort();
-			close && setShow(false);
-			setIsConfirming(false);
-			const amount = Number(inputRef.current?.value ?? 0) ?? 0;
-			control.current = new AbortController();
-			getLeverageQuote({
-				user: address,
-				protocol: name,
-				debt: debt.marketAddress,
-				signal: control.current.signal,
-				collateral: collateral.marketAddress,
-				slippage: (slippage / 100) * 1000000,
-				version: versions[activeVersion].name,
-				initialCollateralAmount: Number(inputRef.current?.value),
-				collateralizationRatio:
-					((1000 - ratio + market.marketData.minCollateralizationRatio) / 100) *
-					1000000,
-				chainId: versions[activeVersion].chains[activeChain].id
-			})
-				.then(d => {
-					setLeverage(d);
-
-					setGasPrice(
-						(Number(fees?.gasPrice._hex) *
-							(500000 * d.loops) *
-							usdValue.getTokenUSDValue) /
-							10 ** 18
-					);
-					setInputValid(
-						amount &&
-							amount <= balance[collateral.marketAddress] &&
-							debt.marketAddress !== collateral.marketAddress
-					);
-					setLoading(false);
-				})
-				.catch(e => {});
+	const { data: leverage, isLoading, isRefetching } = useLeverageQuote(
+		{
+			slippage,
+			initialCollateralAmount: amount,
+			debtAddress: debt?.marketAddress,
+			collateralAddress: collateral.marketAddress,
+			collateralizationRatio:
+				((1000 - ratio + market.marketData.minCollateralizationRatio) / 100) *
+				1000000
 		},
-		[
-			debt,
-			name,
-			address,
-			balance,
-			versions,
-			collateral,
-			activeChain,
-			activeVersion,
-			fees?.gasPrice,
-			usdValue?.getTokenUSDValue,
-			market.marketData.minCollateralizationRatio
-		]
+		(d: LeverageQuoteInput) => {
+			const amount = Number(inputRef.current?.value ?? 0) ?? 0;
+			setGasPrice(
+				(Number(fees?.gasPrice._hex) *
+					(500000 * d.loops) *
+					usdValue.getTokenUSDValue) /
+					10 ** 18
+			);
+			setInputValid(
+				amount &&
+					amount <= balance[collateral.marketAddress] &&
+					debt.marketAddress !== collateral.marketAddress
+			);
+		}
 	);
 
 	return preparing ? (
@@ -203,10 +175,10 @@ export default function Leverage({
 									step={0.01}
 									type="number"
 									ref={inputRef}
+									value={amount}
 									pattern="[0-9]*"
 									inputMode="numeric"
-									onChange={() => getLeverage(ratio)}
-									defaultValue={balance?.[collateral.marketAddress] ?? 0}
+									onChange={e => setAmount(Number(e.target.value))}
 									onKeyDown={evt => {
 										let charCode = evt.which ? evt.which : evt.keyCode;
 										if (charCode > 31 && (charCode < 48 || charCode > 57))
@@ -267,7 +239,7 @@ export default function Leverage({
 												inputRef.current.value = `${
 													balance?.[collateral.marketAddress] ?? 0
 												}`;
-												getLeverage(ratio);
+												// getLeverage(ratio);
 											}
 										}}
 									>
@@ -334,7 +306,7 @@ export default function Leverage({
 									value={ratio}
 									onChange={v => {
 										setRatio(typeof v === "number" ? v : v[0]);
-										getLeverage(typeof v === "number" ? v : v[0]);
+										// getLeverage(typeof v === "number" ? v : v[0]);
 									}}
 									min={market.marketData.minCollateralizationRatio}
 								/>
@@ -436,7 +408,7 @@ export default function Leverage({
 												defaultValue={slippage}
 												onChange={e => {
 													setSlippage(Number(e.target.value));
-													getLeverage(ratio, Number(e.target.value), false);
+													// getLeverage(ratio, Number(e.target.value), false);
 												}}
 												className="text-xs text-right text-white rounded-full border border-darkGrey p-1 bg-transparent"
 											/>
@@ -473,7 +445,7 @@ export default function Leverage({
 			</div>
 			<Button
 				size="large"
-				loading={loading}
+				loading={isLoading || isRefetching}
 				disabled={!isInputValid}
 				className="w-full font-semibold"
 				onClick={() => {
