@@ -6,6 +6,7 @@ import {
 import { useState } from "react";
 import Router from "next/router";
 import NProgress from "nprogress";
+import { ToastContainer } from "react-toastify";
 import { publicProvider } from "wagmi/providers/public";
 import { alchemyProvider } from "wagmi/providers/alchemy";
 import { Hydrate, QueryClient, QueryClientProvider } from "react-query";
@@ -23,24 +24,24 @@ import "../styles/globals.css";
 import "nprogress/nprogress.css";
 import "rc-slider/assets/index.css";
 import "@rainbow-me/rainbowkit/styles.css";
-import { useTokenBalance } from "@hooks/useQueries";
+import "react-toastify/dist/ReactToastify.css";
 
 const { chains, provider } = configureChains(
 	[
+		asterChain,
 		chain.mainnet,
 		chain.polygon,
+		BNBSmartChain,
 		chain.optimism,
 		chain.arbitrum,
 		avalancheChain,
-		asterChain,
-		BNBSmartChain
 	],
 	[alchemyProvider({ apiKey: process.env.ALCHEMY_ID }), publicProvider()]
 );
 
 const { connectors } = getDefaultWallets({
-	appName: "Uliquid",
-	chains
+	chains,
+	appName: "Uliquid"
 });
 
 const wagmiClient = createClient({
@@ -70,6 +71,18 @@ function MyApp({ Component, pageProps }) {
 							<Component {...pageProps} />
 						</RainbowKitProvider>
 					</WagmiConfig>
+					<ToastContainer
+						position="top-right"
+						autoClose={5000}
+						hideProgressBar={false}
+						newestOnTop={false}
+						closeOnClick
+						rtl={false}
+						pauseOnFocusLoss
+						draggable
+						pauseOnHover
+						theme="dark"
+					/>
 				</Hydrate>
 			</QueryClientProvider>
 		</DataProvider>

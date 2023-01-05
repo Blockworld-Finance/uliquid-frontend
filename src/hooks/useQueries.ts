@@ -1,20 +1,20 @@
+import {
+	getUserData,
+	getProtocols,
+	getLiquidation,
+	getTokenUSDValue,
+	getTokenBalances,
+	getLeverageQuote,
+	getNativeTokenUSDValue,
+	getLendingProtocolMarkets,
+} from "src/queries";
+import { useRef } from "react";
 import { useAccount } from "wagmi";
 import { useQuery } from "react-query";
 
 import useData from "./useData";
 import { AnyObject, NormalizedProtocols } from "@types";
-import {
-	getUserData,
-	getProtocols,
-	getTokenBalances,
-	getNativeTokenUSDValue,
-	getLendingProtocolMarkets,
-	getTokenUSDValue,
-	getLeverageQuote,
-	getLiquidation
-} from "src/queries";
-import { useRef } from "react";
-import { LeverageQuote, LeverageQuoteInput, LiquidationQuote, LiquidationQuoteInput } from "@schema";
+import { LeverageQuoteInput, LiquidationQuote } from "@schema";
 
 export function useProtocols(data?: NormalizedProtocols) {
 	return useQuery(["protocols"], getProtocols, {
