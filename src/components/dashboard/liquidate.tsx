@@ -133,11 +133,16 @@ export function Liquidate({
 				</div>
 
 				<div className="space-y-2 my-4">
-					{/* {collateral.marketAddress === ass.marketAddress && (
+					{liquidation?.swapQuote?.priceImpact < -5 && (
 						<Alert
-							message={<>You can&quot;t incur a debt of the same token</>}
+							message={
+								<>
+									Price impact warning:{" "}
+									{liquidation?.swapQuote?.priceImpact?.toFixed(2) ?? 0}
+								</>
+							}
 						/>
-					)} */}
+					)}
 					{chain?.id !== versions[activeVersion].chains[activeChain].id && (
 						<Alert
 							message={
@@ -316,7 +321,15 @@ export function Liquidate({
 							</div>
 							<div className="flex justify-between items-center">
 								<h3 className="text-grey">Price impact</h3>
-								<h3>{liquidation?.swapQuote?.priceImpact?.toFixed(2) ?? 0}%</h3>
+								<h3
+									className={`${
+										liquidation?.swapQuote?.priceImpact < -5
+											? "text-red-500"
+											: ""
+									}`}
+								>
+									{liquidation?.swapQuote?.priceImpact?.toFixed(2) ?? 0}%
+								</h3>
 							</div>
 							<div className="flex justify-between items-start text-grey">
 								<div>

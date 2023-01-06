@@ -428,6 +428,7 @@ export default function Leverage({
 								{leverage && <Dropdown onClick={() => setShow(!show)} />}
 							</div>
 						</div>
+
 						<div
 							className={`${
 								show ? "h-min space-y-2 mt-3" : "h-0"
@@ -435,7 +436,13 @@ export default function Leverage({
 						>
 							<div className="flex justify-between items-center">
 								<h3 className="text-grey">Price impact</h3>
-								<h3>{leverage?.swapQuote?.priceImpact?.toFixed(2) ?? 0}%</h3>
+								<h3
+									className={`${
+										leverage?.swapQuote?.priceImpact < -5 ? "text-red-500" : ""
+									}`}
+								>
+									{leverage?.swapQuote?.priceImpact?.toFixed(2) ?? 0}%
+								</h3>
 							</div>
 							<div className="flex justify-between items-center text-grey">
 								<div>
@@ -500,6 +507,19 @@ export default function Leverage({
 							</div>
 						</div>
 					</div>
+					{leverage?.swapQuote?.priceImpact < -5 && (
+						<Alert
+							type="warning"
+							message={
+								<div className="flex justify-between items-center">
+									<span>Price impact warning: </span>
+									<span>
+										{leverage?.swapQuote?.priceImpact?.toFixed(2) ?? 0}%
+									</span>
+								</div>
+							}
+						/>
+					)}
 				</div>
 			</div>
 			<Button
