@@ -53,8 +53,10 @@ export default function Leverage({
 		useNativeTokenUSDValue();
 	const [isConfirming, setIsConfirming] = useState(false);
 	const [collateral, setCollateral] = useState(initialCollateral);
-	const { data: fees, isLoading: feeLoading } = useFeeData();
 	const { name, logo, versions = [] } = data[activeProtocol];
+	const { data: fees, isLoading: feeLoading } = useFeeData({
+		chainId: versions[activeVersion].chains[activeChain].id
+	});
 	const [changeSlippage, setChangeSlippage] = useState(false);
 	const [amount, setAmount] = useState(
 		balance?.[collateral.marketAddress] ?? 0
