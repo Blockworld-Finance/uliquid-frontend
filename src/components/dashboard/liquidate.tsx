@@ -52,11 +52,12 @@ export function Liquidate({
 	const [isConfirming, setIsConfirming] = useState(false);
 	const { data: usdValue, isLoading: nativeTokenLoading } =
 		useNativeTokenUSDValue();
-	const { data: fees, isLoading: feeLoading } = useFeeData();
+	const { name, logo, versions = [] } = data[activeProtocol];
+	const { data: fees, isLoading: feeLoading } = useFeeData({
+		chainId: versions[activeVersion].chains[activeChain].id
+	});
 	const [changeSlippage, setChangeSlippage] = useState(false);
 	const [collateral, setCollateral] = useState(initialCollateral);
-
-	const { name, logo, versions = [] } = data[activeProtocol];
 
 	const { data: tokenValue, isLoading: tokenLoading } = useTokenUSDValues({
 		token: asset?.marketAddress,
@@ -350,7 +351,7 @@ export function Liquidate({
 												Auto
 											</Button>
 											<input
-												max={50}
+												max={10}
 												min={0.1}
 												step={0.5}
 												type={"number"}
@@ -358,10 +359,17 @@ export function Liquidate({
 												style={{
 													appearance: "textfield"
 												}}
-												defaultValue={slippage}
+												value={slippage}
 												onChange={e => {
+													if (Number(e.target.value) < 0.1) {
+														setSlippage(0.1);
+														return;
+													}
+													if (Number(e.target.value) > 10) {
+														setSlippage(10);
+														return;
+													}
 													setSlippage(Number(e.target.value));
-													// getLiquidationQuote(Number(e.target.value), false);
 												}}
 												className="text-xs text-right text-white rounded-full border border-darkGrey p-1 bg-transparent"
 											/>
@@ -422,7 +430,6 @@ export function Liquidate({
 								Protocol fee of {(liquidation?.fee / 1000000) * 100 ?? 0}{" "}
 								included
 							</p>
-							<p className="text-grey">Service charge of 1% included</p>
 						</>
 					);
 				}}

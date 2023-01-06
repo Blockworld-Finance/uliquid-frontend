@@ -1,6 +1,7 @@
 import Image from "next/image";
-import { useFeeData, useNetwork, useSwitchNetwork } from "wagmi";
+import { toast } from "react-toastify";
 import { useRef, useMemo, useState, useEffect } from "react";
+import { useFeeData, useNetwork, useSwitchNetwork } from "wagmi";
 
 import {
 	useProtocols,
@@ -11,7 +12,6 @@ import {
 	useNativeTokenUSDValue
 } from "@hooks/useQueries";
 import useData from "@hooks/useData";
-import wagmiClient from "src/utils/chains";
 import Alert from "@components/common/alert";
 import Button from "@components/common/button";
 import Slider from "@components/common/slider";
@@ -21,7 +21,6 @@ import { ClickOutside } from "@hooks/useClickOutside";
 import { Dropdown, GasPump, Help, Info } from "@icons";
 import { AssetPicker } from "@components/common/asset-picker";
 import { LendingMarketUser, LeverageQuoteInput } from "@schema";
-import { toast } from "react-toastify";
 
 type Props = {
 	debt?: LendingMarketUser;
@@ -300,7 +299,6 @@ export default function Leverage({
 												inputRef.current.value = `${
 													balance?.[collateral.marketAddress] ?? 0
 												}`;
-												// getLeverage(ratio);
 											}
 										}}
 									>
@@ -366,7 +364,6 @@ export default function Leverage({
 									value={ratio}
 									onChange={v => {
 										setRatio(typeof v === "number" ? v : v[0]);
-										// getLeverage(typeof v === "number" ? v : v[0]);
 									}}
 									min={market.marketData.minCollateralizationRatio}
 								/>

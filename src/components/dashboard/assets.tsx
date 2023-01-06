@@ -6,6 +6,11 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { prepareSendTransaction, sendTransaction } from "@wagmi/core";
 
 import {
+	LiquidationQuote,
+	LendingMarketUser,
+	LeverageQuoteInput
+} from "src/schema";
+import {
 	getLendingProtocolLeverageTx,
 	getLendingProtocolLiquidateTx
 } from "src/queries";
@@ -15,11 +20,6 @@ import {
 	useProtocolMarkets,
 	useNativeTokenUSDValue
 } from "src/hooks/useQueries";
-import {
-	LiquidationQuote,
-	LendingMarketUser,
-	LeverageQuoteInput
-} from "src/schema";
 import Leverage from "./leverage";
 import useData from "@hooks/useData";
 import { Liquidate } from "./liquidate";
@@ -28,7 +28,8 @@ import Modal from "@components/common/Modal";
 import Button from "@components/common/button";
 import Spinner from "@components/common/Spinner";
 import { formatNumber } from "src/utils/helpers";
-import { Info, Send, Wallet, Sortable } from "@icons";
+import { Info, Send, Wallet, Sortable, Warning, Exclamation } from "@icons";
+import { TransactionStatus } from "@types";
 
 export default function Assets() {
 	useNativeTokenUSDValue();
@@ -41,11 +42,12 @@ export default function Assets() {
 	const { data, isLoading } = useUserData();
 	const { data: protocols } = useProtocols();
 	const { isConnected, address } = useAccount();
+	const [asset, setAsset] = useState<LendingMarketUser>();
+	const [status, setStatus] = useState<TransactionStatus>();
+	const [liquidationInfo, setLiquidationInfo] = useState(<></>);
 	const [assetList, setAssetList] = useState(
 		data?.getLendingProtocolUserData?.markets ?? []
 	);
-	const [liquidationInfo, setLiquidationInfo] = useState(<></>);
-	const [asset, setAsset] = useState<LendingMarketUser>();
 	const [sortDir, setSortDir] = useState({
 		currentSort: "",
 		amountSupplied: "asc",
@@ -101,23 +103,33 @@ export default function Assets() {
 			chainId: versions[activeVersion].chains[activeChain].id
 		})
 			.then(async d => {
+				let status: TransactionStatus = "completed";
+
 				for (let tx in d.getLendingProtocolLiquidateTx) {
-					const config = await prepareSendTransaction({
-						request: {
-							to: d.getLendingProtocolLiquidateTx[tx].to,
-							data: d.getLendingProtocolLiquidateTx[tx].data,
-							from: d.getLendingProtocolLiquidateTx[tx].from,
+					try {
+						const config = await prepareSendTransaction({
+							request: {
+								to: d.getLendingProtocolLiquidateTx[tx].to,
+								data: d.getLendingProtocolLiquidateTx[tx].data,
+								from: d.getLendingProtocolLiquidateTx[tx].from,
+								chainId: versions[activeVersion].chains[activeChain].id
+							},
 							chainId: versions[activeVersion].chains[activeChain].id
-						},
-						chainId: versions[activeVersion].chains[activeChain].id
-					});
+						});
 
-					const result = await sendTransaction(config);
-					await result.wait();
+						const result = await sendTransaction(config);
+						await result.wait();
+					} catch (e) {
+						console.log(e, e.message, "====> errr");
+						if (e.message?.includes("user rejected transaction"))
+							status = "rejected";
+						else status = "failed";
+						break;
+					}
 				}
-
-				setView(false);
 				setShow(true);
+				setView(false);
+				setStatus(status);
 			})
 			.catch(e => {
 				console.log(e);
@@ -140,22 +152,32 @@ export default function Assets() {
 			chainId: versions[activeVersion].chains[activeChain].id
 		})
 			.then(async d => {
+				let status: TransactionStatus = "completed";
 				for (let tx in d.getLendingProtocolLeverageTx) {
-					const config = await prepareSendTransaction({
-						request: {
-							gasLimit: 7000000,
-							to: d.getLendingProtocolLeverageTx[tx].to,
-							data: d.getLendingProtocolLeverageTx[tx].data,
-							from: d.getLendingProtocolLeverageTx[tx].from,
+					try {
+						const config = await prepareSendTransaction({
+							request: {
+								gasLimit: 7000000,
+								to: d.getLendingProtocolLeverageTx[tx].to,
+								data: d.getLendingProtocolLeverageTx[tx].data,
+								from: d.getLendingProtocolLeverageTx[tx].from,
+								chainId: versions[activeVersion].chains[activeChain].id
+							},
 							chainId: versions[activeVersion].chains[activeChain].id
-						},
-						chainId: versions[activeVersion].chains[activeChain].id
-					});
-					const result = await sendTransaction(config);
-					await result.wait();
+						});
+						const result = await sendTransaction(config);
+						await result.wait();
+					} catch (e) {
+						console.log(e, e.message, "====> errr");
+						if (e.message?.includes("user rejected transaction"))
+							status = "rejected";
+						else status = "failed";
+						break;
+					}
 				}
 				setView(false);
 				setShow(true);
+				setStatus(status);
 			})
 			.catch(e => {
 				console.log(e);
@@ -260,8 +282,15 @@ export default function Assets() {
 			<Modal open={view} setOpen={setView} type="dark">
 				<Confirmation message={liquidationInfo} />
 			</Modal>
-			<Modal open={show} setOpen={setShow} type="dark">
-				<Submitted />
+			<Modal
+				open={show}
+				setOpen={v => {
+					setShow(v);
+					setStatus(undefined);
+				}}
+				type="dark"
+			>
+				<Submitted status={status} />
 			</Modal>
 			<Modal open={open} setOpen={setOpen}>
 				<Tabs
@@ -370,22 +399,34 @@ const Confirmation = ({ message }: { message: JSX.Element }) => {
 	);
 };
 
-const Submitted = () => {
+type Props = {
+	status?: TransactionStatus;
+};
+
+const Submitted = ({ status = "completed" }: Props) => {
 	return (
 		<div className="text-center">
-			<Send className="mx-auto mt-3" />
-			<h3 className="text-[18px] my-5">Transaction submitted</h3>
+			{status === "completed" && <Send className="mx-auto mt-3" />}
+			{status === "rejected" && <Warning className="mx-auto mt-3" />}
+			{status === "failed" && <Exclamation className="mx-auto mt-3" />}
+			<h3 className="text-[18px] my-5">Transaction {status}</h3>
 			<p className="text-grey">
-				Click dashboard button below to perform another transaction or return
-				home.
+				{status === "completed" &&
+					"Click dashboard button below to perform another transaction or return home."}
+				{status === "rejected" &&
+					"This transaction was declined in your wallet."}
+				{status === "failed" &&
+					"An error occurred while trying to send your transaction"}
 			</p>
 
-			<div className="flex justify-center items-center space-x-2 mt-6">
-				<Link passHref href={"/"}>
-					<a className="px-8 py-4 text-blue">Go home</a>
-				</Link>
-				<Button>Dashboard</Button>
-			</div>
+			{status === "completed" && (
+				<div className="flex justify-center items-center space-x-2 mt-6">
+					<Link passHref href={"/"}>
+						<a className="px-8 py-4 text-blue">Go home</a>
+					</Link>
+					<Button>Dashboard</Button>
+				</div>
+			)}
 		</div>
 	);
 };

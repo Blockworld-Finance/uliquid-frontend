@@ -10,6 +10,8 @@ export interface AnyObject<T = any, D = any> extends D {
 	[key: string]: T;
 }
 
+type TransactionStatus = "completed" | "rejected" | "failed";
+
 type CategoryNames = "Lending" | "Leverage";
 
 type GetProtocolResponse = {

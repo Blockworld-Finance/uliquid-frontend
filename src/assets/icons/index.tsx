@@ -17,11 +17,13 @@ export { default as Discord } from "./discord.svg";
 export { default as Starlay } from "./starlay.svg";
 export { default as Twitter } from "./twitter.svg";
 export { default as BitCoin } from "./bitcoin.svg";
+export { default as Warning } from "./warning.svg";
 export { default as GasPump } from "./gas-pump.svg";
 export { default as Networth } from "./networth.svg";
 export { default as Dropdown } from "./dropdown.svg";
 export { default as Ethereum } from "./ethereum.svg";
 export { default as Sortable } from "./sortable.svg";
+export { default as Exclamation } from "./exclamation.svg";
 
 export { default as Boom } from "./boom.svg";
 export { default as Asset } from "./asset.svg";
