@@ -6,9 +6,11 @@ import Layout from "@components/common/layout";
 import { getProtocols, getURLS } from "src/queries";
 import MarketPlace from "@components/dashboard/market";
 import { useProtocols, useTokenBalance } from "src/hooks/useQueries";
+import useWindowDimensions from "@hooks/useWindowDimensions";
 
 export default function Dashboard({ data: ddata, urls }) {
 	const { dispatch } = useData();
+	const { isMobile } = useWindowDimensions();
 	const queryclient = useQueryClient();
 	const { data } = useProtocols(ddata);
 	useTokenBalance();
@@ -17,6 +19,7 @@ export default function Dashboard({ data: ddata, urls }) {
 		<Layout urls={urls}>
 			<div className="my-6 md:my-36">
 				<Tabs
+					breakpoint={isMobile ? 2 : 3}
 					data={data.map(p => ({
 						title: p.name,
 						icon: p.logo,
