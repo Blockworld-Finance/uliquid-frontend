@@ -408,13 +408,13 @@ export default function Leverage({
 							<div className="flex space-x-2 items-center">
 								<Info />
 								<span>
-									1{debt?.marketSymbol} ={" "}
-									{tokenValue?.getTokenValue.toPrecision(6) ?? 0}{" "}
-									{collateral?.marketSymbol} ($
+									1{collateral?.marketSymbol} ={" "}
 									{(
 										(tokenValue?.getTokenValue ?? 0) *
 											tokenValue?.getTokenUSDValue ?? 0
-									).toPrecision(6)}
+									).toPrecision(6)} {" "}
+									{debt?.marketSymbol} ($
+									{tokenValue?.getTokenValue.toPrecision(6) ?? 0}{" "}
 									)
 								</span>
 							</div>

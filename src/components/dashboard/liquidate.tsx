@@ -294,13 +294,13 @@ export function Liquidate({
 							<div className="flex space-x-2 items-center">
 								<Info />
 								<span>
-									1{asset?.marketSymbol} ={" "}
-									{formatNumber(tokenValue?.getTokenValue) ?? 0}{" "}
-									{collateral?.marketSymbol} ($
+									1{collateral?.marketSymbol} ={" "}
 									{formatNumber(
 										(tokenValue?.getTokenValue ?? 0) *
 											tokenValue?.getTokenUSDValue ?? 0
 									)}
+									{asset?.marketSymbol} ($
+									{formatNumber(tokenValue?.getTokenValue) ?? 0}{" "}
 									)
 								</span>
 							</div>
