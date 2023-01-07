@@ -95,7 +95,7 @@ export const CustomConnectButton = () => {
 										<Dropdown />
 									</div>
 									<ClickOutside
-										className={`absolute bg-primary rounded-md py-3 px-4 space-y-2 ${
+										className={`absolute bg-primary rounded-md py-3 px-4 space-y-2 z-50 shadow-md ${
 											open ? "block" : "hidden"
 										}`}
 										onclickoutside={() => {

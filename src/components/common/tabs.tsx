@@ -14,6 +14,7 @@ type Props = {
 	data: TabData[];
 	className?: string;
 	breakpoint?: number;
+	defaultActive?: number;
 	onTabChnaged?: (t: TabData, index: number) => void;
 };
 
@@ -21,10 +22,11 @@ export default function Tabs({
 	data,
 	className,
 	onTabChnaged,
+	defaultActive,
 	breakpoint = 2
 }: Props) {
 	const [open, setOpen] = useState(false);
-	const [active, setActive] = useState(0);
+	const [active, setActive] = useState(defaultActive ?? 0);
 
 	const changeTab = useCallback(
 		(tabIndex: number) => {

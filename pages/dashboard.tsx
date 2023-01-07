@@ -9,7 +9,10 @@ import { useProtocols, useTokenBalance } from "src/hooks/useQueries";
 import useWindowDimensions from "@hooks/useWindowDimensions";
 
 export default function Dashboard({ data: ddata, urls }) {
-	const { dispatch } = useData();
+	const {
+		dispatch,
+		data: { activeProtocol }
+	} = useData();
 	const queryclient = useQueryClient();
 	const { data } = useProtocols(ddata);
 	const { isMobile } = useWindowDimensions();
@@ -19,6 +22,7 @@ export default function Dashboard({ data: ddata, urls }) {
 		<Layout urls={urls}>
 			<div className="my-6 md:my-36">
 				<Tabs
+					defaultActive={activeProtocol}
 					breakpoint={isMobile ? 2 : 3}
 					data={data.map(p => ({
 						title: p.name,

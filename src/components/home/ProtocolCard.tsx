@@ -1,21 +1,31 @@
 /* eslint-disable @next/next/no-img-element */
-import Image from "next/image";
 import { useMemo } from "react";
 
 import { Chain } from "@schema";
 import { NormalizedProtocol } from "@types";
-import { BitCoin } from "../../assets/icons";
+import Spinner from "@components/common/Spinner";
+import { useProtocolMarkets } from "@hooks/useQueries";
+import { useRouter } from "next/router";
+import useData from "@hooks/useData";
 
 type Props = {
+	index: number;
 	protocol: NormalizedProtocol;
 };
 
-export default function ProtocolCard({ protocol }: Props) {
+export default function ProtocolCard({ protocol, index }: Props) {
+	const { dispatch } = useData();
+	const { push } = useRouter();
 	const chains: Chain[] = useMemo(() => {
 		const chains = [];
 		protocol?.versions?.forEach(version => chains.push(...version.chains));
 		return chains.slice(0, 3);
 	}, [protocol]);
+	const { data, isLoading } = useProtocolMarkets(protocol.name);
+	const markets = useMemo(
+		() => (data ? Object.values(data).slice(0, 3) : []),
+		[data]
+	);
 
 	return (
 		<div className="bg-navy rounded-xl py-8 px-2 md:px-6 space-y-10 hover:bg-white hover:text-darkGrey">
@@ -45,7 +55,32 @@ export default function ProtocolCard({ protocol }: Props) {
 				</p>
 			</div>
 			<div className="flex justify-between items-end">
-				<div>
+				{isLoading ? (
+					<Spinner />
+				) : markets.length ? (
+					<div className="text-darkGrey space-y-3">
+						<span className="text-xs">Assets up for liquidation</span>
+						<div className="flex items-center space-x-1">
+							{markets.map((m, i) => (
+								<img
+									src={m.logo}
+									alt={m.name}
+									key={`${m.name}-${i}`}
+									className="w-6 md:w-8 h-6 md:h-8"
+								/>
+							))}
+						</div>
+					</div>
+				) : null}
+				<div
+					className="cursor-pointer"
+					onClick={() => {
+						dispatch({
+							activeProtocol: index
+						});
+						push("/dashboard");
+					}}
+				>
 					<span className="text-sm underline">See more</span>
 				</div>
 			</div>
