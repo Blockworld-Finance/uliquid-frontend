@@ -15,6 +15,7 @@ import "nprogress/nprogress.css";
 import "rc-slider/assets/index.css";
 import "@rainbow-me/rainbowkit/styles.css";
 import "react-toastify/dist/ReactToastify.css";
+import 'aos/dist/aos.css';
 
 NProgress.configure({ showSpinner: false });
 

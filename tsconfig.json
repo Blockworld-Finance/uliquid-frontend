@@ -19,6 +19,7 @@
 			"@hooks/*": ["src/hooks/*"],
 			"@types": ["src/types.d.ts"],
 			"@schema": ["src/schema.d.ts"],
+			"@images": ["src/assets/images/index"],
 			"@icons": ["src/assets/icons/index"],
 			"@components/*": ["src/components/*"],
 			"@common/*": ["src/components/common/*"]

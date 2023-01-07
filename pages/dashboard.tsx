@@ -7,6 +7,8 @@ import { getProtocols, getURLS } from "src/queries";
 import MarketPlace from "@components/dashboard/market";
 import { useProtocols, useTokenBalance } from "src/hooks/useQueries";
 import useWindowDimensions from "@hooks/useWindowDimensions";
+import { useEffect } from "react";
+import Aos from "aos";
 
 export default function Dashboard({ data: ddata, urls }) {
 	const {
@@ -17,6 +19,10 @@ export default function Dashboard({ data: ddata, urls }) {
 	const { data } = useProtocols(ddata);
 	const { isMobile } = useWindowDimensions();
 	useTokenBalance();
+	
+	useEffect(() => {
+		Aos.init();
+	}, [])
 
 	return (
 		<Layout urls={urls}>
