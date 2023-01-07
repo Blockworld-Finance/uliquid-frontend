@@ -317,8 +317,11 @@ export function Liquidate({
 							} overflow-y-hidden`}
 						>
 							<div className="flex justify-between items-center">
-								<h3 className="text-grey">Expected output</h3>
-								<h3> {asset?.marketSymbol ?? ""}</h3>
+								<h3 className="text-grey">Repaid debt</h3>
+								<h3>
+									{formatNumber(liquidation?.debtAmount) ?? 0}{" "}
+									{asset?.marketSymbol ?? ""}
+								</h3>
 							</div>
 							<div className="flex justify-between items-center">
 								<h3 className="text-grey">Price impact</h3>

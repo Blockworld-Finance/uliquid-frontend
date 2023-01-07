@@ -357,7 +357,7 @@ export default function Leverage({
 							</h1>
 							<div className="no-transition">
 								<label htmlFor="" className="text-sm text-darkGrey">
-									Collatreral ratio
+									Collateral ratio
 								</label>
 								<Slider
 									max={1000}
@@ -443,7 +443,7 @@ export default function Leverage({
 							</div>
 							<div className="flex justify-between items-center text-grey">
 								<div>
-									<p>Maximum debt incurred after slippage (0.3%)</p>
+									<p>Maximum debt incurred after slippage</p>
 									{changeSlippage ? (
 										<ClickOutside
 											className="space-x-2"
