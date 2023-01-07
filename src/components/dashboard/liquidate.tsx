@@ -67,10 +67,11 @@ export function Liquidate({
 		getTokenUsdValueChainId2: versions[activeVersion].chains[activeChain].id
 	});
 
-	const preparing = useMemo(
-		() => tokenLoading || nativeTokenLoading || feeLoading,
-		[tokenLoading, nativeTokenLoading, feeLoading]
-	);
+	const preparing = useMemo(() => {
+		console.log(tokenLoading, nativeTokenLoading, feeLoading);
+
+		return tokenLoading || nativeTokenLoading || feeLoading;
+	}, [tokenLoading, nativeTokenLoading, feeLoading]);
 
 	const {
 		data: liquidation,
@@ -294,14 +295,13 @@ export function Liquidate({
 							<div className="flex space-x-2 items-center">
 								<Info />
 								<span>
-									1{collateral?.marketSymbol} ={" "}
+									1{asset?.marketSymbol} ={" "}
+									{formatNumber(tokenValue?.getTokenValue) ?? 0} 
+									{collateral?.marketSymbol} ($
 									{formatNumber(
 										(tokenValue?.getTokenValue ?? 0) *
 											tokenValue?.getTokenUSDValue ?? 0
-									)}
-									{asset?.marketSymbol} ($
-									{formatNumber(tokenValue?.getTokenValue) ?? 0}{" "}
-									)
+									)})
 								</span>
 							</div>
 

@@ -1,6 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
-import { useAccount } from "wagmi";
+import { useAccount, useFeeData } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { prepareSendTransaction, sendTransaction } from "@wagmi/core";
@@ -55,6 +55,9 @@ export default function Assets() {
 	});
 
 	const { name = "", versions = [], categories } = protocols[activeProtocol];
+	useFeeData({
+		chainId: versions[activeVersion].chains[activeChain].id
+	});
 	useProtocolMarkets(name, {
 		version: versions[activeVersion].name,
 		chainId: versions[activeVersion].chains[activeChain].id
