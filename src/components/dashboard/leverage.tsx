@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import Image from "next/image";
 import { toast } from "react-toastify";
 import { useRef, useMemo, useState, useEffect } from "react";
@@ -136,17 +137,21 @@ export default function Leverage({
 		</div>
 	) : (
 		<>
-			<div className="max-h-[60vh] overflow-y-scroll overscroll-y-contain mt-4">
-				<div className="flex space-x-10">
+			<div className="max-h-[60vh] overflow-y-scroll overscroll-y-contain mt-4 text-xs md:text-base">
+				<div className="flex space-x-4 md:space-x-10">
 					<div className="space-y-2">
-						<small className="text-sm text-darkGrey">Protocol</small>
+						<small className="text-tiny md:text-sm text-darkGrey">
+							Protocol
+						</small>
 						<div className="flex space-x-2 items-center">
 							<Image src={logo} alt={name} width={24} height={24} />
 							<span>{name}</span>
 						</div>
 					</div>
 					<div className="space-y-2">
-						<small className="text-sm text-darkGrey">Blockchain</small>
+						<small className="text-tiny md:text-sm text-darkGrey">
+							Blockchain
+						</small>
 						<div className="flex space-x-2 items-center">
 							<Image
 								width={24}
@@ -156,7 +161,7 @@ export default function Leverage({
 							/>
 							<p>{versions[activeVersion].chains[activeChain]?.name ?? ""}</p>
 							{versions && versions.length ? (
-								<div className="bg-primary text-blue text-xs px-5 py-1 rounded">
+								<div className="bg-primary text-blue text-tiny md:text-xs px-5 py-1 rounded">
 									{versions[activeVersion].name}
 								</div>
 							) : (
@@ -166,7 +171,7 @@ export default function Leverage({
 					</div>
 					{leverage && (
 						<div className="space-y-2">
-							<small className="text-sm text-darkGrey">
+							<small className="text-tiny md:text-sm text-darkGrey">
 								Est. Health Factor
 							</small>
 							<div className="flex space-x-2 items-center">
@@ -223,7 +228,9 @@ export default function Leverage({
 						/>
 					)}
 					<div className="bg-primary p-3 rounded-lg space-y-3">
-						<small className="text-sm text-darkGrey">Leverage token</small>
+						<small className="text-tiny md:text-sm text-darkGrey">
+							Leverage token
+						</small>
 						<div className="grid gap-2 grid-cols-12 space-x-4 items-center">
 							<div className="flex-grow border border-darkGrey rounded-lg py-3 px-4 col-span-7">
 								<input
@@ -240,9 +247,9 @@ export default function Leverage({
 											return false;
 										return true;
 									}}
-									className="w-full text-3xl text-white bg-primary border-none focus:outline-none"
+									className="w-full text-xs md:text-3xl text-white bg-primary border-none focus:outline-none"
 								/>
-								<small className="text-sm text-grey">
+								<small className="text-tiny md:text-sm text-grey">
 									$
 									{(
 										tokenValue?.getTokenUSDValue *
@@ -257,9 +264,8 @@ export default function Leverage({
 							<div className="space-y-2 col-span-5">
 								<div className="flex items-center justify-between">
 									<div className="flex items-center space-x-2 flex-initial">
-										<Image
-											width={32}
-											height={32}
+										<img
+											className="w-6 md:w-8 h-6 md:h-8"
 											src={collateral?.marketLogo ?? ""}
 											alt={collateral?.marketName ?? ""}
 										/>
@@ -287,7 +293,7 @@ export default function Leverage({
 										</ClickOutside>
 									</div>
 								</div>
-								<small className="text-sm text-grey flex items-center justify-between">
+								<small className="text-tiny md:text-sm text-grey flex items-center justify-between">
 									<span>
 										Bal ={" "}
 										{formatNumber(balance?.[collateral.marketAddress], 6) ?? 0}
@@ -316,9 +322,8 @@ export default function Leverage({
 							<div className="space-y-2 col-span-2">
 								<div className="flex items-center justify-between">
 									<div className="flex items-center space-x-2">
-										<Image
-											width={32}
-											height={32}
+										<img
+											className="w-6 md:w-8 h-6 md:h-8"
 											src={debt?.marketLogo ?? ""}
 											alt={debt?.marketName ?? ""}
 										/>
@@ -412,10 +417,9 @@ export default function Leverage({
 									{(
 										(tokenValue?.getTokenValue ?? 0) *
 											tokenValue?.getTokenUSDValue ?? 0
-									).toPrecision(6)} {" "}
+									).toPrecision(6)}{" "}
 									{debt?.marketSymbol} ($
-									{tokenValue?.getTokenValue.toPrecision(6) ?? 0}{" "}
-									)
+									{tokenValue?.getTokenValue.toPrecision(6) ?? 0} )
 								</span>
 							</div>
 

@@ -1,17 +1,18 @@
+/* eslint-disable @next/next/no-img-element */
 import Image from "next/image";
-import { useAccount, useFeeData, useNetwork, useSwitchNetwork } from "wagmi";
-import { useRef, useState, useEffect, useCallback, useMemo } from "react";
+import { toast } from "react-toastify";
+import { useRef, useState, useMemo } from "react";
+import { useFeeData, useNetwork, useSwitchNetwork } from "wagmi";
 
 import {
 	useProtocols,
 	useTokenBalance,
-	useNativeTokenUSDValue,
 	useTokenUSDValues,
-	useLeverageQuote,
-	useLiquidationQuote
+	useLiquidationQuote,
+	useNativeTokenUSDValue
 } from "@hooks/useQueries";
 import useData from "@hooks/useData";
-import { getLiquidation } from "src/queries";
+import Alert from "@components/common/alert";
 import Button from "@components/common/button";
 import { formatNumber } from "src/utils/helpers";
 import { Info, GasPump, Dropdown } from "@icons";
@@ -19,8 +20,6 @@ import Spinner from "@components/common/Spinner";
 import { ClickOutside } from "@hooks/useClickOutside";
 import { AssetPicker } from "@components/common/asset-picker";
 import { LendingMarketUser, LiquidationQuote } from "src/schema";
-import Alert from "@components/common/alert";
-import { toast } from "react-toastify";
 
 type Props = {
 	asset?: LendingMarketUser;
@@ -107,14 +106,18 @@ export function Liquidate({
 			<div className="max-h-[60vh] overflow-y-scroll overscroll-y-contain mt-4">
 				<div className="flex space-x-10">
 					<div className="space-y-2">
-						<small className="text-sm text-darkGrey">Protocol</small>
+						<small className="text-tiny md:text-sm text-darkGrey">
+							Protocol
+						</small>
 						<div className="flex space-x-2 items-center">
 							<Image src={logo} alt={name} width={24} height={24} />
-							<span>{name}</span>
+							<span className="text-xs md:text-base">{name}</span>
 						</div>
 					</div>
 					<div className="space-y-2">
-						<small className="text-sm text-darkGrey">Blockchain</small>
+						<small className="text-tiny md:text-sm text-darkGrey">
+							Blockchain
+						</small>
 						<div className="flex space-x-2 items-center">
 							<Image
 								width={24}
@@ -122,9 +125,11 @@ export function Liquidate({
 								src={versions[activeVersion].chains[activeChain]?.logo ?? ""}
 								alt={versions[activeVersion].chains[activeChain]?.name ?? ""}
 							/>
-							<p>{versions[activeVersion].chains[activeChain]?.name ?? ""}</p>
+							<p className="text-xs md:text-base">
+								{versions[activeVersion].chains[activeChain]?.name ?? ""}
+							</p>
 							{versions && versions.length ? (
-								<div className="bg-primary text-blue text-xs px-5 py-1 rounded">
+								<div className="bg-primary text-blue text-tiny md:text-xs px-5 py-1 rounded">
 									{versions[activeVersion].name}
 								</div>
 							) : (
@@ -172,10 +177,10 @@ export function Liquidate({
 							}
 						/>
 					)}
-					<div className="bg-primary p-3 rounded-lg space-y-3">
-						<small className="text-sm text-darkGrey">Debt</small>
+					<div className="bg-primary p-2 md:p-3 rounded-lg space-y-3">
+						<small className="text-tiny md:text-sm text-darkGrey">Debt</small>
 						<div className="grid gap-4 grid-cols-5 space-x-4 items-center">
-							<div className="flex-grow border border-darkGrey rounded-lg py-3 px-4 col-span-3">
+							<div className="flex-grow border border-darkGrey rounded-lg p-2 md:py-3 md:px-4 col-span-3">
 								<input
 									step={0.01}
 									type="number"
@@ -183,22 +188,23 @@ export function Liquidate({
 									value={amount}
 									inputMode="numeric"
 									onChange={e => setAmount(Number(e.target.value))}
-									className="w-full text-3xl text-white bg-primary border-none focus:outline-none"
+									className="w-full text-xs md:text-3xl text-white bg-primary border-none focus:outline-none"
 								/>
-								<small className="text-sm text-grey">
+								<small className="text-tiny md:text-sm text-grey">
 									${formatNumber(liquidation?.debtAmountUSD) ?? 0}
 								</small>
 							</div>
 							<div className="space-y-2 col-span-2">
 								<div className="flex items-center justify-between">
 									<div className="flex items-center space-x-2 flex-initial">
-										<Image
-											width={32}
-											height={32}
+										<img
+											className="w-6 md:w-8 h-6 md:h-8"
 											src={asset?.marketLogo ?? ""}
 											alt={asset?.marketName ?? ""}
 										/>
-										<span className="">{asset?.marketSymbol}</span>
+										<span className="text-xs md:text-base">
+											{asset?.marketSymbol}
+										</span>
 									</div>
 									<div className="">
 										<ClickOutside
@@ -220,7 +226,7 @@ export function Liquidate({
 										</ClickOutside>
 									</div>
 								</div>
-								<small className="text-sm text-grey flex items-center justify-between">
+								<small className="text-tiny md:text-sm text-grey flex items-center justify-between">
 									<span>
 										Debt = {asset?.amountBorrowed.toPrecision(6) ?? 0}
 									</span>
@@ -239,28 +245,31 @@ export function Liquidate({
 					</div>
 
 					<div className="bg-primary p-3 rounded-lg space-y-3">
-						<small className="text-sm text-darkGrey">Collateral</small>
+						<small className="text-tiny md:text-sm text-darkGrey">
+							Collateral
+						</small>
 						<div className="grid gap-4 grid-cols-5 space-x-4 items-center">
 							<div className="flex-grow border border-darkGrey rounded-lg py-3 px-4 col-span-3">
 								<input
 									readOnly
 									value={formatNumber(liquidation?.collateralAmount) ?? 0}
-									className="w-full text-3xl text-white bg-primary border-none focus:outline-none"
+									className="w-full text-xs md:text-3xl text-white bg-primary border-none focus:outline-none"
 								/>
-								<small className="text-sm text-grey">
+								<small className="text-tiny md:text-sm text-grey">
 									${formatNumber(liquidation?.collateralAmountUSD) ?? 0}
 								</small>
 							</div>
 							<div className="space-y-2 col-span-2">
 								<div className="flex items-center justify-between">
 									<div className="flex items-center space-x-2">
-										<Image
-											width={32}
-											height={32}
+										<img
+											className="w-6 md:w-8 h-6 md:h-8"
 											src={collateral?.marketLogo ?? ""}
 											alt={collateral?.marketName ?? ""}
 										/>
-										<span>{collateral?.marketSymbol}</span>
+										<span className="text-xs md:text-base">
+											{collateral?.marketSymbol}
+										</span>
 									</div>
 									<div className="">
 										<ClickOutside
@@ -283,25 +292,26 @@ export function Liquidate({
 										</ClickOutside>
 									</div>
 								</div>
-								<small className="text-sm text-grey">
+								<small className="text-tiny md:text-sm text-grey">
 									Bal = {collateral?.amountSupplied.toPrecision(8) ?? 0}
 								</small>
 							</div>
 						</div>
 					</div>
 
-					<div className="bg-primary p-3 rounded-lg">
+					<div className="bg-primary p-3 rounded-lg text-xs md:text-base">
 						<div className="flex justify-between items-center">
 							<div className="flex space-x-2 items-center">
 								<Info />
 								<span>
 									1{asset?.marketSymbol} ={" "}
-									{formatNumber(tokenValue?.getTokenValue) ?? 0} 
+									{formatNumber(tokenValue?.getTokenValue) ?? 0}
 									{collateral?.marketSymbol} ($
 									{formatNumber(
 										(tokenValue?.getTokenValue ?? 0) *
 											tokenValue?.getTokenUSDValue ?? 0
-									)})
+									)}
+									)
 								</span>
 							</div>
 
