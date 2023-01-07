@@ -10,9 +10,9 @@ import useWindowDimensions from "@hooks/useWindowDimensions";
 
 export default function Dashboard({ data: ddata, urls }) {
 	const { dispatch } = useData();
-	const { isMobile } = useWindowDimensions();
 	const queryclient = useQueryClient();
 	const { data } = useProtocols(ddata);
+	const { isMobile } = useWindowDimensions();
 	useTokenBalance();
 
 	return (
