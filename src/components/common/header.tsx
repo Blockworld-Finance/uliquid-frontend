@@ -6,6 +6,7 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { TGetURLsResponse } from "src/queries";
 import { ClickOutside } from "@hooks/useClickOutside";
 import { Close, Discord, Github, Menu, Twitter } from "@icons";
+import { CustomConnectButton } from "./connect-button";
 
 export default function Header({
 	getURLs: { twitter, github, discord, documentation }
@@ -31,18 +32,18 @@ export default function Header({
 							<li>FAQs</li>
 						</Link>
 					</ul>
-					<ConnectButton />
+					<CustomConnectButton />
 				</div>
 			</header>
 			<header className="p-4 md:hidden block">
 				<div className="flex items-center justify-between w-full mx-auto">
 					<Image src="/logo.svg" alt="Logo" width={80} height={48} />
 					<div className="flex items-center space-x-4">
-						<ConnectButton
-							accountStatus={{
-								smallScreen: "avatar",
-								largeScreen: "full"
-							}}
+						<CustomConnectButton
+						// accountStatus={{
+						// 	smallScreen: "avatar",
+						// 	largeScreen: "full"
+						// }}
 						/>
 						<span
 							className="relative"
@@ -62,7 +63,7 @@ export default function Header({
 								}}
 								className={`bg-navy w-min absolute top-10 ${
 									open ? "-right-4" : "-right-64"
-								} py-10 px-6 space-y-10 rounded-tl-2xl rounded-bl-2xl`}
+								} py-10 px-6 space-y-10 rounded-tl-2xl rounded-bl-2xl z-50`}
 							>
 								<ul className="menu text-[18px] leading-6 text-grey space-y-3">
 									<Link href={"/"} className="block">
