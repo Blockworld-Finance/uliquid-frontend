@@ -209,7 +209,7 @@ export default function Assets() {
 									}}
 								>
 									<Sortable
-										className={`${
+										className={`cursor-pointer ${
 											sortDir.currentSort === "amountSupplied"
 												? `${
 														sortDir.amountSupplied === "asc" ? "" : "rotate-180"
@@ -232,7 +232,7 @@ export default function Assets() {
 										}}
 									>
 										<Sortable
-											className={`${
+											className={`cursor-pointer ${
 												sortDir.currentSort === "amountBorrowed"
 													? `${
 															sortDir.amountBorrowed === "asc"

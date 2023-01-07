@@ -1,18 +1,26 @@
 /* eslint-disable @next/next/no-img-element */
-import { Dropdown } from "@icons";
+import { Copy, Dropdown, Logout } from "@icons";
+import { useAccount, useDisconnect } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { ClickOutside } from "@hooks/useClickOutside";
+import { copyTextToClipboard } from "src/utils/helpers";
+import { useState } from "react";
 
 export const CustomConnectButton = () => {
+	const { address } = useAccount();
+	const { disconnect } = useDisconnect();
+	const [open, setOpen] = useState(false);
+
 	return (
 		<ConnectButton.Custom>
 			{({
-				account,
 				chain,
-				openAccountModal,
+				account,
+				mounted,
 				openChainModal,
+				// openAccountModal,
 				openConnectModal,
-				authenticationStatus,
-				mounted
+				authenticationStatus
 			}) => {
 				// Note: If your app doesn't use authentication, you
 				// can remove all 'authenticationStatus' checks
@@ -56,12 +64,14 @@ export const CustomConnectButton = () => {
 							}
 
 							return (
-								<div
-									onClick={openAccountModal}
-									style={{ display: "flex", gap: 12 }}
-									className="items-center bg-navy leading-6 py-3 px-4 rounded-md"
-								>
-									{/* <button
+								<div>
+									<div
+										onClick={() => setOpen(true)}
+										// onClick={openAccountModal}
+										style={{ display: "flex", gap: 12 }}
+										className="items-center bg-navy leading-6 py-3 px-4 rounded-md"
+									>
+										{/* <button
 										onClick={openChainModal}
 										style={{ display: "flex", alignItems: "center" }}
 										type="button"
@@ -89,28 +99,87 @@ export const CustomConnectButton = () => {
 										{chain.name}
 									</button> */}
 
-									{chain.hasIcon && (
-										<div
-											style={{
-												background: chain.iconBackground,
-												width: 16,
-												height: 16,
-												borderRadius: 999,
-												overflow: "hidden",
-												marginRight: 4
-											}}
-										>
-											{chain.iconUrl && (
-												<img
-													src={chain.iconUrl}
-													alt={chain.name ?? "Chain icon"}
-													style={{ width: 16, height: 16 }}
-												/>
+										{chain.hasIcon && (
+											<div
+												style={{
+													background: chain.iconBackground,
+													width: 16,
+													height: 16,
+													borderRadius: 999,
+													overflow: "hidden",
+													marginRight: 4
+												}}
+											>
+												{chain.iconUrl && (
+													<img
+														src={chain.iconUrl}
+														alt={chain.name ?? "Chain icon"}
+														style={{ width: 16, height: 16 }}
+													/>
+												)}
+											</div>
+										)}
+										<span>{account.displayName}</span>
+										<Dropdown />
+									</div>
+									<ClickOutside
+										className={`absolute bg-primary rounded-md py-3 px-4 space-y-2 ${
+											open ? "block" : "hidden"
+										}`}
+										onclickoutside={() => {
+											setOpen(false);
+										}}
+									>
+										<div className="flex items-center space-x-2">
+											{chain.hasIcon && (
+												<div
+													style={{
+														background: chain.iconBackground,
+														width: 16,
+														height: 16,
+														borderRadius: 999,
+														overflow: "hidden",
+														marginRight: 4
+													}}
+												>
+													{chain.iconUrl && (
+														<img
+															src={chain.iconUrl}
+															alt={chain.name ?? "Chain icon"}
+															style={{ width: 16, height: 16 }}
+														/>
+													)}
+												</div>
 											)}
+											<span>{account.displayName}</span>
 										</div>
-									)}
-									<span>{account.displayName}</span>
-									<Dropdown />
+
+										<div>
+											<span className="text-xs text-darkGrey">Network</span>
+											<p>{chain.name}</p>
+										</div>
+										<hr className="border-navy" />
+										<ul className="space-y-2">
+											<li
+												className="cursor-pointer flex items-center space-x-2"
+												onClick={() => {
+													copyTextToClipboard(address);
+												}}
+											>
+												<Copy />
+												<span>Copy address</span>
+											</li>
+											<li
+												className="cursor-pointer flex items-center space-x-2"
+												onClick={() => {
+													disconnect();
+												}}
+											>
+												<Logout />
+												<span>Disconnect wallet</span>
+											</li>
+										</ul>
+									</ClickOutside>
 								</div>
 							);
 						})()}
