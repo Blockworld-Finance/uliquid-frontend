@@ -38,12 +38,12 @@ export default function Tabs({
 
 	const renderTabs = useMemo(() => {
 		return (
-			<div className="flex items-center space-x-8 border border-none border-b-darkGrey">
+			<div className="flex items-center space-x-3 md:space-x-8 border border-none border-b-darkGrey">
 				{data.map((tab, index) =>
 					index <= breakpoint ? (
 						<span
 							key={index}
-							className={`space-x-2 cursor-pointer flex items-center ${className} ${
+							className={`space-x-1 md:space-x-2 cursor-pointer flex items-center ${className} ${
 								active === index ? "text-blue font-semibold" : "text-grey"
 							}`}
 							onClick={() => {
@@ -63,13 +63,13 @@ export default function Tabs({
 				)}
 				{data.length > 3 ? (
 					<span
-						className={`relative bg-navy cursor-pointer md:py-6 text-xs md:text-base py-4 px-6 rounded-lg`}
+						className={`relative bg-navy cursor-pointer md:py-6 text-xs md:text-base py-2 px-2 md:px-6 rounded-lg`}
 					>
 						<span
-							className="flex items-center space-x-2"
+							className="flex items-center space-x-1 md:space-x-2"
 							onClick={() => setOpen(!open)}
 						>
-							<span>Other protocols</span>
+							<span className="text-[10px] md:text-base">Other protocols</span>
 							<Dropdown />
 						</span>
 						<DropDown
