@@ -17,11 +17,12 @@ export default function ProtocolCard({ protocol, index }: Props) {
 	const { dispatch } = useData();
 	const { push } = useRouter();
 	const chains: Chain[] = useMemo(() => {
-		const chains = [];
-		protocol?.versions?.forEach(version => chains.push(...version.chains));
-		return chains.slice(0, 3);
+		return protocol?.versions[0].chains.slice(0, 3);
 	}, [protocol]);
-	const { data, isLoading } = useProtocolMarkets(protocol.name);
+	const { data, isLoading } = useProtocolMarkets(protocol.name, {
+		version: protocol?.versions[0].name,
+		chainId: protocol?.versions[0].chains[0].id
+	});
 	const markets = useMemo(
 		() => (data ? Object.values(data).slice(0, 3) : []),
 		[data]

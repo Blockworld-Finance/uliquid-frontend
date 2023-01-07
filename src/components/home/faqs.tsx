@@ -18,6 +18,8 @@ export default function FAQs({ faqs }: Props) {
 				q.question.toLowerCase().includes(e.target.value.toLowerCase())
 			);
 			setList(cache);
+		} else {
+			setList(faqs);
 		}
 	};
 
