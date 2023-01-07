@@ -75,64 +75,91 @@ const LeftImage = () => {
 				className="absolute -top-44 left-4 z-10 "
 				data-aos-anchor-placement="center-bottom"
 			>
-				<Image src={LendingProtocol} alt="boom" layout="intrinsic" />
+				<Image
+					src={LendingProtocol}
+					alt="boom"
+					layout="intrinsic"
+					placeholder="blur"
+				/>
 			</div>
 			<div
 				data-aos="fade-up"
 				data-aos-anchor-placement="center-bottom"
 				className="absolute left-32 -top-48"
 			>
-				<Image src={Protocol} alt="boom" layout="intrinsic" />
+				<Image
+					src={Protocol}
+					alt="boom"
+					layout="intrinsic"
+					placeholder="blur"
+				/>
 			</div>
 			<div
 				data-aos="fade-left"
 				className="absolute -top-40 left-64 z-10 "
 				data-aos-anchor-placement="center-center"
 			>
-				<Image src={Protocols} alt="boom" layout="intrinsic" />
+				<Image
+					src={Protocols}
+					alt="boom"
+					layout="intrinsic"
+					placeholder="blur"
+				/>
 			</div>
-			{/* <div className="invisible">
-				<Protocol />
-			</div> */}
 			<div
 				data-aos="fade-up"
-				data-aos-delay="500"
+				data-aos-delay="300"
 				data-aos-anchor-placement="center-bottom"
 				className="absolute  -translate-x-1/2 -translate-y-1/2 z-10"
 			>
-				<Image src={AllAssets} alt="boom" layout="intrinsic" />
+				<Image
+					src={AllAssets}
+					alt="boom"
+					layout="intrinsic"
+					placeholder="blur"
+				/>
 			</div>
 			<div
 				data-aos="fade-right"
-				data-aos-delay="500"
+				data-aos-delay="300"
 				className="absolute z-20 -left-16 -top-8"
 				data-aos-anchor-placement="center-bottom"
 			>
-				<Image src={Assets} alt="boom" layout="intrinsic" />
+				<Image src={Assets} alt="boom" layout="intrinsic" placeholder="blur" />
 			</div>
 			<div
 				data-aos="fade-left"
-				data-aos-delay="500"
+				data-aos-delay="300"
 				className="absolute z-20 -right-4 -top-8"
 				data-aos-anchor-placement="center-bottom"
 			>
-				<Image src={AssetsText} alt="boom" layout="intrinsic" />
+				<Image
+					alt="boom"
+					src={AssetsText}
+					layout="intrinsic"
+					placeholder="blur"
+				/>
 			</div>
 			<div
 				data-aos="fade-up"
-				data-aos-delay="1000"
+				data-aos-delay="600"
 				data-aos-anchor-placement="center-bottom"
 				className="absolute -bottom-40 z-20 right-0"
 			>
-				<Image src={LiquidateOverlay} alt="boom" layout="intrinsic" />
+				<Image
+					src={LiquidateOverlay}
+					alt="boom"
+					layout="intrinsic"
+					placeholder="blur"
+				/>
 			</div>
 			<div
 				data-aos="fade-right"
-				data-aos-delay="1000"
+				data-aos-delay="600"
 				data-aos-anchor-placement="center-bottom"
 				className="absolute -bottom-32 z-20 right-60"
 			>
-				<Image src={Boom} alt="boom" layout="intrinsic" />
+				<Image src={Boom} alt="boom" layout="intrinsic" placeholder="blur" />
 			</div>
 		</div>
 	);
