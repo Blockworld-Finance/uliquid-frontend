@@ -10,15 +10,13 @@ import { getProtocols, getURLS } from "src/queries";
 import MarketPlace from "@components/dashboard/market";
 import { useProtocols, useTokenBalance } from "src/hooks/useQueries";
 import useWindowDimensions from "@hooks/useWindowDimensions";
+import { useNavData } from "@hooks/useNavData";
 
 export default function Dashboard({ data: ddata, urls }) {
-	const {
-		query: { activeProtocol = 0 },
-		push
-	} = useRouter();
 	const queryclient = useQueryClient();
 	const { data } = useProtocols(ddata);
 	const { isMobile } = useWindowDimensions();
+	const { activeProtocol, push } = useNavData();
 	useTokenBalance();
 
 	useEffect(() => {

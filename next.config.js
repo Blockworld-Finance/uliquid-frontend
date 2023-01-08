@@ -11,9 +11,6 @@ const nextConfig = {
 	images: {
 		domains: ["blockchain-rdata.s3.amazonaws.com", "static.alchemyapi.io"]
 	},
-	// experimental: {
-	// 	// appDir: true
-	// },
 	swcMinify: true,
 	reactStrictMode: true
 };
