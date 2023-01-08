@@ -2,7 +2,13 @@
 import Link from "next/link";
 import { useAccount, useFeeData } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+	ChangeEventHandler,
+	useCallback,
+	useEffect,
+	useMemo,
+	useState
+} from "react";
 import { prepareSendTransaction, sendTransaction } from "@wagmi/core";
 
 import {
@@ -29,7 +35,17 @@ import Button from "@components/common/button";
 import { useNavData } from "@hooks/useNavData";
 import Spinner from "@components/common/Spinner";
 import { formatNumber } from "src/utils/helpers";
-import { Info, Send, Wallet, Sortable, Warning, Exclamation } from "@icons";
+import {
+	Info,
+	Send,
+	Wallet,
+	Sortable,
+	Warning,
+	Exclamation,
+	Search
+} from "@icons";
+import Stats from "./stats";
+import Input from "@components/common/input";
 
 export default function Assets() {
 	useNativeTokenUSDValue();
@@ -92,6 +108,17 @@ export default function Assets() {
 			setAssetList([...cache.sort((a, b) => b[prop] - a[prop])]);
 		setSortDir({ ...sortDir, [prop]: dir, currentSort: prop });
 	};
+
+	const searchAssets: ChangeEventHandler<HTMLInputElement> = useCallback(
+		e => {
+			const cache = data.getLendingProtocolUserData.markets.filter(m =>
+				m.marketName.toLowerCase().includes(e.target.value.toLowerCase())
+			);
+
+			setAssetList(cache);
+		},
+		[data]
+	);
 
 	const getLiquidateTx = (
 		liquidationQuote: LiquidationQuote,
@@ -196,51 +223,40 @@ export default function Assets() {
 	}, []);
 
 	return (
-		<div className="bg-navy p-4 md:p-10 rounded-xl">
-			{isConnected ? (
-				<div className="space-y-3 md:space-y-6">
-					<div className="text-darkGrey">
-						<ul className="md:px-8 grid grid-cols-4 md:grid-cols-6 items-center text-xs md:text-base">
-							<li className="col-span-2">Asset</li>
-							<li className="col-span-1 md:col-span-2 flex space-x-3 pr-1">
-								<span>Total supplied</span>
-								<div
-									className="hidden md:block"
-									onClick={() => {
-										sortAssetList(
-											"amountSupplied",
-											sortDir.amountSupplied === "asc" ? "desc" : "asc"
-										);
-									}}
-								>
-									<Sortable
-										className={`cursor-pointer ${
-											sortDir.currentSort === "amountSupplied"
-												? `${
-														sortDir.amountSupplied === "asc" ? "" : "rotate-180"
-												  }`
-												: "rotate-0"
-										}`}
-									/>
-								</div>
-							</li>
-							<li className="col-span-1 md:col-span-2 flex items-center justify-between">
-								<div className="flex space-x-3">
-									<span className="">Total borrowed</span>
+		<>
+			<div className="flex items-start md:items-center md:justify-between flex-col md:flex-row">
+				<Stats />
+				{isConnected && (
+					<Input
+						onChange={searchAssets}
+						placeholder="Search assets"
+						LeadingIcon={() => <Search />}
+						className="self-center w-full md:w-fit mb-4 md:mb-0"
+					/>
+				)}
+			</div>
+			<div className="bg-navy p-4 md:p-10 rounded-xl">
+				{isConnected ? (
+					<div className="space-y-3 md:space-y-6">
+						<div className="text-darkGrey">
+							<ul className="md:px-8 grid grid-cols-4 md:grid-cols-6 items-center text-xs md:text-base">
+								<li className="col-span-2">Asset</li>
+								<li className="col-span-1 md:col-span-2 flex space-x-3 pr-1">
+									<span>Total supplied</span>
 									<div
 										className="hidden md:block"
 										onClick={() => {
 											sortAssetList(
-												"amountBorrowed",
-												sortDir.amountBorrowed === "asc" ? "desc" : "asc"
+												"amountSupplied",
+												sortDir.amountSupplied === "asc" ? "desc" : "asc"
 											);
 										}}
 									>
 										<Sortable
 											className={`cursor-pointer ${
-												sortDir.currentSort === "amountBorrowed"
+												sortDir.currentSort === "amountSupplied"
 													? `${
-															sortDir.amountBorrowed === "asc"
+															sortDir.amountSupplied === "asc"
 																? ""
 																: "rotate-180"
 													  }`
@@ -248,89 +264,117 @@ export default function Assets() {
 											}`}
 										/>
 									</div>
-								</div>
-							</li>
-						</ul>
-					</div>
-					{isLoading ? (
-						<div className="grid place-items-center py-10">
-							<Spinner size={4} />
-						</div>
-					) : (
-						<>
-							{assetList.length
-								? assetList.map((m, i) => (
-										<Asset key={i} setOpen={selectAsset} market={m} />
-								  ))
-								: !isLoading && (
-										<div className="text-center space-y-5 py-24">
-											<p className="mb-14 text-2xl text-grey">
-												No assets found
-											</p>
-										</div>
-								  )}
-						</>
-					)}
-				</div>
-			) : (
-				<div className="text-center space-y-5 py-24">
-					<Wallet className="mx-auto" />
-					<h2 className="font-semibold text-4xl">No wallet found</h2>
-					<p className="mb-14 text-2xl text-grey">
-						Please connect your wallet to see supplies and borrowings
-					</p>
-					<span className="mx-auto block w-max">
-						<ConnectButton />
-					</span>
-				</div>
-			)}
-			<Modal open={view} setOpen={setView} type="dark">
-				<Confirmation message={liquidationInfo} />
-			</Modal>
-			<Modal
-				open={show}
-				setOpen={v => {
-					setShow(v);
-					setStatus(undefined);
-				}}
-				type="dark"
-			>
-				<Submitted status={status} />
-			</Modal>
-			<Modal open={open} setOpen={setOpen}>
-				<Tabs
-					className="py-2"
-					data={[
-						{
-							title: "Liquidate",
-							render: (
-								<Liquidate
-									asset={asset}
-									getTx={getLiquidateTx}
-									collateral={defaultCollateral}
-									key={`${asset?.marketSymbol ?? "NOASSET"}-${open}`}
-								/>
-							)
-						},
-						...(categories.Leverage
-							? [
-									{
-										title: "Leverage",
-										render: (
-											<Leverage
-												debt={defaultCollateral}
-												getTx={getLeverageTx}
-												collateral={asset}
-												key={`${asset?.marketSymbol ?? "NOASSET"}-${open}-lev`}
+								</li>
+								<li className="col-span-1 md:col-span-2 flex items-center justify-between">
+									<div className="flex space-x-3">
+										<span className="">Total borrowed</span>
+										<div
+											className="hidden md:block"
+											onClick={() => {
+												sortAssetList(
+													"amountBorrowed",
+													sortDir.amountBorrowed === "asc" ? "desc" : "asc"
+												);
+											}}
+										>
+											<Sortable
+												className={`cursor-pointer ${
+													sortDir.currentSort === "amountBorrowed"
+														? `${
+																sortDir.amountBorrowed === "asc"
+																	? ""
+																	: "rotate-180"
+														  }`
+														: "rotate-0"
+												}`}
 											/>
-										)
-									}
-							  ]
-							: [])
-					]}
-				/>
-			</Modal>
-		</div>
+										</div>
+									</div>
+								</li>
+							</ul>
+						</div>
+						{isLoading ? (
+							<div className="grid place-items-center py-10">
+								<Spinner size={4} />
+							</div>
+						) : (
+							<>
+								{assetList.length
+									? assetList.map((m, i) => (
+											<Asset key={i} setOpen={selectAsset} market={m} />
+									  ))
+									: !isLoading && (
+											<div className="text-center space-y-5 py-24">
+												<p className="mb-14 text-2xl text-grey">
+													No assets found
+												</p>
+											</div>
+									  )}
+							</>
+						)}
+					</div>
+				) : (
+					<div className="text-center space-y-5 py-24">
+						<Wallet className="mx-auto" />
+						<h2 className="font-semibold text-4xl">No wallet found</h2>
+						<p className="mb-14 text-2xl text-grey">
+							Please connect your wallet to see supplies and borrowings
+						</p>
+						<span className="mx-auto block w-max">
+							<ConnectButton />
+						</span>
+					</div>
+				)}
+				<Modal open={view} setOpen={setView} type="dark">
+					<Confirmation message={liquidationInfo} />
+				</Modal>
+				<Modal
+					open={show}
+					setOpen={v => {
+						setShow(v);
+						setStatus(undefined);
+					}}
+					type="dark"
+				>
+					<Submitted status={status} />
+				</Modal>
+				<Modal open={open} setOpen={setOpen}>
+					<Tabs
+						className="py-2"
+						data={[
+							{
+								title: "Liquidate",
+								render: (
+									<Liquidate
+										asset={asset}
+										getTx={getLiquidateTx}
+										collateral={defaultCollateral}
+										key={`${asset?.marketSymbol ?? "NOASSET"}-${open}`}
+									/>
+								)
+							},
+							...(categories.Leverage
+								? [
+										{
+											title: "Leverage",
+											render: (
+												<Leverage
+													debt={defaultCollateral}
+													getTx={getLeverageTx}
+													collateral={asset}
+													key={`${
+														asset?.marketSymbol ?? "NOASSET"
+													}-${open}-lev`}
+												/>
+											)
+										}
+								  ]
+								: [])
+						]}
+					/>
+				</Modal>
+			</div>
+		</>
 	);
 }
 
