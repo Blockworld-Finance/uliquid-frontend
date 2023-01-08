@@ -1,14 +1,13 @@
 /* eslint-disable @next/next/no-img-element */
 import { useState } from "react";
 import { Dropdown } from "@icons";
-import useData from "src/hooks/useData";
+
 import { useProtocols } from "src/hooks/useQueries";
 import { ClickOutside } from "src/hooks/useClickOutside";
+import { useNavData } from "@hooks/useNavData";
 
 export default function BlockChain() {
-	const {
-		data: { activeProtocol, activeChain, activeVersion }
-	} = useData();
+	const { activeChain, activeProtocol, activeVersion } = useNavData();
 	const { data } = useProtocols();
 	const [open, setOpen] = useState(false);
 	const { versions = [] } = data[activeProtocol];
@@ -76,11 +75,8 @@ type SelectorProps = {
 };
 
 const Selector = ({ open, close }: SelectorProps) => {
-	const {
-		dispatch,
-		data: { activeVersion, activeChain, activeProtocol }
-	} = useData();
 	const { data } = useProtocols();
+	const { activeChain, activeProtocol, activeVersion, push } = useNavData();
 	const [chain, setChain] = useState(activeChain);
 	const [version, setVersion] = useState(activeVersion);
 
@@ -121,7 +117,7 @@ const Selector = ({ open, close }: SelectorProps) => {
 						}`}
 						onClick={() => {
 							close();
-							dispatch({ activeChain: i, activeVersion: version });
+							push(`/dashboard/${activeProtocol}/${version}/${i}`);
 						}}
 					>
 						<img

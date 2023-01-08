@@ -1,3 +1,4 @@
+"use client";
 import { ReactNode } from "react";
 import { TGetURLsResponse } from "src/queries";
 import Footer from "./footer";
@@ -13,7 +14,9 @@ export default function Layout({ children, urls }: Props) {
 		<>
 			<main className="bg-primary min-h-screen pattern max-w-[1440px] mx-auto">
 				<Header {...urls} />
-				<section className="max-w-[1240px] mx-auto px-4 md:p-0">{children}</section>
+				<section className="max-w-[1240px] mx-auto px-4 md:p-0">
+					{children}
+				</section>
 			</main>
 			<Footer {...urls} />
 		</>

@@ -21,21 +21,18 @@ import {
 	useNativeTokenUSDValue
 } from "src/hooks/useQueries";
 import Leverage from "./leverage";
-import useData from "@hooks/useData";
 import { Liquidate } from "./liquidate";
 import Tabs from "@components/common/tabs";
+import { TransactionStatus } from "@types";
 import Modal from "@components/common/Modal";
 import Button from "@components/common/button";
+import { useNavData } from "@hooks/useNavData";
 import Spinner from "@components/common/Spinner";
 import { formatNumber } from "src/utils/helpers";
 import { Info, Send, Wallet, Sortable, Warning, Exclamation } from "@icons";
-import { TransactionStatus } from "@types";
 
 export default function Assets() {
 	useNativeTokenUSDValue();
-	const {
-		data: { activeChain, activeProtocol, activeVersion }
-	} = useData();
 	const [open, setOpen] = useState(false);
 	const [view, setView] = useState(false);
 	const [show, setShow] = useState(false);
@@ -44,6 +41,7 @@ export default function Assets() {
 	const { isConnected, address } = useAccount();
 	const [asset, setAsset] = useState<LendingMarketUser>();
 	const [status, setStatus] = useState<TransactionStatus>();
+	const { activeChain, activeProtocol, activeVersion } = useNavData();
 	const [liquidationInfo, setLiquidationInfo] = useState(<></>);
 	const [assetList, setAssetList] = useState(
 		data?.getLendingProtocolUserData?.markets ?? []
@@ -54,7 +52,11 @@ export default function Assets() {
 		amountBorrowed: "asc"
 	});
 
-	const { name = "", versions = [], categories } = protocols[activeProtocol];
+	const {
+		name = "",
+		versions = [],
+		categories
+	} = protocols[activeProtocol as number];
 	useFeeData({
 		chainId: versions[activeVersion].chains[activeChain].id
 	});

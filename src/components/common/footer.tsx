@@ -40,13 +40,13 @@ export default function Footer({
 					</div>
 					<a href="#">
 						<Image
+							width={240}
+							height={53}
 							id="badge-button"
-							width={"240px"}
-							height={"53px"}
+							alt="Alchemy Supercharged"
 							// @ts-ignore
 							onClick={() => logBadgeClick()}
 							src="https://static.alchemyapi.io/images/marketing/badge.png"
-							alt="Alchemy Supercharged"
 						/>
 					</a>
 				</div>

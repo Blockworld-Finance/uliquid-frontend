@@ -12,7 +12,6 @@ import {
 	useProtocolMarkets,
 	useNativeTokenUSDValue
 } from "@hooks/useQueries";
-import useData from "@hooks/useData";
 import Alert from "@components/common/alert";
 import Button from "@components/common/button";
 import Slider from "@components/common/slider";
@@ -22,6 +21,7 @@ import { ClickOutside } from "@hooks/useClickOutside";
 import { Dropdown, GasPump, Help, Info } from "@icons";
 import { AssetPicker } from "@components/common/asset-picker";
 import { LendingMarketUser, LeverageQuoteInput } from "@schema";
+import { useNavData } from "@hooks/useNavData";
 
 type Props = {
 	debt?: LendingMarketUser;
@@ -34,9 +34,7 @@ export default function Leverage({
 	debt: initialDebt,
 	collateral: initialCollateral
 }: Props) {
-	const {
-		data: { activeProtocol, activeChain, activeVersion }
-	} = useData();
+	const { activeChain, activeProtocol, activeVersion } = useNavData();
 	const { chain } = useNetwork();
 	const { data } = useProtocols();
 	const [view, setView] = useState(false);

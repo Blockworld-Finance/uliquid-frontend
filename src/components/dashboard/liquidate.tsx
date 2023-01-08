@@ -11,8 +11,8 @@ import {
 	useLiquidationQuote,
 	useNativeTokenUSDValue
 } from "@hooks/useQueries";
-import useData from "@hooks/useData";
 import Alert from "@components/common/alert";
+import { useNavData } from "@hooks/useNavData";
 import Button from "@components/common/button";
 import { formatNumber } from "src/utils/helpers";
 import { Info, GasPump, Dropdown } from "@icons";
@@ -32,9 +32,6 @@ export function Liquidate({
 	asset: initialAsset,
 	collateral: initialCollateral
 }: Props) {
-	const {
-		data: { activeProtocol, activeChain, activeVersion }
-	} = useData();
 	const { data } = useProtocols();
 	const { chain } = useNetwork();
 	const [open, setOpen] = useState(false);
@@ -51,6 +48,7 @@ export function Liquidate({
 	const [isConfirming, setIsConfirming] = useState(false);
 	const { data: usdValue, isLoading: nativeTokenLoading } =
 		useNativeTokenUSDValue();
+	const { activeChain, activeProtocol, activeVersion } = useNavData();
 	const { name, logo, versions = [] } = data[activeProtocol];
 	const { data: fees, isLoading: feeLoading } = useFeeData({
 		chainId: versions[activeVersion].chains[activeChain].id

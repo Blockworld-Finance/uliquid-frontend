@@ -2,11 +2,10 @@
 import { useMemo } from "react";
 
 import { Chain } from "@schema";
+import { useRouter } from "next/router";
 import { NormalizedProtocol } from "@types";
 import Spinner from "@components/common/Spinner";
 import { useProtocolMarkets } from "@hooks/useQueries";
-import { useRouter } from "next/router";
-import useData from "@hooks/useData";
 
 type Props = {
 	index: number;
@@ -14,7 +13,6 @@ type Props = {
 };
 
 export default function ProtocolCard({ protocol, index }: Props) {
-	const { dispatch } = useData();
 	const { push } = useRouter();
 	const chains: Chain[] = useMemo(() => {
 		return protocol?.versions[0].chains.slice(0, 3);
@@ -76,10 +74,7 @@ export default function ProtocolCard({ protocol, index }: Props) {
 				<div
 					className="cursor-pointer"
 					onClick={() => {
-						dispatch({
-							activeProtocol: index
-						});
-						push("/dashboard");
+						push(`/dashboard/${index}/0/0`);
 					}}
 				>
 					<span className="text-sm underline">See more</span>
