@@ -7,11 +7,13 @@ import { useNavData } from "@hooks/useNavData";
 import { ClickOutside } from "@hooks/useClickOutside";
 import { CustomConnectButton } from "./connect-button";
 import { Close, Discord, Github, Menu, Twitter } from "@icons";
+import { useRouter } from "next/router";
 
 export default function Header({
 	getURLs: { twitter, github, discord, documentation }
 }: TGetURLsResponse) {
 	const { push } = useNavData();
+	const { pathname } = useRouter();
 	const [open, setOpen] = useState(false);
 
 	return (
@@ -23,9 +25,14 @@ export default function Header({
 					</Link>
 					<ul className="menu flex items-center justify-between space-x-10 text-[18px] leading-6 text-grey">
 						<Link href={"/"}>
-							<li>Home</li>
+							<li className={`${pathname === "/" ? "text-blue" : ""}`}>Home</li>
 						</Link>
-						<li className="cursor-pointer" onClick={() => push(0)}>
+						<li
+							className={`cursor-pointer ${
+								pathname.includes("dashboard") ? "text-blue" : ""
+							}`}
+							onClick={() => push(0)}
+						>
 							Dashboard
 						</li>
 						<a href={documentation} target="_blank" rel="noopener noreferrer">

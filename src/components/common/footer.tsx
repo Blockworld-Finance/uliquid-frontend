@@ -10,7 +10,9 @@ export default function Footer({
 	return (
 		<footer className="bg-navy h-80 flex justify-center items-center">
 			<div className="flex items-center flex-col md:flex-row justify-between w-full max-w-[1240px] mx-auto space-y-6 md:space-y-0">
-				<img src="/logo.svg" alt="Logo" className="w-20 md:w-[185px]" />
+				<Link href={"/"}>
+					<img src="/logo.svg" alt="Logo" className="w-20 md:w-[185px]" />
+				</Link>
 				<ul className="menu flex items-center justify-between space-x-6 md:space-x-10 text-xs md:text-[18px] leading-6 text-grey">
 					<Link href={"/"}>
 						<li>Home</li>

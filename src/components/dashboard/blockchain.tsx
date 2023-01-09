@@ -2,9 +2,9 @@
 import { useState } from "react";
 import { Dropdown } from "@icons";
 
+import { useNavData } from "@hooks/useNavData";
 import { useProtocols } from "src/hooks/useQueries";
 import { ClickOutside } from "src/hooks/useClickOutside";
-import { useNavData } from "@hooks/useNavData";
 
 export default function BlockChain() {
 	const { activeChain, activeProtocol, activeVersion } = useNavData();
@@ -59,7 +59,7 @@ export default function BlockChain() {
 							<Selector
 								open={open}
 								close={() => setOpen(false)}
-								key={`${activeProtocol}-${activeVersion}-${activeChain}`}
+								key={`${activeProtocol}-${activeVersion}-${activeChain}-${open}`}
 							/>
 						</ClickOutside>
 					</div>
@@ -99,7 +99,8 @@ const Selector = ({ open, close }: SelectorProps) => {
 								version === i ? "text-primary bg-blue" : "bg-primary text-blue"
 							} text-sm px-2 md:px-5 py-1 md:py-2 rounded cursor-pointer`}
 							onClick={() => {
-								setChain(0);
+								if (i !== activeVersion) setChain(0);
+								else setChain(activeChain);
 								setVersion(i);
 							}}
 						>
@@ -113,7 +114,7 @@ const Selector = ({ open, close }: SelectorProps) => {
 					<div
 						key={`${c.name}-${i}-${version}`}
 						className={`flex text-grey space-x-4 cursor-pointer text-xs md:text-base ${
-							chain === i ? "text-blue" : ""
+							chain === i && version === activeVersion ? "text-blue" : ""
 						}`}
 						onClick={() => {
 							close();

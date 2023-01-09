@@ -77,7 +77,7 @@ export default function ProtocolCard({ protocol, index }: Props) {
 						push(index);
 					}}
 				>
-					<span className="text-sm underline">See more</span>
+					<span className="text-xs whitespace-nowrap md:text-sm underline">See more</span>
 				</div>
 			</div>
 		</div>
