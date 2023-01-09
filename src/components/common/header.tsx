@@ -28,7 +28,6 @@ export default function Header({
 						<li className="cursor-pointer" onClick={() => push(0)}>
 							Dashboard
 						</li>
-
 						<a href={documentation} target="_blank" rel="noopener noreferrer">
 							<li>Docs</li>
 						</a>
