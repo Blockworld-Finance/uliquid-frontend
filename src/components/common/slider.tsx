@@ -36,13 +36,13 @@ export default function Slider({
 			}}
 			handleStyle={{
 				opacity: 1,
-				width: "16px",
-				height: "16px",
+				width: "24px",
+				height: "24px",
 				background: color,
-				marginTop: "-15px",
+				marginTop: "-19px",
 				borderRadius: "12px",
 				position: "relative",
-				border: "4px #fff solid"
+				border: "6px #fff solid"
 			}}
 			min={min}
 			max={max}
