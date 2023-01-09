@@ -46,7 +46,9 @@ export default function Tabs({
 						<span
 							key={index}
 							className={`space-x-1 md:space-x-2 cursor-pointer flex items-center ${className} ${
-								active === index ? "text-blue font-semibold" : "text-grey"
+								active === index
+									? "text-blue font-semibold"
+									: "text-grey hover:text-white"
 							}`}
 							onClick={() => {
 								changeTab(index);
