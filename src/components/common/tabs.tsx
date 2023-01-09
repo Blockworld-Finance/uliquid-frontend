@@ -47,7 +47,7 @@ export default function Tabs({
 							key={index}
 							className={`space-x-1 md:space-x-2 cursor-pointer flex items-center ${className} ${
 								active === index
-									? "text-blue font-semibold"
+									? "text-blue font-semibold border-b-2 relative top-[1px] border-b-blue"
 									: "text-grey hover:text-white"
 							}`}
 							onClick={() => {
