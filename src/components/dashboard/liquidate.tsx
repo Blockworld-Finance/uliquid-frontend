@@ -37,7 +37,7 @@ export function Liquidate({
 	const [open, setOpen] = useState(false);
 	const [view, setView] = useState(false);
 	const [show, setShow] = useState(false);
-	const [amount, setAmount] = useState(0);
+	const [amount, setAmount] = useState<number>();
 	const [gasPrice, setGasPrice] = useState(0);
 	const { data: balance } = useTokenBalance();
 	const [slippage, setSlippage] = useState(1.0);
@@ -76,8 +76,8 @@ export function Liquidate({
 		isRefetching
 	} = useLiquidationQuote(
 		{
-			amount,
 			slippage,
+			amount: amount ?? 0,
 			assetAddress: asset?.marketAddress,
 			collateralAddress: collateral.marketAddress
 		},

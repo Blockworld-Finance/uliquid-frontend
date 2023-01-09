@@ -15,13 +15,13 @@ import {
 import Alert from "@components/common/alert";
 import Button from "@components/common/button";
 import Slider from "@components/common/slider";
+import { useNavData } from "@hooks/useNavData";
 import Spinner from "@components/common/Spinner";
 import { formatNumber } from "src/utils/helpers";
 import { ClickOutside } from "@hooks/useClickOutside";
 import { Dropdown, GasPump, Help, Info } from "@icons";
 import { AssetPicker } from "@components/common/asset-picker";
 import { LendingMarketUser, LeverageQuoteInput } from "@schema";
-import { useNavData } from "@hooks/useNavData";
 
 type Props = {
 	debt?: LendingMarketUser;
@@ -34,7 +34,6 @@ export default function Leverage({
 	debt: initialDebt,
 	collateral: initialCollateral
 }: Props) {
-	const { activeChain, activeProtocol, activeVersion } = useNavData();
 	const { chain } = useNetwork();
 	const { data } = useProtocols();
 	const [view, setView] = useState(false);
@@ -51,14 +50,13 @@ export default function Leverage({
 		useNativeTokenUSDValue();
 	const [isConfirming, setIsConfirming] = useState(false);
 	const [collateral, setCollateral] = useState(initialCollateral);
+	const { activeChain, activeProtocol, activeVersion } = useNavData();
 	const { name, logo, versions = [] } = data[activeProtocol];
 	const { data: fees, isLoading: feeLoading } = useFeeData({
 		chainId: versions[activeVersion].chains[activeChain].id
 	});
 	const [changeSlippage, setChangeSlippage] = useState(false);
-	const [amount, setAmount] = useState(
-		balance?.[collateral.marketAddress] ?? 0
-	);
+	const [amount, setAmount] = useState<number>();
 	const { data: markets, isLoading: marketLoading } = useProtocolMarkets(name, {
 		version: versions[activeVersion].name,
 		chainId: versions[activeVersion].chains[activeChain].id
@@ -100,8 +98,8 @@ export default function Leverage({
 	} = useLeverageQuote(
 		{
 			slippage,
-			initialCollateralAmount: amount,
 			debtAddress: debt?.marketAddress,
+			initialCollateralAmount: amount ?? 0,
 			collateralAddress: collateral.marketAddress,
 			collateralizationRatio:
 				((1000 - ratio + market.marketData.minCollateralizationRatio) / 100) *
