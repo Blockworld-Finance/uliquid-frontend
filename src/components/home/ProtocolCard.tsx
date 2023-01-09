@@ -2,7 +2,6 @@
 import { useMemo } from "react";
 
 import { Chain } from "@schema";
-import { useRouter } from "next/router";
 import { NormalizedProtocol } from "@types";
 import Spinner from "@components/common/Spinner";
 import { useProtocolMarkets } from "@hooks/useQueries";

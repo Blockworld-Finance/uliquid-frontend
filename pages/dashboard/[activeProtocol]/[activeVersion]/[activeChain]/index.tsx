@@ -8,8 +8,8 @@ import Layout from "@components/common/layout";
 import { useNavData } from "@hooks/useNavData";
 import { getProtocols, getURLS } from "src/queries";
 import MarketPlace from "@components/dashboard/market";
-import { useProtocols, useTokenBalance } from "src/hooks/useQueries";
 import useWindowDimensions from "@hooks/useWindowDimensions";
+import { useProtocols, useTokenBalance } from "src/hooks/useQueries";
 
 export default function Dashboard({ data: ddata, urls }) {
 	const queryclient = useQueryClient();
