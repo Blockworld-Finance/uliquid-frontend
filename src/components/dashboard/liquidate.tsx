@@ -231,8 +231,7 @@ export function Liquidate({
 									<span
 										className="px-1 py-[2px] bg-[#008DE4] rounded-full text-white cursor-pointer"
 										onClick={() => {
-											if (inputRef.current)
-												inputRef.current.value = `${asset.amountBorrowed}`;
+											setAmount(asset.amountBorrowed);
 										}}
 									>
 										Max

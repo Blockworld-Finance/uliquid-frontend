@@ -81,9 +81,9 @@ export default function Leverage({
 	);
 
 	const { data: tokenValue, isLoading: tokenLoading } = useTokenUSDValues({
-		token: debt?.marketAddress,
-		quoteToken: collateral?.marketAddress,
-		getTokenUsdValueToken2: collateral?.marketAddress,
+		token: collateral?.marketAddress,
+		quoteToken: debt?.marketAddress,
+		getTokenUsdValueToken2: debt?.marketAddress,
 		chainId: versions[activeVersion].chains[activeChain].id,
 		getTokenUsdValueChainId2: versions[activeVersion].chains[activeChain].id
 	});
@@ -120,6 +120,12 @@ export default function Leverage({
 			);
 		}
 	);
+
+	const color = useMemo(() => {
+		if (leverage?.estimatedHealthFactor < 1.09) return "#EB5757";
+		if (leverage?.estimatedHealthFactor < 1.9) return "#F7931A";
+		return "#32C1CC";
+	}, [leverage?.estimatedHealthFactor]);
 
 	useEffect(() => {
 		if (market.marketData.minCollateralizationRatio) {
@@ -171,7 +177,7 @@ export default function Leverage({
 								Est. Health Factor
 							</small>
 							<div className="flex space-x-2 items-center">
-								<p className="text-blue">
+								<p style={{ color }}>
 									{leverage.estimatedHealthFactor.toFixed(2) ?? 0}
 								</p>
 							</div>
@@ -297,11 +303,7 @@ export default function Leverage({
 									<span
 										className="px-1 py-[2px] bg-[#008DE4] rounded-full text-white cursor-pointer"
 										onClick={() => {
-											if (inputRef.current) {
-												inputRef.current.value = `${
-													balance?.[collateral.marketAddress] ?? 0
-												}`;
-											}
+											setAmount(balance?.[collateral.marketAddress] ?? 0);
 										}}
 									>
 										Max
@@ -362,6 +364,7 @@ export default function Leverage({
 								</label>
 								<Slider
 									max={1000}
+									color={color}
 									value={ratio}
 									onChange={v => {
 										setRatio(typeof v === "number" ? v : v[0]);
@@ -410,12 +413,13 @@ export default function Leverage({
 								<Info />
 								<span>
 									1{collateral?.marketSymbol} ={" "}
+									{tokenValue?.getTokenValue.toPrecision(6) ?? 0}{" "}
+									{debt?.marketSymbol} ($
 									{(
 										(tokenValue?.getTokenValue ?? 0) *
 											tokenValue?.getTokenUSDValue ?? 0
 									).toPrecision(6)}{" "}
-									{debt?.marketSymbol} ($
-									{tokenValue?.getTokenValue.toPrecision(6) ?? 0} )
+									)
 								</span>
 							</div>
 

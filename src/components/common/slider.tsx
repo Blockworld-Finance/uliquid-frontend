@@ -15,7 +15,7 @@ export default function Slider({
 	value,
 	min = 0,
 	onChange,
-	color="#32C1CC",
+	color = "#32C1CC",
 	onBlur = () => {}
 }: SliderProps) {
 	const { isMobile } = useWindowDimensions();
@@ -25,9 +25,9 @@ export default function Slider({
 			trackStyle={{
 				top: "-2px",
 				height: "10px",
+				background: color,
 				borderRadius: "10px",
-				position: "relative",
-				background: "#32C1CC"
+				position: "relative"
 			}}
 			railStyle={{
 				height: "6px",
@@ -38,11 +38,11 @@ export default function Slider({
 				opacity: 1,
 				width: "24px",
 				height: "24px",
-				border: "6px #fff solid",
-				background: "#32C1CC",
+				background: color,
+				marginTop: "-19px",
 				borderRadius: "12px",
 				position: "relative",
-				marginTop: "-19px"
+				border: "6px #fff solid"
 			}}
 			min={min}
 			max={max}
