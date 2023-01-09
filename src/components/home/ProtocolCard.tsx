@@ -6,6 +6,7 @@ import { useRouter } from "next/router";
 import { NormalizedProtocol } from "@types";
 import Spinner from "@components/common/Spinner";
 import { useProtocolMarkets } from "@hooks/useQueries";
+import { useNavData } from "@hooks/useNavData";
 
 type Props = {
 	index: number;
@@ -13,7 +14,7 @@ type Props = {
 };
 
 export default function ProtocolCard({ protocol, index }: Props) {
-	const { push } = useRouter();
+	const { push } = useNavData();
 	const chains: Chain[] = useMemo(() => {
 		return protocol?.versions[0].chains.slice(0, 3);
 	}, [protocol]);
@@ -74,7 +75,7 @@ export default function ProtocolCard({ protocol, index }: Props) {
 				<div
 					className="cursor-pointer"
 					onClick={() => {
-						push(`/dashboard/${index}/0/0`);
+						push(index);
 					}}
 				>
 					<span className="text-sm underline">See more</span>

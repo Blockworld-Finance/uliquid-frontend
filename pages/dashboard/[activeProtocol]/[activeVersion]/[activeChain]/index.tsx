@@ -1,21 +1,21 @@
 import Aos from "aos";
 import { useEffect } from "react";
 import { GetStaticPaths } from "next";
-import { useRouter } from "next/router";
 import { useQueryClient } from "react-query";
 
 import Tabs from "@components/common/tabs";
 import Layout from "@components/common/layout";
+import { useNavData } from "@hooks/useNavData";
 import { getProtocols, getURLS } from "src/queries";
 import MarketPlace from "@components/dashboard/market";
 import { useProtocols, useTokenBalance } from "src/hooks/useQueries";
 import useWindowDimensions from "@hooks/useWindowDimensions";
-import { useNavData } from "@hooks/useNavData";
 
 export default function Dashboard({ data: ddata, urls }) {
 	const queryclient = useQueryClient();
 	const { data } = useProtocols(ddata);
 	const { isMobile } = useWindowDimensions();
+	const breakpoint = isMobile ? 2 : 3;
 	const { activeProtocol, push } = useNavData();
 	useTokenBalance();
 
@@ -27,7 +27,7 @@ export default function Dashboard({ data: ddata, urls }) {
 		<Layout urls={urls}>
 			<div className="my-6 md:my-36">
 				<Tabs
-					breakpoint={isMobile ? 2 : 3}
+					breakpoint={breakpoint}
 					data={data.map(p => ({
 						title: p.name,
 						icon: p.logo,
@@ -37,13 +37,13 @@ export default function Dashboard({ data: ddata, urls }) {
 					className={"py-4 md:py-6 text-xs md:text-2xl"}
 					onTabChnaged={(_t, tIndex) => {
 						let index = tIndex;
-						if (index > 2) {
+						if (index > breakpoint) {
 							const removed = data.splice(index, 1);
-							data.splice(2, 0, removed[0]);
+							data.splice(breakpoint, 0, removed[0]);
 							queryclient.setQueryData(["protocols"], data);
-							index = 2;
+							index = breakpoint;
 						}
-						push(`/dashboard/${index}/0/0`);
+						push(index);
 					}}
 				/>
 			</div>

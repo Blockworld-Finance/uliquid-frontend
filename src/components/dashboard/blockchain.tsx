@@ -117,7 +117,7 @@ const Selector = ({ open, close }: SelectorProps) => {
 						}`}
 						onClick={() => {
 							close();
-							push(`/dashboard/${activeProtocol}/${version}/${i}`);
+							push(activeProtocol, version, i);
 						}}
 					>
 						<img
