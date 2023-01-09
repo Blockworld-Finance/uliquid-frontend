@@ -8,7 +8,7 @@ export const getServerSideProps: GetServerSideProps = async () => {
 	return {
 		redirect: {
 			permanent: true,
-			destination: "/dashboard/0/0/0"
+			destination: "/dashboard/Aave/V2/Ethereum"
 		}
 	};
 };
