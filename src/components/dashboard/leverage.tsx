@@ -88,8 +88,22 @@ export default function Leverage({
 		getTokenUsdValueChainId2: versions[activeVersion].chains[activeChain].id
 	});
 
+	const { data: dbttokenValue, isLoading: dbttokenLoading } = useTokenUSDValues(
+		{
+			token: debt?.marketAddress,
+			quoteToken: collateral?.marketAddress,
+			getTokenUsdValueToken2: collateral?.marketAddress,
+			chainId: versions[activeVersion].chains[activeChain].id,
+			getTokenUsdValueChainId2: versions[activeVersion].chains[activeChain].id
+		}
+	);
+
 	const preparing =
-		tokenLoading || nativeTokenLoading || feeLoading || marketLoading;
+		tokenLoading ||
+		nativeTokenLoading ||
+		feeLoading ||
+		marketLoading ||
+		dbttokenLoading;
 
 	const {
 		isLoading,
@@ -254,7 +268,7 @@ export default function Leverage({
 								<small className="text-tiny md:text-sm text-grey">
 									$
 									{(
-										tokenValue?.getTokenUSDValue *
+										dbttokenValue?.getTokenUSDValue *
 										Number(
 											inputRef.current?.value ??
 												balance?.[collateral.marketAddress] ??
