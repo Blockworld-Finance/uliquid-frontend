@@ -1,4 +1,3 @@
-import Aos from "aos";
 import { useState } from "react";
 import Router from "next/router";
 import NProgress from "nprogress";
@@ -11,12 +10,13 @@ import { init } from "src/utils/store";
 import wagmiClient from "src/utils/chains";
 import { DataProvider } from "src/hooks/useData";
 
+import "aos/dist/aos.css";
 import "../styles/globals.css";
 import "nprogress/nprogress.css";
 import "rc-slider/assets/index.css";
 import "@rainbow-me/rainbowkit/styles.css";
+import "react-tooltip/dist/react-tooltip.css";
 import "react-toastify/dist/ReactToastify.css";
-import "aos/dist/aos.css";
 
 NProgress.configure({ showSpinner: false });
 

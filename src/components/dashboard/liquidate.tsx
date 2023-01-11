@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 import Image from "next/image";
 import { toast } from "react-toastify";
+import { Tooltip } from "react-tooltip";
 import { useRef, useState, useMemo } from "react";
 import { useFeeData, useNetwork, useSwitchNetwork } from "wagmi";
 
@@ -185,7 +186,10 @@ export function Liquidate({
 									ref={inputRef}
 									value={amount}
 									inputMode="numeric"
-									onChange={e => setAmount(Number(e.target.value))}
+									onChange={e => {
+										if (e.target.value) setAmount(Number(e.target.value));
+										else setAmount(undefined);
+									}}
 									className="w-full text-xs md:text-3xl text-white bg-primary border-none focus:outline-none"
 								/>
 								<small className="text-tiny md:text-sm text-grey">
@@ -297,9 +301,17 @@ export function Liquidate({
 					</div>
 
 					<div className="bg-primary p-3 rounded-lg text-xs md:text-base">
-						<div className="flex justify-between items-center">
+						<div className="flex justify-between items-center text-grey text-sm">
 							<div className="flex space-x-2 items-center">
-								<Info />
+								<div id="info">
+									<Info />
+								</div>
+								<Tooltip anchorId="info" place="top">
+									<div className="max-w-[200px]">
+										The amount of collateral liquidated is calculated using this
+										exchange rate plus protocol fee.
+									</div>
+								</Tooltip>
 								<span>
 									1{asset?.marketSymbol} ={" "}
 									{formatNumber(tokenValue?.getTokenValue) ?? 0}

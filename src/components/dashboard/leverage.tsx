@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 import Image from "next/image";
 import { toast } from "react-toastify";
+import { Tooltip } from "react-tooltip";
 import { useRef, useMemo, useState, useEffect } from "react";
 import { useFeeData, useNetwork, useSwitchNetwork } from "wagmi";
 
@@ -244,8 +245,18 @@ export default function Leverage({
 						/>
 					)}
 					<div className="bg-primary p-3 rounded-lg space-y-3">
-						<small className="text-tiny md:text-sm text-darkGrey">
-							Leverage token
+						<small className="text-tiny md:text-sm text-darkGrey flex items-center">
+							<span>Leverage token</span>
+							<div id="leverage-info">
+								<Help className="ml-2" />
+							</div>
+							<Tooltip place="top" anchorId="leverage-info">
+								<div className="max-w-[200px]">
+									The leverage token selected will be deposited on {name} and
+									used as collateral to borrow the debt token in a series of
+									loops
+								</div>
+							</Tooltip>
 						</small>
 						<div className="grid gap-2 grid-cols-12 space-x-4 items-center">
 							<div className="flex-grow border border-darkGrey rounded-lg py-3 px-4 col-span-7">
@@ -256,7 +267,10 @@ export default function Leverage({
 									value={amount}
 									pattern="[0-9]*"
 									inputMode="numeric"
-									onChange={e => setAmount(Number(e.target.value))}
+									onChange={e => {
+										if (e.target.value) setAmount(Number(e.target.value));
+										else setAmount(undefined);
+									}}
 									onKeyDown={evt => {
 										let charCode = evt.which ? evt.which : evt.keyCode;
 										if (charCode > 31 && (charCode < 48 || charCode > 57))
@@ -329,7 +343,17 @@ export default function Leverage({
 					<div className="bg-primary p-3 rounded-lg">
 						<div className="flex items-center justify-between">
 							<small className="text-sm text-darkGrey flex items-center">
-								<span>Debt</span> <Help className="ml-2" />
+								<span>Debt</span>
+
+								<div id="debt-info">
+									<Help className="ml-2" />
+								</div>
+								<Tooltip anchorId="debt-info" place="top">
+									<div className="max-w-[200px]">
+										A debt of the token selected will be incurred on {name} and
+										swapped for the leverage token in a series of loops
+									</div>
+								</Tooltip>
 							</small>
 							<div className="space-y-2 col-span-2">
 								<div className="flex items-center justify-between">
@@ -422,12 +446,20 @@ export default function Leverage({
 						</div>
 					</div>
 					<div className="bg-primary p-3 rounded-lg">
-						<div className="flex justify-between items-center">
+						<div className="flex justify-between items-center text-grey text-sm">
 							<div className="flex space-x-2 items-center">
-								<Info />
+								<div id="token-info">
+									<Info />
+								</div>
+								<Tooltip anchorId="token-info" place="top">
+									<div className="max-w-[200px]">
+										The amount of debt incured is calculated using this exchange
+										rate - leverage.
+									</div>
+								</Tooltip>
 								<span>
 									1{collateral?.marketSymbol} ={" "}
-									{tokenValue?.getTokenValue.toPrecision(6) ?? 0}{" "}
+									{formatNumber(tokenValue?.getTokenValue, 8) ?? 0}{" "}
 									{debt?.marketSymbol} ($
 									{(
 										(tokenValue?.getTokenValue ?? 0) *
