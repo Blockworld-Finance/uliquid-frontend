@@ -20,13 +20,13 @@ export function useNavData() {
 		if (activeProtocol === -1) activeProtocol = 0;
 
 		let activeVersion =
-			protocols?.[activeProtocol].versions.findIndex(
+			protocols?.[activeProtocol]?.versions?.findIndex(
 				v => removeSpecialChars(v.name) === av
 			) ?? 0;
 		if (activeVersion === -1) activeVersion = 0;
 
 		let activeChain =
-			protocols?.[activeProtocol].versions[activeVersion].chains.findIndex(
+			protocols?.[activeProtocol]?.versions?.[activeVersion]?.chains?.findIndex(
 				c => removeSpecialChars(c.name) === ac
 			) ?? 0;
 		if (activeChain === -1) activeChain = 0;

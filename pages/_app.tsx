@@ -33,7 +33,7 @@ function MyApp({ Component, pageProps }) {
 				<Hydrate state={pageProps.dehydratedState}>
 					<WagmiConfig client={wagmiClient}>
 						<RainbowKitProvider
-							chains={wagmiClient.chains}
+							chains={wagmiClient?.chains ?? []}
 							theme={darkTheme({
 								accentColor: "white",
 								accentColorForeground: "black"

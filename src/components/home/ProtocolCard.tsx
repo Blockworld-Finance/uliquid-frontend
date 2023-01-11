@@ -15,11 +15,11 @@ type Props = {
 export default function ProtocolCard({ protocol, index }: Props) {
 	const { push } = useNavData();
 	const chains: Chain[] = useMemo(() => {
-		return protocol?.versions[0].chains.slice(0, 3);
+		return protocol?.versions?.[0]?.chains?.slice(0, 3) ?? [];
 	}, [protocol]);
 	const { data, isLoading } = useProtocolMarkets(protocol.name, {
-		version: protocol?.versions[0].name,
-		chainId: protocol?.versions[0].chains[0].id
+		version: protocol?.versions?.[0]?.name,
+		chainId: protocol?.versions?.[0]?.chains?.[0]?.id
 	});
 	const markets = useMemo(
 		() => (data ? Object.values(data).slice(0, 3) : []),
@@ -38,7 +38,7 @@ export default function ProtocolCard({ protocol, index }: Props) {
 					<h3 className="text-sm text-[18px]">{protocol.name}</h3>
 				</div>
 				<div className="bg-primary rounded-full flex items-center text-darkGrey p-2 w-min whitespace-nowrap space-x-2">
-					{chains.map((chain, key) => (
+					{chains?.map((chain, key) => (
 						<div key={key} className="items-center w-4 h-4 md:w-8 md:h-8">
 							<img
 								className="w-4 h-4 md:w-8 md:h-8"
@@ -47,7 +47,7 @@ export default function ProtocolCard({ protocol, index }: Props) {
 							/>
 						</div>
 					))}
-					{chains.length > 3 && <span className="text-xs">and so on</span>}
+					{chains?.length > 3 && <span className="text-xs">and so on</span>}
 				</div>
 				<p className="text-grey text-xs md:text-base leading-6 line-clamp-3 tx">
 					{protocol.description}
@@ -77,7 +77,9 @@ export default function ProtocolCard({ protocol, index }: Props) {
 						push(index);
 					}}
 				>
-					<span className="text-xs whitespace-nowrap md:text-sm underline">See more</span>
+					<span className="text-xs whitespace-nowrap md:text-sm underline">
+						See more
+					</span>
 				</div>
 			</div>
 		</div>

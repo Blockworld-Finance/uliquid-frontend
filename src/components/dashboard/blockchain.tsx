@@ -110,7 +110,7 @@ const Selector = ({ open, close }: SelectorProps) => {
 				</div>
 			</div>
 			<div className="space-y-6">
-				{data[activeProtocol].versions[version].chains.map((c, i) => (
+				{data[activeProtocol].versions?.[version]?.chains?.map((c, i) => (
 					<div
 						key={`${c.name}-${i}-${version}`}
 						className={`flex text-grey space-x-4 cursor-pointer text-xs md:text-base ${
