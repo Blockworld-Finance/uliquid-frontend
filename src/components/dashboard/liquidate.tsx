@@ -432,7 +432,10 @@ export function Liquidate({
 			<Button
 				size="large"
 				loading={isLoading || isRefetching}
-				disabled={!isInputValid}
+				disabled={
+					!isInputValid ||
+					chain?.id !== versions[activeVersion].chains[activeChain].id
+				}
 				className="w-full font-semibold"
 				onClick={() => {
 					if (!isConfirming) {
