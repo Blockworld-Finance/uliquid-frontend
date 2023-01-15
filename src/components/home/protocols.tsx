@@ -18,7 +18,7 @@ export default function Protocols({ protocols }: Props) {
 			</div>
 			<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-4">
 				{protocols.map((protocol, i) => (
-					<ProtocolCard key={i} protocol={protocol} />
+					<ProtocolCard key={i} protocol={protocol} index={i} />
 				))}
 			</div>
 		</div>

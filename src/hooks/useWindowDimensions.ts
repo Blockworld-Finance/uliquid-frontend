@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-const maxMobileWidth = 960;
+const maxMobileWidth = 720;
 
 export default function useWindowDimensions() {
 	const [width, setWidth] = useState(0);

@@ -13,32 +13,42 @@ type TabData = {
 type Props = {
 	data: TabData[];
 	className?: string;
+	breakpoint?: number;
+	defaultActive?: number;
 	onTabChnaged?: (t: TabData, index: number) => void;
 };
 
-export default function Tabs({ data, onTabChnaged, className }: Props) {
+export default function Tabs({
+	data,
+	className,
+	onTabChnaged,
+	defaultActive,
+	breakpoint = 2
+}: Props) {
 	const [open, setOpen] = useState(false);
-	const [active, setActive] = useState(0);
+	const [active, setActive] = useState(defaultActive ?? 0);
 
 	const changeTab = useCallback(
 		(tabIndex: number) => {
 			let index = tabIndex;
 			onTabChnaged?.(data[index], index);
-			if (index > 2) index = 2;
+			if (index > breakpoint) index = breakpoint;
 			setActive(index);
 		},
-		[data, onTabChnaged]
+		[data, onTabChnaged, breakpoint]
 	);
 
 	const renderTabs = useMemo(() => {
 		return (
-			<div className="flex items-center space-x-8 border border-none border-b-darkGrey">
+			<div className="flex items-center space-x-3 md:space-x-8 border border-none border-b-darkGrey">
 				{data.map((tab, index) =>
-					index < 3 ? (
+					index <= breakpoint ? (
 						<span
 							key={index}
-							className={`space-x-2 cursor-pointer flex items-center ${className} ${
-								active === index ? "text-blue font-semibold" : "text-grey"
+							className={`space-x-1 md:space-x-2 cursor-pointer flex items-center ${className} ${
+								active === index
+									? "text-blue font-semibold border-b-2 relative top-[1px] border-b-blue"
+									: "text-grey hover:text-white"
 							}`}
 							onClick={() => {
 								changeTab(index);
@@ -57,13 +67,13 @@ export default function Tabs({ data, onTabChnaged, className }: Props) {
 				)}
 				{data.length > 3 ? (
 					<span
-						className={`relative bg-navy cursor-pointer md:py-6 text-xs md:text-base py-4 px-6 rounded-lg`}
+						className={`relative bg-navy cursor-pointer md:py-6 text-xs md:text-base py-2 px-2 md:px-6 rounded-lg`}
 					>
 						<span
-							className="flex items-center space-x-2"
+							className="flex items-center space-x-1 md:space-x-2"
 							onClick={() => setOpen(!open)}
 						>
-							<span>Other protocols</span>
+							<span className="text-[10px] md:text-base">Other protocols</span>
 							<Dropdown />
 						</span>
 						<DropDown
@@ -72,12 +82,13 @@ export default function Tabs({ data, onTabChnaged, className }: Props) {
 							active={active}
 							setOpen={setOpen}
 							changeTab={changeTab}
+							breakpoint={breakpoint}
 						/>
 					</span>
 				) : null}
 			</div>
 		);
-	}, [data, changeTab, active, open, setOpen, className]);
+	}, [data, changeTab, active, open, setOpen, className, breakpoint]);
 
 	return (
 		<div>
@@ -91,6 +102,7 @@ type DropdownProps = {
 	open: boolean;
 	active: number;
 	hidden: TabData[];
+	breakpoint?: number;
 	setOpen: (s: boolean) => void;
 	changeTab: (_t: number) => void;
 };
@@ -100,7 +112,8 @@ export const DropDown = ({
 	active,
 	hidden,
 	setOpen,
-	changeTab
+	changeTab,
+	breakpoint = 2
 }: DropdownProps) => {
 	return (
 		<ClickOutside
@@ -110,7 +123,7 @@ export const DropDown = ({
 			}`}
 		>
 			{hidden.map((tab, index) =>
-				index > 2 ? (
+				index > breakpoint ? (
 					<div
 						key={tab.title}
 						className={`flex items-center space-x-2 cursor-pointer ${

@@ -1,13 +1,15 @@
 /* eslint-disable @next/next/no-img-element */
-import { Copy, Dropdown, Logout } from "@icons";
-import { useAccount, useDisconnect } from "wagmi";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { ClickOutside } from "@hooks/useClickOutside";
-import { copyTextToClipboard } from "src/utils/helpers";
 import { useState } from "react";
+import { useAccount, useDisconnect, useNetwork } from "wagmi";
+
+import { Copy, Dropdown, Logout } from "@icons";
+import { ClickOutside } from "@hooks/useClickOutside";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { copyTextToClipboard } from "src/utils/helpers";
 
 export const CustomConnectButton = () => {
 	const { address } = useAccount();
+	const { chain: currentChain } = useNetwork();
 	const { disconnect } = useDisconnect();
 	const [open, setOpen] = useState(false);
 
@@ -18,7 +20,6 @@ export const CustomConnectButton = () => {
 				account,
 				mounted,
 				openChainModal,
-				// openAccountModal,
 				openConnectModal,
 				authenticationStatus
 			}) => {
@@ -67,38 +68,9 @@ export const CustomConnectButton = () => {
 								<div>
 									<div
 										onClick={() => setOpen(true)}
-										// onClick={openAccountModal}
 										style={{ display: "flex", gap: 12 }}
 										className="items-center bg-navy leading-6 py-3 px-4 rounded-md"
 									>
-										{/* <button
-										onClick={openChainModal}
-										style={{ display: "flex", alignItems: "center" }}
-										type="button"
-									>
-										{chain.hasIcon && (
-											<div
-												style={{
-													background: chain.iconBackground,
-													width: 12,
-													height: 12,
-													borderRadius: 999,
-													overflow: "hidden",
-													marginRight: 4
-												}}
-											>
-												{chain.iconUrl && (
-													<img
-														src={chain.iconUrl}
-														alt={chain.name ?? "Chain icon"}
-														style={{ width: 12, height: 12 }}
-													/>
-												)}
-											</div>
-										)}
-										{chain.name}
-									</button> */}
-
 										{chain.hasIcon && (
 											<div
 												style={{
@@ -123,7 +95,7 @@ export const CustomConnectButton = () => {
 										<Dropdown />
 									</div>
 									<ClickOutside
-										className={`absolute bg-primary rounded-md py-3 px-4 space-y-2 ${
+										className={`absolute bg-primary rounded-md py-3 px-4 space-y-2 z-50 shadow-md ${
 											open ? "block" : "hidden"
 										}`}
 										onclickoutside={() => {
@@ -168,6 +140,17 @@ export const CustomConnectButton = () => {
 											>
 												<Copy />
 												<span>Copy address</span>
+											</li>
+											<li className="cursor-pointer">
+												<a
+													target={"_blank"}
+													rel="noopener noreferrer"
+													className=" flex items-center space-x-2"
+													href={`${currentChain?.blockExplorers?.default?.url}/address/${address}`}
+												>
+													<Copy />
+													<span>View on explorer</span>
+												</a>
 											</li>
 											<li
 												className="cursor-pointer flex items-center space-x-2"

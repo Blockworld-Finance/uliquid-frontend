@@ -9,7 +9,7 @@ const variants = {
 
 const sizes = {
 	default: "h-14",
-	large: "h-20"
+	large: "h-10 md:h-20"
 };
 
 type Props = DetailedHTMLProps<
@@ -42,7 +42,7 @@ export default function Button({
 				disabled={loading || disabled}
 				className={`${variants[variant]} ${
 					sizes[size]
-				} rounded-md text-sm md:text-[18px] leading-6 py-3 px-4 text-primary disabled:bg-slate-500 ${className} ${
+				} rounded-md text-sm md:text-[18px] leading-6 py-2 md:py-3 px-4 text-primary disabled:bg-slate-500 ${className} ${
 					loading ? "flex items-center justify-center" : ""
 				}`}
 			>

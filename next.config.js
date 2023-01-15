@@ -3,16 +3,16 @@ const nextConfig = {
 	webpack(config) {
 		config.module.rules.push({
 			test: /\.svg$/,
-			use: ["@svgr/webpack"],
+			use: ["@svgr/webpack"]
 		});
 
 		return config;
 	},
 	images: {
-		domains: ["blockchain-rdata.s3.amazonaws.com", "static.alchemyapi.io"],
+		domains: ["blockchain-rdata.s3.amazonaws.com", "static.alchemyapi.io"]
 	},
 	swcMinify: true,
-	reactStrictMode: true,
+	reactStrictMode: true
 };
 
 module.exports = nextConfig;

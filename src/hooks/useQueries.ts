@@ -12,10 +12,10 @@ import { useRef } from "react";
 import { useAccount } from "wagmi";
 import { useQuery } from "react-query";
 
-import useData from "./useData";
 import { AnyObject, NormalizedProtocols } from "@types";
 import { LeverageQuoteInput, LiquidationQuote } from "@schema";
 import { toast } from "react-toastify";
+import { useNavData } from "./useNavData";
 
 export function useProtocols(data?: NormalizedProtocols) {
 	return useQuery(["protocols"], getProtocols, {
@@ -29,9 +29,7 @@ export function useProtocols(data?: NormalizedProtocols) {
 
 export function useUserData() {
 	const { data: protocols } = useProtocols();
-	const {
-		data: { activeChain, activeProtocol, activeVersion }
-	} = useData();
+	const { activeChain, activeProtocol, activeVersion } = useNavData();
 	const { address, isConnected } = useAccount();
 
 	return useQuery(
@@ -53,9 +51,7 @@ export function useUserData() {
 
 export function useTokenBalance() {
 	const { address, isConnected } = useAccount();
-	const {
-		data: { activeChain, activeVersion, activeProtocol }
-	} = useData();
+	const { activeChain, activeProtocol, activeVersion } = useNavData();
 	const { data } = useProtocols();
 
 	return useQuery(
@@ -83,9 +79,7 @@ export function useProtocolMarkets(protocol: string, options: AnyObject = {}) {
 }
 
 export function useNativeTokenUSDValue() {
-	const {
-		data: { activeChain, activeVersion, activeProtocol }
-	} = useData();
+	const { activeChain, activeProtocol, activeVersion } = useNavData();
 	const { data } = useProtocols();
 	const { isConnected } = useAccount();
 
@@ -166,9 +160,7 @@ export function useLeverageQuote(
 	const { data } = useProtocols();
 	const { address } = useAccount();
 	let control = useRef(new AbortController());
-	const {
-		data: { activeProtocol, activeChain, activeVersion }
-	} = useData();
+	const { activeChain, activeProtocol, activeVersion } = useNavData();
 	const { name, versions = [] } = data[activeProtocol];
 
 	return useQuery(
@@ -223,9 +215,7 @@ export function useLiquidationQuote(
 	const { data } = useProtocols();
 	const { address } = useAccount();
 	let control = useRef(new AbortController());
-	const {
-		data: { activeProtocol, activeChain, activeVersion }
-	} = useData();
+	const { activeChain, activeProtocol, activeVersion } = useNavData();
 	const { name, versions = [] } = data[activeProtocol];
 
 	return useQuery(

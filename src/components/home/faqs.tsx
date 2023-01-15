@@ -18,6 +18,8 @@ export default function FAQs({ faqs }: Props) {
 				q.question.toLowerCase().includes(e.target.value.toLowerCase())
 			);
 			setList(cache);
+		} else {
+			setList(faqs);
 		}
 	};
 
@@ -32,7 +34,7 @@ export default function FAQs({ faqs }: Props) {
 			<div className="mt-8">
 				<Input
 					onChange={filterFAQs}
-					placeholder="Search assets"
+					placeholder="Search FAQs"
 					LeadingIcon={() => <Search />}
 					className="self-center max-w-md"
 				/>

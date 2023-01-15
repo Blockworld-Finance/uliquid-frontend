@@ -1,14 +1,13 @@
 /* eslint-disable @next/next/no-img-element */
 import { useState } from "react";
 import { Dropdown } from "@icons";
-import useData from "src/hooks/useData";
+
+import { useNavData } from "@hooks/useNavData";
 import { useProtocols } from "src/hooks/useQueries";
 import { ClickOutside } from "src/hooks/useClickOutside";
 
 export default function BlockChain() {
-	const {
-		data: { activeProtocol, activeChain, activeVersion }
-	} = useData();
+	const { activeChain, activeProtocol, activeVersion } = useNavData();
 	const { data } = useProtocols();
 	const [open, setOpen] = useState(false);
 	const { versions = [] } = data[activeProtocol];
@@ -60,7 +59,7 @@ export default function BlockChain() {
 							<Selector
 								open={open}
 								close={() => setOpen(false)}
-								key={`${activeProtocol}-${activeVersion}-${activeChain}`}
+								key={`${activeProtocol}-${activeVersion}-${activeChain}-${open}`}
 							/>
 						</ClickOutside>
 					</div>
@@ -76,11 +75,8 @@ type SelectorProps = {
 };
 
 const Selector = ({ open, close }: SelectorProps) => {
-	const {
-		dispatch,
-		data: { activeVersion, activeChain, activeProtocol }
-	} = useData();
 	const { data } = useProtocols();
+	const { activeChain, activeProtocol, activeVersion, push } = useNavData();
 	const [chain, setChain] = useState(activeChain);
 	const [version, setVersion] = useState(activeVersion);
 
@@ -103,7 +99,8 @@ const Selector = ({ open, close }: SelectorProps) => {
 								version === i ? "text-primary bg-blue" : "bg-primary text-blue"
 							} text-sm px-2 md:px-5 py-1 md:py-2 rounded cursor-pointer`}
 							onClick={() => {
-								setChain(0);
+								if (i !== activeVersion) setChain(0);
+								else setChain(activeChain);
 								setVersion(i);
 							}}
 						>
@@ -113,15 +110,15 @@ const Selector = ({ open, close }: SelectorProps) => {
 				</div>
 			</div>
 			<div className="space-y-6">
-				{data[activeProtocol].versions[version].chains.map((c, i) => (
+				{data[activeProtocol].versions?.[version]?.chains?.map((c, i) => (
 					<div
 						key={`${c.name}-${i}-${version}`}
 						className={`flex text-grey space-x-4 cursor-pointer text-xs md:text-base ${
-							chain === i ? "text-blue" : ""
+							chain === i && version === activeVersion ? "text-blue" : ""
 						}`}
 						onClick={() => {
 							close();
-							dispatch({ activeChain: i, activeVersion: version });
+							push(activeProtocol, version, i);
 						}}
 					>
 						<img

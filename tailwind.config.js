@@ -9,6 +9,9 @@ module.exports = {
 				navy: "#1F2832",
 				primary: "#0C0B0E",
 				darkGrey: "#605D5D"
+			},
+			fontSize: {
+				tiny: "8px"
 			}
 		}
 	},

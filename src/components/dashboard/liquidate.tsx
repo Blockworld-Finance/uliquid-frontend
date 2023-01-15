@@ -1,17 +1,19 @@
+/* eslint-disable @next/next/no-img-element */
 import Image from "next/image";
-import { useAccount, useFeeData, useNetwork, useSwitchNetwork } from "wagmi";
-import { useRef, useState, useEffect, useCallback, useMemo } from "react";
+import { toast } from "react-toastify";
+import { Tooltip } from "react-tooltip";
+import { useRef, useState, useMemo } from "react";
+import { useFeeData, useNetwork, useSwitchNetwork } from "wagmi";
 
 import {
 	useProtocols,
 	useTokenBalance,
-	useNativeTokenUSDValue,
 	useTokenUSDValues,
-	useLeverageQuote,
-	useLiquidationQuote
+	useLiquidationQuote,
+	useNativeTokenUSDValue
 } from "@hooks/useQueries";
-import useData from "@hooks/useData";
-import { getLiquidation } from "src/queries";
+import Alert from "@components/common/alert";
+import { useNavData } from "@hooks/useNavData";
 import Button from "@components/common/button";
 import { formatNumber } from "src/utils/helpers";
 import { Info, GasPump, Dropdown } from "@icons";
@@ -19,8 +21,6 @@ import Spinner from "@components/common/Spinner";
 import { ClickOutside } from "@hooks/useClickOutside";
 import { AssetPicker } from "@components/common/asset-picker";
 import { LendingMarketUser, LiquidationQuote } from "src/schema";
-import Alert from "@components/common/alert";
-import { toast } from "react-toastify";
 
 type Props = {
 	asset?: LendingMarketUser;
@@ -33,18 +33,15 @@ export function Liquidate({
 	asset: initialAsset,
 	collateral: initialCollateral
 }: Props) {
-	const {
-		data: { activeProtocol, activeChain, activeVersion }
-	} = useData();
 	const { data } = useProtocols();
 	const { chain } = useNetwork();
 	const [open, setOpen] = useState(false);
 	const [view, setView] = useState(false);
 	const [show, setShow] = useState(false);
-	const [amount, setAmount] = useState(0);
 	const [gasPrice, setGasPrice] = useState(0);
 	const { data: balance } = useTokenBalance();
 	const [slippage, setSlippage] = useState(1.0);
+	const [amount, setAmount] = useState<number>();
 	const inputRef = useRef<HTMLInputElement>(null);
 	const [asset, setAsset] = useState(initialAsset);
 	const { chains, switchNetwork } = useSwitchNetwork();
@@ -52,6 +49,7 @@ export function Liquidate({
 	const [isConfirming, setIsConfirming] = useState(false);
 	const { data: usdValue, isLoading: nativeTokenLoading } =
 		useNativeTokenUSDValue();
+	const { activeChain, activeProtocol, activeVersion } = useNavData();
 	const { name, logo, versions = [] } = data[activeProtocol];
 	const { data: fees, isLoading: feeLoading } = useFeeData({
 		chainId: versions[activeVersion].chains[activeChain].id
@@ -67,10 +65,11 @@ export function Liquidate({
 		getTokenUsdValueChainId2: versions[activeVersion].chains[activeChain].id
 	});
 
-	const preparing = useMemo(
-		() => tokenLoading || nativeTokenLoading || feeLoading,
-		[tokenLoading, nativeTokenLoading, feeLoading]
-	);
+	const preparing = useMemo(() => {
+		console.log(tokenLoading, nativeTokenLoading, feeLoading);
+
+		return tokenLoading || nativeTokenLoading || feeLoading;
+	}, [tokenLoading, nativeTokenLoading, feeLoading]);
 
 	const {
 		data: liquidation,
@@ -78,8 +77,8 @@ export function Liquidate({
 		isRefetching
 	} = useLiquidationQuote(
 		{
-			amount,
 			slippage,
+			amount: amount ?? 0,
 			assetAddress: asset?.marketAddress,
 			collateralAddress: collateral.marketAddress
 		},
@@ -89,13 +88,17 @@ export function Liquidate({
 				(Number(fees?.gasPrice._hex) * 2000000 * usdValue.getTokenUSDValue) /
 					10 ** 18
 			);
+			
 			setInputValid(
 				amount &&
-					amount <= balance[collateral.marketAddress] &&
-					asset.marketAddress !== collateral.marketAddress
+					amount  <= asset.amountBorrowed &&  //amount <= balance[collateral.marketAddress] &&
+					d.collateralAmount <= collateral.amountSupplied 
+					//asset.marketAddress !== collateral.marketAddress
 			);
 		}
 	);
+
+
 
 	return preparing ? (
 		<div className="my-8 flex justify-center items-center">
@@ -106,14 +109,18 @@ export function Liquidate({
 			<div className="max-h-[60vh] overflow-y-scroll overscroll-y-contain mt-4">
 				<div className="flex space-x-10">
 					<div className="space-y-2">
-						<small className="text-sm text-darkGrey">Protocol</small>
+						<small className="text-tiny md:text-sm text-darkGrey">
+							Protocol
+						</small>
 						<div className="flex space-x-2 items-center">
 							<Image src={logo} alt={name} width={24} height={24} />
-							<span>{name}</span>
+							<span className="text-xs md:text-base">{name}</span>
 						</div>
 					</div>
 					<div className="space-y-2">
-						<small className="text-sm text-darkGrey">Blockchain</small>
+						<small className="text-tiny md:text-sm text-darkGrey">
+							Blockchain
+						</small>
 						<div className="flex space-x-2 items-center">
 							<Image
 								width={24}
@@ -121,9 +128,11 @@ export function Liquidate({
 								src={versions[activeVersion].chains[activeChain]?.logo ?? ""}
 								alt={versions[activeVersion].chains[activeChain]?.name ?? ""}
 							/>
-							<p>{versions[activeVersion].chains[activeChain]?.name ?? ""}</p>
+							<p className="text-xs md:text-base">
+								{versions[activeVersion].chains[activeChain]?.name ?? ""}
+							</p>
 							{versions && versions.length ? (
-								<div className="bg-primary text-blue text-xs px-5 py-1 rounded">
+								<div className="bg-primary text-blue text-tiny md:text-xs px-5 py-1 rounded">
 									{versions[activeVersion].name}
 								</div>
 							) : (
@@ -171,33 +180,37 @@ export function Liquidate({
 							}
 						/>
 					)}
-					<div className="bg-primary p-3 rounded-lg space-y-3">
-						<small className="text-sm text-darkGrey">Debt</small>
+					<div className="bg-primary p-2 md:p-3 rounded-lg space-y-3">
+						<small className="text-tiny md:text-sm text-darkGrey">Debt</small>
 						<div className="grid gap-4 grid-cols-5 space-x-4 items-center">
-							<div className="flex-grow border border-darkGrey rounded-lg py-3 px-4 col-span-3">
+							<div className="flex-grow border border-darkGrey rounded-lg p-2 md:py-3 md:px-4 col-span-3">
 								<input
 									step={0.01}
 									type="number"
 									ref={inputRef}
 									value={amount}
 									inputMode="numeric"
-									onChange={e => setAmount(Number(e.target.value))}
-									className="w-full text-3xl text-white bg-primary border-none focus:outline-none"
+									onChange={e => {
+										if (e.target.value) setAmount(Number(e.target.value));
+										else setAmount(undefined);
+									}}
+									className="w-full text-xs md:text-3xl text-white bg-primary border-none focus:outline-none"
 								/>
-								<small className="text-sm text-grey">
+								<small className="text-tiny md:text-sm text-grey">
 									${formatNumber(liquidation?.debtAmountUSD) ?? 0}
 								</small>
 							</div>
 							<div className="space-y-2 col-span-2">
 								<div className="flex items-center justify-between">
 									<div className="flex items-center space-x-2 flex-initial">
-										<Image
-											width={32}
-											height={32}
+										<img
+											className="w-6 md:w-8 h-6 md:h-8"
 											src={asset?.marketLogo ?? ""}
 											alt={asset?.marketName ?? ""}
 										/>
-										<span className="">{asset?.marketSymbol}</span>
+										<span className="text-xs md:text-base">
+											{asset?.marketSymbol}
+										</span>
 									</div>
 									<div className="">
 										<ClickOutside
@@ -219,15 +232,14 @@ export function Liquidate({
 										</ClickOutside>
 									</div>
 								</div>
-								<small className="text-sm text-grey flex items-center justify-between">
+								<small className="text-tiny md:text-sm text-grey flex items-center justify-between">
 									<span>
 										Debt = {asset?.amountBorrowed.toPrecision(6) ?? 0}
 									</span>
 									<span
 										className="px-1 py-[2px] bg-[#008DE4] rounded-full text-white cursor-pointer"
 										onClick={() => {
-											if (inputRef.current)
-												inputRef.current.value = `${asset.amountBorrowed}`;
+											setAmount(asset.amountBorrowed);
 										}}
 									>
 										Max
@@ -238,28 +250,31 @@ export function Liquidate({
 					</div>
 
 					<div className="bg-primary p-3 rounded-lg space-y-3">
-						<small className="text-sm text-darkGrey">Collateral</small>
+						<small className="text-tiny md:text-sm text-darkGrey">
+							Collateral
+						</small>
 						<div className="grid gap-4 grid-cols-5 space-x-4 items-center">
 							<div className="flex-grow border border-darkGrey rounded-lg py-3 px-4 col-span-3">
 								<input
 									readOnly
 									value={formatNumber(liquidation?.collateralAmount) ?? 0}
-									className="w-full text-3xl text-white bg-primary border-none focus:outline-none"
+									className="w-full text-xs md:text-3xl text-white bg-primary border-none focus:outline-none"
 								/>
-								<small className="text-sm text-grey">
+								<small className="text-tiny md:text-sm text-grey">
 									${formatNumber(liquidation?.collateralAmountUSD) ?? 0}
 								</small>
 							</div>
 							<div className="space-y-2 col-span-2">
 								<div className="flex items-center justify-between">
 									<div className="flex items-center space-x-2">
-										<Image
-											width={32}
-											height={32}
+										<img
+											className="w-6 md:w-8 h-6 md:h-8"
 											src={collateral?.marketLogo ?? ""}
 											alt={collateral?.marketName ?? ""}
 										/>
-										<span>{collateral?.marketSymbol}</span>
+										<span className="text-xs md:text-base">
+											{collateral?.marketSymbol}
+										</span>
 									</div>
 									<div className="">
 										<ClickOutside
@@ -282,25 +297,33 @@ export function Liquidate({
 										</ClickOutside>
 									</div>
 								</div>
-								<small className="text-sm text-grey">
+								<small className="text-tiny md:text-sm text-grey">
 									Bal = {collateral?.amountSupplied.toPrecision(8) ?? 0}
 								</small>
 							</div>
 						</div>
 					</div>
 
-					<div className="bg-primary p-3 rounded-lg">
-						<div className="flex justify-between items-center">
+					<div className="bg-primary p-3 rounded-lg text-xs md:text-base">
+						<div className="flex justify-between items-center text-grey text-sm">
 							<div className="flex space-x-2 items-center">
-								<Info />
+								<div id="info">
+									<Info />
+								</div>
+								<Tooltip anchorId="info" place="top">
+									<div className="max-w-[200px]">
+										The amount of collateral liquidated is calculated using this
+										exchange rate plus protocol fee.
+									</div>
+								</Tooltip>
 								<span>
-									1{collateral?.marketSymbol} ={" "}
+									1{asset?.marketSymbol} ={" "}
+									{formatNumber(tokenValue?.getTokenValue) ?? 0}
+									{collateral?.marketSymbol} ($
 									{formatNumber(
 										(tokenValue?.getTokenValue ?? 0) *
 											tokenValue?.getTokenUSDValue ?? 0
 									)}
-									{asset?.marketSymbol} ($
-									{formatNumber(tokenValue?.getTokenValue) ?? 0}{" "}
 									)
 								</span>
 							</div>
@@ -413,7 +436,7 @@ export function Liquidate({
 			<Button
 				size="large"
 				loading={isLoading || isRefetching}
-				disabled={!isInputValid}
+				disabled={!isInputValid || chain?.id !== versions[activeVersion].chains[activeChain].id}
 				className="w-full font-semibold"
 				onClick={() => {
 					if (!isConfirming) {
@@ -426,11 +449,11 @@ export function Liquidate({
 						liquidation,
 						<>
 							<p className="text-grey">
-								Liquidating {liquidation.collateralAmount}{" "}
-								{collateral.marketSymbol} to repay {liquidation.debtAmount}{" "}
+								Liquidating {liquidation.collateralAmount} {" "}
+								{collateral.marketSymbol} to repay {liquidation.debtAmount} {" "}
 								{asset.marketSymbol}
 								<br />
-								Protocol fee of {(liquidation?.fee / 1000000) * 100 ?? 0}{" "}
+								Protocol fee of {(liquidation?.fee / 1000000) * 100 ?? 0} {" "}
 								included
 							</p>
 						</>

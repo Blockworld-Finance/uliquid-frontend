@@ -1,6 +1,5 @@
 import { Component, createContext, ReactNode, useContext } from "react";
 import { AppData } from "@types";
-import { navigate } from "src/utils/helpers";
 
 interface Props<T extends object> {
 	init: T;
@@ -79,7 +78,6 @@ export class DataProvider<T extends object> extends Component<
 
 	updateState(data: Partial<T>) {
 		this.setState(p => {
-			navigate({ ...p, ...data });
 			return { ...p, ...data };
 		});
 		// this.persist({ ...this.state, ...data });

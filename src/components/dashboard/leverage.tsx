@@ -1,5 +1,7 @@
+/* eslint-disable @next/next/no-img-element */
 import Image from "next/image";
 import { toast } from "react-toastify";
+import { Tooltip } from "react-tooltip";
 import { useRef, useMemo, useState, useEffect } from "react";
 import { useFeeData, useNetwork, useSwitchNetwork } from "wagmi";
 
@@ -11,10 +13,10 @@ import {
 	useProtocolMarkets,
 	useNativeTokenUSDValue
 } from "@hooks/useQueries";
-import useData from "@hooks/useData";
 import Alert from "@components/common/alert";
 import Button from "@components/common/button";
 import Slider from "@components/common/slider";
+import { useNavData } from "@hooks/useNavData";
 import Spinner from "@components/common/Spinner";
 import { formatNumber } from "src/utils/helpers";
 import { ClickOutside } from "@hooks/useClickOutside";
@@ -33,9 +35,6 @@ export default function Leverage({
 	debt: initialDebt,
 	collateral: initialCollateral
 }: Props) {
-	const {
-		data: { activeProtocol, activeChain, activeVersion }
-	} = useData();
 	const { chain } = useNetwork();
 	const { data } = useProtocols();
 	const [view, setView] = useState(false);
@@ -52,14 +51,13 @@ export default function Leverage({
 		useNativeTokenUSDValue();
 	const [isConfirming, setIsConfirming] = useState(false);
 	const [collateral, setCollateral] = useState(initialCollateral);
+	const { activeChain, activeProtocol, activeVersion } = useNavData();
 	const { name, logo, versions = [] } = data[activeProtocol];
 	const { data: fees, isLoading: feeLoading } = useFeeData({
 		chainId: versions[activeVersion].chains[activeChain].id
 	});
 	const [changeSlippage, setChangeSlippage] = useState(false);
-	const [amount, setAmount] = useState(
-		balance?.[collateral.marketAddress] ?? 0
-	);
+	const [amount, setAmount] = useState<number>();
 	const { data: markets, isLoading: marketLoading } = useProtocolMarkets(name, {
 		version: versions[activeVersion].name,
 		chainId: versions[activeVersion].chains[activeChain].id
@@ -84,15 +82,29 @@ export default function Leverage({
 	);
 
 	const { data: tokenValue, isLoading: tokenLoading } = useTokenUSDValues({
-		token: debt?.marketAddress,
-		quoteToken: collateral?.marketAddress,
-		getTokenUsdValueToken2: collateral?.marketAddress,
+		token: collateral?.marketAddress,
+		quoteToken: debt?.marketAddress,
+		getTokenUsdValueToken2: debt?.marketAddress,
 		chainId: versions[activeVersion].chains[activeChain].id,
 		getTokenUsdValueChainId2: versions[activeVersion].chains[activeChain].id
 	});
 
+	const { data: dbttokenValue, isLoading: dbttokenLoading } = useTokenUSDValues(
+		{
+			token: debt?.marketAddress,
+			quoteToken: collateral?.marketAddress,
+			getTokenUsdValueToken2: collateral?.marketAddress,
+			chainId: versions[activeVersion].chains[activeChain].id,
+			getTokenUsdValueChainId2: versions[activeVersion].chains[activeChain].id
+		}
+	);
+
 	const preparing =
-		tokenLoading || nativeTokenLoading || feeLoading || marketLoading;
+		tokenLoading ||
+		nativeTokenLoading ||
+		feeLoading ||
+		marketLoading ||
+		dbttokenLoading;
 
 	const {
 		isLoading,
@@ -101,8 +113,8 @@ export default function Leverage({
 	} = useLeverageQuote(
 		{
 			slippage,
-			initialCollateralAmount: amount,
 			debtAddress: debt?.marketAddress,
+			initialCollateralAmount: amount ?? 0,
 			collateralAddress: collateral.marketAddress,
 			collateralizationRatio:
 				((1000 - ratio + market.marketData.minCollateralizationRatio) / 100) *
@@ -124,11 +136,27 @@ export default function Leverage({
 		}
 	);
 
+	const color = useMemo(() => {
+		if (leverage?.estimatedHealthFactor < 1.09) return "#EB5757";
+		if (leverage?.estimatedHealthFactor < 1.9) return "#F7931A";
+		return "#32C1CC";
+	}, [leverage?.estimatedHealthFactor]);
+
 	useEffect(() => {
 		if (market.marketData.minCollateralizationRatio) {
 			setRatio(market.marketData.minCollateralizationRatio);
 		}
 	}, [market.marketData]);
+
+	const maximumDebt = useMemo(() => {
+		if (leverage?.leveragedDebtAmount) {
+			if (!leverage.slippage) return 0
+			let debtAmount = leverage.leveragedDebtAmount + ( leverage.leveragedDebtAmount * leverage.slippage / 10 ** 6) 
+			return debtAmount.toFixed(6)
+		}
+
+		return 0
+	}, [leverage?.leveragedDebtAmount])
 
 	return preparing ? (
 		<div className="my-8 flex justify-center items-center">
@@ -136,17 +164,21 @@ export default function Leverage({
 		</div>
 	) : (
 		<>
-			<div className="max-h-[60vh] overflow-y-scroll overscroll-y-contain mt-4">
-				<div className="flex space-x-10">
+			<div className="max-h-[60vh] overflow-y-scroll overscroll-y-contain mt-4 text-xs md:text-base">
+				<div className="flex space-x-4 md:space-x-10">
 					<div className="space-y-2">
-						<small className="text-sm text-darkGrey">Protocol</small>
+						<small className="text-tiny md:text-sm text-darkGrey">
+							Protocol
+						</small>
 						<div className="flex space-x-2 items-center">
 							<Image src={logo} alt={name} width={24} height={24} />
 							<span>{name}</span>
 						</div>
 					</div>
 					<div className="space-y-2">
-						<small className="text-sm text-darkGrey">Blockchain</small>
+						<small className="text-tiny md:text-sm text-darkGrey">
+							Blockchain
+						</small>
 						<div className="flex space-x-2 items-center">
 							<Image
 								width={24}
@@ -156,7 +188,7 @@ export default function Leverage({
 							/>
 							<p>{versions[activeVersion].chains[activeChain]?.name ?? ""}</p>
 							{versions && versions.length ? (
-								<div className="bg-primary text-blue text-xs px-5 py-1 rounded">
+								<div className="bg-primary text-blue text-tiny md:text-xs px-5 py-1 rounded">
 									{versions[activeVersion].name}
 								</div>
 							) : (
@@ -166,11 +198,11 @@ export default function Leverage({
 					</div>
 					{leverage && (
 						<div className="space-y-2">
-							<small className="text-sm text-darkGrey">
+							<small className="text-tiny md:text-sm text-darkGrey">
 								Est. Health Factor
 							</small>
 							<div className="flex space-x-2 items-center">
-								<p className="text-blue">
+								<p style={{ color }}>
 									{leverage.estimatedHealthFactor.toFixed(2) ?? 0}
 								</p>
 							</div>
@@ -223,7 +255,19 @@ export default function Leverage({
 						/>
 					)}
 					<div className="bg-primary p-3 rounded-lg space-y-3">
-						<small className="text-sm text-darkGrey">Leverage token</small>
+						<small className="text-tiny md:text-sm text-darkGrey flex items-center">
+							<span>Leverage token</span>
+							<div id="leverage-info">
+								<Help className="ml-2" />
+							</div>
+							<Tooltip place="top" anchorId="leverage-info">
+								<div className="max-w-[200px]">
+									The leverage token selected will be deposited on {name} and
+									used as collateral to borrow the debt token in a series of
+									loops
+								</div>
+							</Tooltip>
+						</small>
 						<div className="grid gap-2 grid-cols-12 space-x-4 items-center">
 							<div className="flex-grow border border-darkGrey rounded-lg py-3 px-4 col-span-7">
 								<input
@@ -233,19 +277,22 @@ export default function Leverage({
 									value={amount}
 									pattern="[0-9]*"
 									inputMode="numeric"
-									onChange={e => setAmount(Number(e.target.value))}
+									onChange={e => {
+										if (e.target.value) setAmount(Number(e.target.value));
+										else setAmount(undefined);
+									}}
 									onKeyDown={evt => {
 										let charCode = evt.which ? evt.which : evt.keyCode;
 										if (charCode > 31 && (charCode < 48 || charCode > 57))
 											return false;
 										return true;
 									}}
-									className="w-full text-3xl text-white bg-primary border-none focus:outline-none"
+									className="w-full text-xs md:text-3xl text-white bg-primary border-none focus:outline-none"
 								/>
-								<small className="text-sm text-grey">
+								<small className="text-tiny md:text-sm text-grey">
 									$
 									{(
-										tokenValue?.getTokenUSDValue *
+										dbttokenValue?.getTokenUSDValue *
 										Number(
 											inputRef.current?.value ??
 												balance?.[collateral.marketAddress] ??
@@ -257,9 +304,8 @@ export default function Leverage({
 							<div className="space-y-2 col-span-5">
 								<div className="flex items-center justify-between">
 									<div className="flex items-center space-x-2 flex-initial">
-										<Image
-											width={32}
-											height={32}
+										<img
+											className="w-6 md:w-8 h-6 md:h-8"
 											src={collateral?.marketLogo ?? ""}
 											alt={collateral?.marketName ?? ""}
 										/>
@@ -287,7 +333,7 @@ export default function Leverage({
 										</ClickOutside>
 									</div>
 								</div>
-								<small className="text-sm text-grey flex items-center justify-between">
+								<small className="text-tiny md:text-sm text-grey flex items-center justify-between">
 									<span>
 										Bal ={" "}
 										{formatNumber(balance?.[collateral.marketAddress], 6) ?? 0}
@@ -295,11 +341,7 @@ export default function Leverage({
 									<span
 										className="px-1 py-[2px] bg-[#008DE4] rounded-full text-white cursor-pointer"
 										onClick={() => {
-											if (inputRef.current) {
-												inputRef.current.value = `${
-													balance?.[collateral.marketAddress] ?? 0
-												}`;
-											}
+											setAmount(balance?.[collateral.marketAddress] ?? 0);
 										}}
 									>
 										Max
@@ -311,14 +353,23 @@ export default function Leverage({
 					<div className="bg-primary p-3 rounded-lg">
 						<div className="flex items-center justify-between">
 							<small className="text-sm text-darkGrey flex items-center">
-								<span>Debt</span> <Help className="ml-2" />
+								<span>Debt</span>
+
+								<div id="debt-info">
+									<Help className="ml-2" />
+								</div>
+								<Tooltip anchorId="debt-info" place="top">
+									<div className="max-w-[200px]">
+										A debt of the token selected will be incurred on {name} and
+										swapped for the leverage token in a series of loops
+									</div>
+								</Tooltip>
 							</small>
 							<div className="space-y-2 col-span-2">
 								<div className="flex items-center justify-between">
 									<div className="flex items-center space-x-2">
-										<Image
-											width={32}
-											height={32}
+										<img
+											className="w-6 md:w-8 h-6 md:h-8"
 											src={debt?.marketLogo ?? ""}
 											alt={debt?.marketName ?? ""}
 										/>
@@ -361,6 +412,7 @@ export default function Leverage({
 								</label>
 								<Slider
 									max={1000}
+									color={color}
 									value={ratio}
 									onChange={v => {
 										setRatio(typeof v === "number" ? v : v[0]);
@@ -404,17 +456,25 @@ export default function Leverage({
 						</div>
 					</div>
 					<div className="bg-primary p-3 rounded-lg">
-						<div className="flex justify-between items-center">
+						<div className="flex justify-between items-center text-grey text-sm">
 							<div className="flex space-x-2 items-center">
-								<Info />
+								<div id="token-info">
+									<Info />
+								</div>
+								<Tooltip anchorId="token-info" place="top">
+									<div className="max-w-[200px]">
+										The amount of debt incured is calculated using this exchange
+										rate - leverage.
+									</div>
+								</Tooltip>
 								<span>
 									1{collateral?.marketSymbol} ={" "}
+									{formatNumber(tokenValue?.getTokenValue, 8) ?? 0}{" "}
+									{debt?.marketSymbol} ($
 									{(
 										(tokenValue?.getTokenValue ?? 0) *
 											tokenValue?.getTokenUSDValue ?? 0
-									).toPrecision(6)} {" "}
-									{debt?.marketSymbol} ($
-									{tokenValue?.getTokenValue.toPrecision(6) ?? 0}{" "}
+									).toPrecision(6)}{" "}
 									)
 								</span>
 							</div>
@@ -443,7 +503,7 @@ export default function Leverage({
 							</div>
 							<div className="flex justify-between items-center text-grey">
 								<div>
-									<p>Maximum debt incurred after slippage</p>
+									<p>Maximum debt after slippage</p>
 									{changeSlippage ? (
 										<ClickOutside
 											className="space-x-2"
@@ -492,10 +552,8 @@ export default function Leverage({
 									)}
 								</div>
 								<p>
-									{(leverage?.leveragedDebtAmount ?? 0) +
-										((leverage?.leveragedDebtAmount ?? 0) *
-											(leverage?.slippage ?? 0)) /
-											10 ** 6}
+									{ maximumDebt}
+									{" "} {debt.marketSymbol}
 								</p>
 							</div>
 							<div className="flex justify-between items-center text-grey">
@@ -522,7 +580,7 @@ export default function Leverage({
 			<Button
 				size="large"
 				loading={isLoading || isRefetching}
-				disabled={!isInputValid}
+				disabled={!isInputValid || chain?.id !== versions[activeVersion].chains[activeChain].id}
 				className="w-full font-semibold"
 				onClick={() => {
 					if (!isConfirming) {

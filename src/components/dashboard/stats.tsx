@@ -9,8 +9,7 @@ export default function Stats() {
 	const {
 		healthFactor = "",
 		totalBorrowedUSD = 0,
-		totalSuppliedUSD = 0,
-		markets
+		totalSuppliedUSD = 0
 	} = data?.getLendingProtocolUserData ?? {};
 
 	return (

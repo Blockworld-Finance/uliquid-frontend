@@ -45,10 +45,10 @@ export default function Modal({
 				className={`w-full ${
 					type === "default"
 						? "bg-navy max-w-lg py-10"
-						: "bg-primary py-6 max-w-md"
+						: "bg-primary py-4 md:py-6 max-w-md"
 				} rounded-lg fixed ${
 					open ? "opacity-100 scale-100" : "opacity-0 scale-50"
-				} fixed -translate-x-1/2 left-1/2 -translate-y-1/2 top-1/2 px-6 z-10`}
+				} fixed -translate-x-1/2 left-1/2 -translate-y-1/2 top-1/2 px-4 md:px-6 z-10`}
 			>
 				<div className="relative">
 					<div

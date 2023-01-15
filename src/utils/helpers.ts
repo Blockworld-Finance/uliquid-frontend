@@ -1,15 +1,4 @@
-import { AnyObject } from "@types";
 import { toast } from "react-toastify";
-
-export const navigate = (params: AnyObject) => {
-	const keys = Object.keys(params);
-	let query = "";
-	keys.forEach(k => {
-		query += `${k}=${params[k]}&`;
-	});
-	if (window)
-		window.history.pushState({ ...params }, "", `${window.location.href}`);
-};
 
 export const formatNumber = (
 	num: number,
@@ -65,3 +54,7 @@ export function copyTextToClipboard(text: string) {
 		}
 	);
 }
+
+export const removeSpecialChars = (str: string) => {
+	return str.replace(/[^a-zA-Z0-9]/g, "-");
+};
