@@ -14,7 +14,7 @@ export default function Layout({ children, urls }: Props) {
 		<>
 			<main className="bg-primary min-h-screen pattern max-w-[1440px] mx-auto">
 				<Header {...urls} />
-				<section className="max-w-[1240px] mx-auto px-4 md:p-0">
+				<section className="max-w-[1240px] mx-auto px-4 lg:p-0">
 					{children}
 				</section>
 			</main>

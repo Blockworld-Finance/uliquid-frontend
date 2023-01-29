@@ -9,7 +9,7 @@ export default function Footer({
 }: TGetURLsResponse) {
 	return (
 		<footer className="bg-navy h-80 flex justify-center items-center">
-			<div className="flex items-center flex-col md:flex-row justify-between w-full max-w-[1240px] mx-auto space-y-6 md:space-y-0">
+			<div className="flex items-center flex-col lg:flex-row justify-between w-full max-w-[1240px] mx-auto space-y-6 lg:space-y-0">
 				<Link href={"/"}>
 					<img src="/logo.svg" alt="Logo" className="w-20 md:w-[185px]" />
 				</Link>
@@ -28,7 +28,7 @@ export default function Footer({
 					</Link>
 					<li>Privacy policy</li>
 				</ul>
-				<div className="flex items-center flex-col md:flex-row space-x-4 space-y-4 md:space-y-0">
+				<div className="flex items-center flex-col lg:flex-row space-x-4 space-y-4 lg:space-y-0">
 					<div className="flex items-center space-x-4">
 						<a href={twitter} target="_blank" rel="noopener noreferrer">
 							<Twitter />

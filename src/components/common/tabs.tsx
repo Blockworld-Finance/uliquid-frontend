@@ -40,7 +40,7 @@ export default function Tabs({
 
 	const renderTabs = useMemo(() => {
 		return (
-			<div className="flex items-center space-x-3 md:space-x-8 border border-none border-b-darkGrey">
+			<div className="flex items-center space-x-3 lg:space-x-8 border border-none border-b-darkGrey">
 				{data.map((tab, index) =>
 					index <= breakpoint ? (
 						<span

@@ -224,14 +224,14 @@ export default function Assets() {
 
 	return (
 		<>
-			<div className="flex items-start md:items-center md:justify-between flex-col md:flex-row">
+			<div className="flex items-start lg:items-center md:justify-between flex-col lg:flex-row">
 				<Stats />
 				{isConnected && (
 					<Input
 						onChange={searchAssets}
 						placeholder="Search assets"
 						LeadingIcon={() => <Search />}
-						className="self-center w-full md:w-fit mb-4 md:mb-0"
+						className="self-center md:self-auto w-full md:max-w-lg lg:w-fit mb-4 lg:mb-0"
 					/>
 				)}
 			</div>

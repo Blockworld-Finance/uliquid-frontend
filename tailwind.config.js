@@ -11,7 +11,8 @@ module.exports = {
 				darkGrey: "#605D5D"
 			},
 			fontSize: {
-				tiny: "8px"
+				tiny: "8px",
+				18: "18px"
 			}
 		}
 	},

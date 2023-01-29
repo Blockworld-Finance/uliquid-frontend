@@ -34,7 +34,7 @@ export default function Dashboard({ data: ddata, urls }) {
 						render: <MarketPlace />
 					}))}
 					defaultActive={activeProtocol as number}
-					className={"py-4 md:py-6 text-xs md:text-2xl"}
+					className={"py-4 lg:py-6 text-xs md:text-[18px] lg:text-2xl"}
 					onTabChnaged={(_t, tIndex) => {
 						let index = tIndex;
 						if (index > breakpoint) {

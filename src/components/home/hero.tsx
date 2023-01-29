@@ -17,12 +17,12 @@ import Button from "../common/button";
 
 export default function Hero() {
 	return (
-		<div className="md:h-[80vh] md:min-h-[772px] flex items-center">
-			<div className="max-w-2xl w-full space-y-3 md:space-y-8">
+		<div className="md:h-[80vh] md:min-h-[772px] grid md:grid-cols-5 lg:grid-cols-2 gap-0 items-center">
+			<div className="max-w-2xl w-full space-y-3 md:space-y-8 md:col-span-3 lg:col-span-1">
 				<div
 					data-aos="fade-up"
 					data-aos-anchor-placement="center-bottom"
-					className="text-2xl md:text-6xl md:space-y-3"
+					className="text-2xl md:text-[42px] md:space-y-3 md:leading-tight lg:text-6xl lg:space-y-4"
 				>
 					<h1 className="text-blue">Be in-charge</h1>
 					<h1>
@@ -41,7 +41,7 @@ export default function Hero() {
 					data-aos="fade-up"
 					data-aos-delay="200"
 					data-aos-anchor-placement="center-bottom"
-					className="text-grey text-sm md:text-2xl"
+					className="text-grey text-sm md:text-[18px] lg:text-2xl"
 				>
 					Avoid loosing a portion of your collateral when it falls in value,
 					perform the liquidation of your assets yourself.
@@ -69,7 +69,7 @@ const LeftImage = () => {
 		});
 	});
 	return (
-		<div className="max-w-2xl hidden md:flex max-h-[244px] w-full h-full relative items-center justify-center">
+		<div className="max-w-2xl hidden md:col-span-2 lg:col-span-1 md:flex md:scale-75 lg:scale-100 max-h-[244px] w-full h-full relative items-center justify-center">
 			<div
 				data-aos="fade-right"
 				className="absolute -top-44 left-4 z-10 "

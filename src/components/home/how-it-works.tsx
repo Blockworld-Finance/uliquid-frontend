@@ -1,9 +1,8 @@
 /* eslint-disable @next/next/no-img-element */
-import Button from "@components/common/button";
-import { BitCoin, BNB, Solana } from "@icons";
-import { TGuide } from "@types";
-import Image from "next/image";
 import Link from "next/link";
+
+import { TGuide } from "@types";
+import Button from "@components/common/button";
 import { TGetGuideResponse } from "src/queries";
 
 const HIWData = Array(4).fill(0);
@@ -14,19 +13,19 @@ type Props = {
 
 export default function HowItWorks({ guide }: Props) {
 	return (
-		<div className="flex flex-col md:flex-row md:space-x-36 my-10 md:my-36">
-			<div className="max-w-lg space-y-4 md:space-y-10 flex-none">
-				<p className="text-sm md:text-3xl text-grey md:leading-10">
+		<div className="flex flex-col md:flex-row md:flex-shrink lg:space-x-36 my-10 md:my-36">
+			<div className="md:max-w-[244px] lg:max-w-lg space-y-5 lg:space-y-10 flex-none">
+				<p className="text-sm md:text-2xl lg:text-3xl text-grey md:leading-10">
 					How it works
 				</p>
-				<h1 className="text-2xl md:text-6xl leading-tight">
+				<h1 className="text-2xl md:text-3xl lg:text-6xl leading-tight">
 					A quick guide on how Uliquid works.
 				</h1>
 				<Link href={"/dashboard"}>
-					<Button className="hidden md:block">Get started</Button>
+					<Button className="hidden md:block mt-4">Get started</Button>
 				</Link>
 			</div>
-			<div className="hiw my-10 md:my-0 grid grid-cols-2 gap-2 md:gap-16">
+			<div className="hiw flex-grow my-10 md:my-0 grid grid-cols-2 gap-2 md:gap-16">
 				{guide.getGuide.map((_d, index) => (
 					<HowItWorksCard key={index} index={index} data={_d} />
 				))}
